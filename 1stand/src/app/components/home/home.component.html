@@ -1,0 +1,61 @@
+<div class="home-container">
+    <!-- Barra de navegación -->
+    <nav class="navbar">
+      <div class="nav-brand">Clínica StandAlone - Modular</div>
+      <div class="nav-menu">
+        <button class="nav-link" routerLink="/register">Registrar Usuario</button>
+        <button class="nav-link" (click)="logout()">Cerrar Sesión</button>
+      </div>
+    </nav>
+  
+    <!-- Dashboard principal -->
+    <div class="dashboard">
+      <h1>Panel de Control</h1>
+      
+      <!-- Tarjetas de acceso rápido -->
+      <div class="quick-access-cards">
+        <div class="card">
+          <h3>Pacientes</h3>
+          <p>Gestionar pacientes</p>
+          <button>Ver Pacientes</button>
+        </div>
+  
+        <div class="card">
+          <h3>Citas</h3>
+          <p>Administrar citas</p>
+          <button routerLink="/appointment">Ver Citas</button>
+        </div>
+  
+        <div class="card">
+          <h3>Médicos</h3>
+          <p>Gestionar médicos</p>
+          <button>Ver Médicos</button>
+        </div>
+  
+        <div class="card">
+          <h3>Historias Clínicas</h3>
+          <p>Acceder a historias</p>
+          <button>Ver Historias</button>
+        </div>
+      </div>
+  
+      <!-- Sección de estadísticas -->
+      <div class="statistics-section">
+        <h2>Resumen</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h4>Citas Hoy</h4>
+            <p class="stat-number">0</p>
+          </div>
+          <div class="stat-card">
+            <h4>Pacientes Totales</h4>
+            <p class="stat-number">0</p>
+          </div>
+          <div class="stat-card">
+            <h4>Médicos Activos</h4>
+            <p class="stat-number">0</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
