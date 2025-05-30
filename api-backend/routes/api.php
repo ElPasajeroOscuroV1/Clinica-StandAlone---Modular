@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\TestController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\AppointmentController;
 
 // Rutas existentes...
 // Ruta de prueba básica
@@ -24,6 +25,14 @@ Route::prefix('auth')->group(function () {
 
 // Rutas para TestController
 Route::apiResource('tests', TestController::class);
+
+//Route::post('/appointment', [AppointmentController::class, 'store']);
+/* ES ESTA RUTA LA QUE USA http://localhost:4200/appointment */
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('appointments', AppointmentController::class);
+});
+//ruta x que no es necesaria al parecer
+//Route::post('/appointments', [AppointmentController::class, 'store'])->middleware('auth:sanctum');
 /*
 Route::get('/example', function () {
     return response()->json([
