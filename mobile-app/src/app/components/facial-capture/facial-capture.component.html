@@ -1,0 +1,31 @@
+<div class="facial-capture-container">
+    <h2>Captura Facial</h2>
+    
+    <!-- Mensaje de estado -->
+    <div class="status-section">
+      <p [class.loading]="isLoadingModels" class="status-text">{{ detectionStatus }}</p>
+    </div>
+  
+    <!-- Sección de botones -->
+    <div class="capture-section">
+      <button 
+        (click)="captureImage()" 
+        class="capture-button"
+        [disabled]="isLoadingModels">
+        <span *ngIf="!capturedImage">Tomar Foto</span>
+        <span *ngIf="capturedImage">Tomar Otra Foto</span>
+      </button>
+  
+      <button 
+        *ngIf="capturedImage" 
+        (click)="resetCapture()" 
+        class="reset-button">
+        Limpiar
+      </button>
+    </div>
+  
+    <!-- Previsualización de la imagen -->
+    <div class="preview-section" *ngIf="capturedImage">
+      <img [src]="capturedImage" alt="Imagen capturada" class="preview-image">
+    </div>
+  </div>

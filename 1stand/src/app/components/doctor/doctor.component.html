@@ -1,0 +1,70 @@
+<div class="container mt-4">
+    <h2>{{ isEditing ? 'Editar Médico' : 'Registrar Nuevo Médico' }}</h2>
+  
+    <form [formGroup]="doctorForm" (ngSubmit)="onSubmit()" class="mb-4">
+      <div class="mb-3">
+        <label for="name" class="form-label">Nombre</label>
+        <input type="text" class="form-control" id="name" formControlName="name">
+      </div>
+  
+      <div class="mb-3">
+        <label for="specialty" class="form-label">Especialidad</label>
+        <input type="text" class="form-control" id="specialty" formControlName="specialty">
+      </div>
+  
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" formControlName="email">
+      </div>
+  
+      <div class="mb-3">
+        <label for="phone" class="form-label">Teléfono</label>
+        <input type="text" class="form-control" id="phone" formControlName="phone">
+      </div>
+  
+      <div class="mb-3 form-check">
+        <input type="checkbox" class="form-check-input" id="available" formControlName="available">
+        <label class="form-check-label" for="available">Disponible</label>
+      </div>
+  
+      <button type="submit" class="btn btn-primary" [disabled]="!doctorForm.valid">
+        {{ isEditing ? 'Actualizar' : 'Registrar' }}
+      </button>
+      <button type="button" class="btn btn-secondary ms-2" (click)="resetForm()" *ngIf="isEditing">
+        Cancelar
+      </button>
+    </form>
+  
+    <h3>Lista de Médicos</h3>
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Especialidad</th>
+            <th>Email</th>
+            <th>Teléfono</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let doctor of doctors">
+            <td>{{ doctor.name }}</td>
+            <td>{{ doctor.specialty }}</td>
+            <td>{{ doctor.email }}</td>
+            <td>{{ doctor.phone }}</td>
+            <td>{{ doctor.available ? 'Disponible' : 'No disponible' }}</td>
+            <td>
+              <button class="btn btn-sm btn-primary me-2" (click)="editDoctor(doctor)">
+                Editar
+              </button>
+              <button class="btn btn-sm btn-danger" (click)="deleteDoctor(doctor.id!)">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>

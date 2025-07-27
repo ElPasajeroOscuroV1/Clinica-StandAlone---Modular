@@ -1,0 +1,99 @@
+<div class="modal-header">
+    <h4 class="modal-title">Historial Clínico del Paciente: {{ patientData?.name }}</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
+  </div>
+  <div class="modal-body">
+    <div *ngIf="loadingHistory" class="text-center mb-3">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando historial...</span>
+      </div>
+    </div>
+  
+    <form [formGroup]="medicalHistoryForm" (ngSubmit)="saveMedicalHistory()">
+      <h5>Datos Personales</h5>
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <label for="patientName" class="form-label">Nombre</label>
+          <input type="text" class="form-control" formControlName="patientName" id="patientName" readonly>
+        </div>
+        <div class="col-md-4">
+          <label for="patientEmail" class="form-label">Email</label>
+          <input type="email" class="form-control" formControlName="patientEmail" id="patientEmail" readonly>
+        </div>
+        <div class="col-md-4">
+          <label for="patientCi" class="form-label">CI</label>
+          <input type="text" class="form-control" formControlName="patientCi" id="patientCi" readonly>
+        </div>
+      </div>
+      <hr>
+  
+      <h5>Antecedentes</h5>
+      <div class="mb-3">
+        <label for="medicalBackground" class="form-label">Antecedentes Médicos</label>
+        <textarea class="form-control" id="medicalBackground" formControlName="medicalBackground" rows="3"></textarea>
+        <div *ngIf="medicalHistoryForm.get('medicalBackground')?.invalid && medicalHistoryForm.get('medicalBackground')?.touched" class="text-danger">
+          <small>Máximo 1000 caracteres.</small>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label for="dentalBackground" class="form-label">Antecedentes Odontológicos</label>
+        <textarea class="form-control" id="dentalBackground" formControlName="dentalBackground" rows="3"></textarea>
+        <div *ngIf="medicalHistoryForm.get('dentalBackground')?.invalid && medicalHistoryForm.get('dentalBackground')?.touched" class="text-danger">
+          <small>Máximo 1000 caracteres.</small>
+        </div>
+      </div>
+      <hr>
+  
+      <h5>Motivo de la Consulta</h5>
+      <div class="mb-3">
+        <textarea class="form-control" id="reasonForConsultation" formControlName="reasonForConsultation" rows="2" required></textarea>
+        <div *ngIf="medicalHistoryForm.get('reasonForConsultation')?.invalid && medicalHistoryForm.get('reasonForConsultation')?.touched" class="text-danger">
+          <small>El motivo de la consulta es requerido.</small>
+        </div>
+      </div>
+      <hr>
+  
+      <h5>Resultados de Exámenes Clínicos</h5>
+      <div class="mb-3">
+        <label for="extraOralExam" class="form-label">Examen Extraoral</label>
+        <textarea class="form-control" id="extraOralExam" formControlName="extraOralExam" rows="3"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="intraOralExam" class="form-label">Examen Intraoral</label>
+        <textarea class="form-control" id="intraOralExam" formControlName="intraOralExam" rows="3"></textarea>
+      </div>
+      <hr>
+  
+      <h5>Odontograma</h5>
+      <div class="odontogram-placeholder border p-3 mb-3 text-center text-muted">
+        <p>Aquí se visualizará y editará el odontograma interactivo.</p>
+        <p>Requiere lógica JS/SVG para cada diente y superficie.</p>
+        </div>
+      <hr>
+  
+      <h5>Información Adicional</h5>
+      <div class="mb-3">
+        <label for="treatments" class="form-label">Tratamientos Realizados</label>
+        <textarea class="form-control" id="treatments" formControlName="treatments" rows="3"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="medications" class="form-label">Medicamentos Actuales</label>
+        <textarea class="form-control" id="medications" formControlName="medications" rows="3"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="allergies" class="form-label">Alergias</label>
+        <textarea class="form-control" id="allergies" formControlName="allergies" rows="3"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="dentalHabits" class="form-label">Hábitos Bucales Relevantes</label>
+        <textarea class="form-control" id="dentalHabits" formControlName="dentalHabits" rows="3"></textarea>
+      </div>
+  
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="medicalHistoryForm.invalid || loadingHistory">
+          Guardar Historial
+        </button>
+      </div>
+    </form>
+  </div>

@@ -19,3 +19,18 @@ export class AuthGuard implements CanActivate {
     return true;
   }
 }
+/*
+export class AuthGuard implements CanActivate {
+  constructor(private router: Router) {}
+
+  canActivate(): boolean {
+    const isAuthenticated = /a* lógica para verificar autenticación *a/;
+    if (isAuthenticated) {
+      return true;
+    } else {
+      this.router.navigate(['/login']);
+      return false;
+    }
+  }
+}
+*/

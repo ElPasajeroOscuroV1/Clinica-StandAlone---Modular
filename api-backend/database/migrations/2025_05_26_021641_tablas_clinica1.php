@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         //
+        /*
         Schema::create('patients', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
@@ -24,7 +25,8 @@ return new class extends Migration
             $table->string('emergency_contact_phone');
             $table->timestamps();
         });
-
+        */
+        /*
         Schema::create('doctors', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
@@ -33,7 +35,8 @@ return new class extends Migration
             $table->text('education');
             $table->timestamps();
         });
-
+        */
+        /*
         Schema::create('appointments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('patient_id')->constrained()->onDelete('cascade');
@@ -45,7 +48,7 @@ return new class extends Migration
             $table->text('treatment')->nullable();
             $table->timestamps();
         });
-
+        */
         Schema::create('medical_records', function (Blueprint $table) {
             $table->id();
             $table->foreignId('patient_id')->constrained()->onDelete('cascade');
@@ -77,8 +80,8 @@ return new class extends Migration
         //
         Schema::dropIfExists('schedules');
         Schema::dropIfExists('medical_records');
-        Schema::dropIfExists('appointments');
-        Schema::dropIfExists('doctors');
-        Schema::dropIfExists('patients');
+        //Schema::dropIfExists('appointments');
+        //Schema::dropIfExists('doctors');
+        //Schema::dropIfExists('patients');
     }
 };

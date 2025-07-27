@@ -1,0 +1,160 @@
+/* Estilos generales */
+.container {
+    max-width: 900px;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  h2, h3 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+  
+  /* Estilos del formulario */
+  .form-label {
+    font-weight: 500;
+    color: #34495e;
+  }
+  
+  .form-control {
+    border-radius: 4px;
+    border-color: #ced4da;
+    transition: border-color 0.3s ease;
+  }
+  
+  .form-control:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+  }
+  
+  .form-check-input:checked {
+    background-color: #3498db;
+    border-color: #3498db;
+  }
+  
+  .form-check-label {
+    color: #34495e;
+  }
+  
+  /* Botones del formulario */
+  .btn-primary {
+    background-color: #2ecc71;
+    border-color: #2ecc71;
+    padding: 8px 20px;
+  }
+  
+  .btn-primary:hover {
+    background-color: #27ae60;
+    border-color: #27ae60;
+  }
+  
+  .btn-primary:disabled {
+    background-color: #95e8c0;
+    border-color: #95e8c0;
+    cursor: not-allowed;
+  }
+  
+  .btn-secondary {
+    background-color: #95a5a6;
+    border-color: #95a5a6;
+    padding: 8px 20px;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #7f8c8d;
+    border-color: #7f8c8d;
+  }
+  
+  /* Estilos de la tabla */
+  .table-responsive {
+    margin-top: 20px;
+  }
+  
+  .table {
+    background-color: #ffffff;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f1f3f5;
+  }
+  
+  .th, .td {
+    vertical-align: middle;
+    padding: 12px;
+    text-align: left;
+  }
+  
+  .th {
+    background-color: #3498db;
+    color: #ffffff;
+    font-weight: 600;
+  }
+  
+  .td {
+    color: #2c3e50;
+  }
+  
+  .btn-sm {
+    padding: 4px 12px;
+    font-size: 0.875rem;
+  }
+  
+  .btn-primary.me-2 {
+    margin-right: 8px;
+  }
+  
+  .btn-danger {
+    background-color: #e74c3c;
+    border-color: #e74c3c;
+  }
+  
+  .btn-danger:hover {
+    background-color: #c0392b;
+    border-color: #c0392b;
+  }
+  
+  /* Estados condicionales */
+  .td:nth-child(5) {
+    font-weight: 500;
+  }
+  
+  .td:nth-child(5):after {
+    content: '';
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  
+  .td:nth-child(5):where(:not(:contains("No disponible")))::after {
+    background-color: #2ecc71;
+  }
+  
+  .td:nth-child(5):contains("No disponible")::after {
+    background-color: #e74c3c;
+  }
+  
+  /* Respuesta a pantallas pequeñas */
+  @media (max-width: 768px) {
+    .container {
+      padding: 10px;
+    }
+  
+    .table th,
+    .table td {
+      padding: 8px;
+      font-size: 0.9rem;
+    }
+  
+    .btn {
+      padding: 6px 12px;
+      font-size: 0.875rem;
+    }
+  }

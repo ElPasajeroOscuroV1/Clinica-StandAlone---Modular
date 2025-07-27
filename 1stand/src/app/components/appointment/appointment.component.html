@@ -11,6 +11,7 @@
       </div>
 
       <form [formGroup]="appointmentForm" (ngSubmit)="onSubmit()">
+        <!--
         <div class="form-group">
           <label for="patient_name">Nombre del Paciente</label>
           <input
@@ -21,16 +22,30 @@
             placeholder="Ingrese el nombre del paciente"
           >
         </div>
-  
+        -->
+        <div class="form-group">
+          <label for="patient_id">Paciente</label>
+          <select
+            id="patient_id"
+            formControlName="patient_id"
+            class="form-control"
+            (change)="onPatientSelect($event)"
+          >
+            <option value="">Seleccione un paciente</option>
+            <option *ngFor="let patient of patients" [value]="patient.id">{{ patient.name }}</option>
+          </select>
+        </div>
+        
         <div class="form-group">
           <label for="doctor">Doctor</label>
-          <input
-            type="text"
+          <select
             id="doctor"
             formControlName="doctor"
             class="form-control"
-            placeholder="Seleccione el doctor"
           >
+            <option value="">Seleccione un doctor</option>
+            <option *ngFor="let doctor of doctors" [value]="doctor.name">{{ doctor.name }} - {{ doctor.specialty }}</option>
+          </select>
         </div>
   
         <div class="form-group">
