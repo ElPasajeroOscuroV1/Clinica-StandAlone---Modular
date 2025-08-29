@@ -1,174 +1,272 @@
-<div class="container mt-4">
-    <h2>Gestión de Pacientes</h2>
-  
-    <!-- Formulario de Paciente -->
-    <form [formGroup]="patientForm" (ngSubmit)="onSubmit()" class="mb-4">
-        <!-- Spinner de carga -->
-        <div *ngIf="loading" class="text-center mb-3">
-            <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Cargando...</span>
-            </div>
-        </div>
-      
-      <div class="row">
-        <!--
-        <div class="form-group mb-3">
-            <label for="patient_id">ID del Paciente</label>
-            <input
-                type="number"
-                id="patient_id"
-                formControlName="patient_id"
-                class="form-control"
-                [readonly]="isEditing"
-                min="1"
-            >
-            <div *ngIf="patientForm.get('patient_id')?.invalid && patientForm.get('patient_id')?.touched" class="text-danger">
-                <small *ngIf="patientForm.get('patient_id')?.errors?.['required']">El ID del paciente es requerido</small>
-                <small *ngIf="patientForm.get('patient_id')?.errors?.['min']">El ID debe ser mayor a 0</small>
-            </div>
-        </div>
-        -->
+<div class="container mt-4" style="max-width: 800px;">
+  <h1>Gestión de Pacientes</h1>
+  <h2>Registro de Pacientes</h2>
+  <!-- Formulario de Paciente -->
+  <form
+    [formGroup]="patientForm"
+    (ngSubmit)="onSubmit()"
+    class="mb-4"
+    [attr.aria-busy]="loading"
+    novalidate
+  >
+    <!-- Spinner de carga -->
+    <div *ngIf="loading" class="text-center mb-3">
+      <div class="spinner-border text-primary" role="status" aria-live="polite" aria-label="Cargando"></div>
+    </div>
 
-        <div class="col-md-6 mb-3">
-          <label for="name" class="form-label">Nombre</label>
-          <input type="text" class="form-control" id="name" formControlName="name">
-          <div *ngIf="patientForm.get('name')?.invalid && patientForm.get('name')?.touched" class="text-danger">
-            <small>El nombre es requerido</small>
-          </div>
-        </div>
-  
-        <div class="col-md-6 mb-3">
-          <label for="email" class="form-label">Email</label>
-          <input type="email" class="form-control" id="email" formControlName="email">
-          <div *ngIf="patientForm.get('email')?.invalid && patientForm.get('email')?.touched" class="text-danger">
-            <small *ngIf="patientForm.get('email')?.errors?.['required']">El email es requerido</small>
-            <small *ngIf="patientForm.get('email')?.errors?.['email']">El email no es válido</small>
-          </div>
-        </div>
+    <!-- Mensaje de error del servidor -->
+    <div *ngIf="serverError" class="alert alert-danger" role="alert" aria-live="assertive">
+      {{ serverError }}
+    </div>
 
-        <div class="col-md-6 mb-3">
-          <label for="ci" class="form-label">Carnet de identidad</label>
-          <input type="tel" class="form-control" id="ci" formControlName="ci">
-          <div *ngIf="patientForm.get('ci')?.invalid && patientForm.get('ci')?.touched" class="text-danger">
-            <small>El ci es requerido</small>
-          </div>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label for="name" class="form-label">Nombre</label>
+        <input
+          type="text"
+          class="form-control"
+          id="name"
+          formControlName="name"
+          required
+          autocomplete="name"
+          [attr.aria-invalid]="patientForm.get('name')?.invalid && (patientForm.get('name')?.touched || submitted)"
+        >
+        <div *ngIf="patientForm.get('name')?.invalid && (patientForm.get('name')?.touched || submitted)" class="text-danger" aria-live="polite">
+          <small>El nombre es requerido</small>
         </div>
-  
-        <div class="col-md-6 mb-3">
-          <label for="phone" class="form-label">Teléfono</label>
-          <input type="tel" class="form-control" id="phone" formControlName="phone">
-          <div *ngIf="patientForm.get('phone')?.invalid && patientForm.get('phone')?.touched" class="text-danger">
-            <small>El teléfono es requerido</small>
-          </div>
-        </div>
-  
-        <div class="col-md-6 mb-3">
-          <label for="birth_date" class="form-label">Fecha de Nacimiento</label>
-          <input type="date" class="form-control" id="birth_date" formControlName="birth_date">
-          <div *ngIf="patientForm.get('birth_date')?.invalid && patientForm.get('birth_date')?.touched" class="text-danger">
-            <small>La fecha de nacimiento es requerida</small>
-          </div>
-        </div>
-  
-        <div class="col-12 mb-3">
-          <label for="address" class="form-label">Dirección</label>
-          <input type="text" class="form-control" id="address" formControlName="address">
-          <div *ngIf="patientForm.get('address')?.invalid && patientForm.get('address')?.touched" class="text-danger">
-            <small>La dirección es requerida</small>
-          </div>
-        </div>
-        <!--
-        <div class="col-12 mb-3">
-          <label for="medical_history" class="form-label">Historial Médico</label>
-          <textarea class="form-control" id="medical_history" formControlName="medical_history" rows="3"></textarea>
-        </div>
-        -->
-
-        <div class="col-12 mb-3">
-          <label class="form-label">Historial Clínico</label>
-          <button type="button" class="btn btn-info w-100" (click)="openMedicalHistoryModal()">
-            Ver/Editar Historial Clínico
-          </button>
-        </div>
-        
       </div>
 
-      <!-- Agregar después del campo medical_history y antes del botón de submit -->
+      <div class="col-md-6 mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input
+          type="email"
+          class="form-control"
+          id="email"
+          formControlName="email"
+          required
+          autocomplete="email"
+          [attr.aria-invalid]="patientForm.get('email')?.invalid && (patientForm.get('email')?.touched || submitted)"
+        >
+        <div *ngIf="patientForm.get('email')?.invalid && (patientForm.get('email')?.touched || submitted)" class="text-danger" aria-live="polite">
+          <small *ngIf="patientForm.get('email')?.errors?.['required']">El email es requerido</small>
+          <small *ngIf="patientForm.get('email')?.errors?.['email']">El email no es válido</small>
+          <small *ngIf="patientForm.get('email')?.errors?.['emailTaken']">Este email ya está registrado</small>
+        </div>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label for="ci" class="form-label">Carnet de identidad</label>
+        <input
+          type="text"
+          class="form-control"
+          id="ci"
+          formControlName="ci"
+          required
+          inputmode="numeric"
+          (input)="onCiChange()"
+          pattern="[0-9]{5,12}"
+          maxlength="12"
+          autocomplete="off"
+          [attr.aria-invalid]="patientForm.get('ci')?.invalid && (patientForm.get('ci')?.touched || submitted)"
+        >
+        <div *ngIf="patientForm.get('ci')?.invalid && (patientForm.get('ci')?.touched || submitted)" class="text-danger" aria-live="polite">
+          <small *ngIf="patientForm.get('ci')?.errors?.['required']">El CI es requerido</small>
+          <small *ngIf="patientForm.get('ci')?.errors?.['pattern']">Solo números (5–12 dígitos)</small>
+          <small *ngIf="patientForm.get('ci')?.errors?.['serverError']">
+            {{ patientForm.get('ci')?.errors?.['serverError'] }}
+        </small>
+        </div>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label for="phone" class="form-label">Teléfono</label>
+        <input
+          type="tel"
+          class="form-control"
+          id="phone"
+          formControlName="phone"
+          required
+          inputmode="tel"
+          pattern="[0-9\s+\-]{7,20}"
+          autocomplete="tel"
+          [attr.aria-invalid]="patientForm.get('phone')?.invalid && (patientForm.get('phone')?.touched || submitted)"
+        >
+        <div *ngIf="patientForm.get('phone')?.invalid && (patientForm.get('phone')?.touched || submitted)" class="text-danger" aria-live="polite">
+          <small *ngIf="patientForm.get('phone')?.errors?.['required']">El teléfono es requerido</small>
+          <small *ngIf="patientForm.get('phone')?.errors?.['pattern']">Formato no válido</small>
+        </div>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label for="birth_date" class="form-label">Fecha de Nacimiento</label>
+        <input
+          type="date"
+          class="form-control"
+          id="birth_date"
+          formControlName="birth_date"
+          required
+          [max]="today"
+          [attr.aria-invalid]="patientForm.get('birth_date')?.invalid && (patientForm.get('birth_date')?.touched || submitted)"
+        >
+        <div *ngIf="patientForm.get('birth_date')?.invalid && (patientForm.get('birth_date')?.touched || submitted)" class="text-danger" aria-live="polite">
+          <small>La fecha de nacimiento es requerida</small>
+        </div>
+      </div>
+
       <div class="col-12 mb-3">
-        <label class="form-label">Foto del Rostro</label>
-        <div class="d-flex flex-column align-items-center">
-          <button type="button" class="btn btn-primary mb-2" (click)="captureImage()">
+        <label for="address" class="form-label">Dirección</label>
+        <input
+          type="text"
+          class="form-control"
+          id="address"
+          formControlName="address"
+          required
+          autocomplete="street-address"
+          [attr.aria-invalid]="patientForm.get('address')?.invalid && (patientForm.get('address')?.touched || submitted)"
+        >
+        <div *ngIf="patientForm.get('address')?.invalid && (patientForm.get('address')?.touched || submitted)" class="text-danger" aria-live="polite">
+          <small>La dirección es requerida</small>
+        </div>
+      </div>
+
+      <div class="col-12 mb-3">
+        <label class="form-label">Historial Clínico</label>
+        <button
+          type="button"
+          class="btn btn-info w-100"
+          (click)="openMedicalHistoryModal()"
+          [disabled]="!currentPatientId && !isEditing"
+          title="Disponible tras guardar el paciente"
+        >
+          Ver/Editar Historial Clínico
+        </button>
+      </div>
+    </div>
+
+    <!-- Foto del Rostro -->
+    <div class="col-12 mb-3">
+      <label class="form-label">Foto del Rostro</label>
+      <div class="d-flex flex-column align-items-center">
+        <div class="d-flex gap-2 mb-2">
+          <button type="button" class="btn btn-primary" (click)="captureImage()">
             {{ capturedImage ? 'Tomar otra foto' : 'Tomar foto' }}
           </button>
+          <!-- Fallback: subir archivo si no hay cámara -->
+          <label class="btn btn-outline-secondary mb-0">
+            Subir imagen
+            <input type="file" accept="image/*" capture="user" hidden (change)="onFileSelected($event)">
+          </label>
+        </div>
 
-          <!-- Mensaje mientras se procesa la imagen -->
-          <div *ngIf="isProcessing" class="text-info mb-2 text-center">
-            <div class="spinner-border spinner-border-sm text-info me-2" role="status">
-              <span class="visually-hidden">Procesando...</span>
-            </div>
-            <small>Procesando imagen... Verificando si contiene un rostro.</small>
-          </div>
+        <!-- Procesando -->
+        <div *ngIf="isProcessing" class="text-info mb-2 text-center" aria-live="polite">
+          <div class="spinner-border spinner-border-sm text-info me-2" role="status"></div>
+          <small>Procesando imagen… Verificando si contiene un rostro.</small>
+        </div>
 
-          <!-- Mensaje de éxito o error -->
-
-          
-          <div *ngIf="capturedImage" class="text-center">
-            <img [src]="capturedImage" class="img-fluid mb-2" style="max-width: 300px">
-            <div [class]="'alert ' + (faceDetected ? 'alert-success' : 'alert-danger')">
-              {{ detectionStatus }}
-            </div>
+        <!-- Resultado detección -->
+        <div *ngIf="capturedImage" class="text-center">
+          <img [src]="capturedImage" class="img-fluid mb-2" style="max-width: 300px" alt="Previsualización rostro">
+          <div [class]="'alert ' + (faceDetected ? 'alert-success' : 'alert-danger')" role="status" aria-live="polite">
+            {{ detectionStatus }}
           </div>
         </div>
       </div>
-  
-      <div class="mb-3">
-        <button type="submit" class="btn btn-primary me-2" [disabled]="!patientForm.valid">
-          {{ isEditing ? 'Actualizar' : 'Registrar' }} Paciente
-        </button>
-        <button type="button" class="btn btn-secondary" (click)="resetForm()" *ngIf="isEditing">
-          Cancelar
-        </button>
-      </div>
-    </form>
-  
-    <!-- Lista de Pacientes -->
-    <div class="table-responsive">
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Foto</th>
-            <th>Nombre</th>
-            <th>Email</th>
-            <th>C.I.</th>
-            <th>Teléfono</th>
-            <th>Dirección</th>
-            <th>Fecha de Nacimiento</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let patient of patients">
-            <td>
-              <img *ngIf="patient.face_image" [src]="'http://localhost:8000/storage/' + patient.face_image" 
-                   class="img-thumbnail" style="max-width: 50px; height: auto;" 
-                   [alt]="patient.name">
-            </td>
-            <td>{{ patient.name }}</td>
-            <td>{{ patient.email }}</td>
-            <td>{{ patient.ci }}</td>
-            <td>{{ patient.phone }}</td>
-            <td>{{ patient.address }}</td>
-            <td>{{ patient.birth_date | date:'dd/MM/yyyy' }}</td>
-            <td>
-              <button class="btn btn-sm btn-info me-2" (click)="editPatient(patient)">
-                Editar
-              </button>
-              <button class="btn btn-sm btn-danger" (click)="deletePatient(patient.id!)">
-                Eliminar
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
     </div>
+
+    <!-- Botones -->
+     
+    <div class="mb-3">
+      <!--
+      <button
+        type="submit"
+        class="btn btn-primary me-2"
+        [disabled]="patientForm.invalid || patientForm.pending || loading"
+      >
+        {{ isEditing ? 'Actualizar' : 'Registrar' }} Paciente
+      </button>
+      -->
+      <button
+        type="submit"
+        class="btn btn-primary me-2 btn-lg"
+        [disabled]="patientForm.invalid || loading"
+        (mouseover)="logFormState()"
+      >
+        {{ isEditing ? 'Actualizar' : 'Registrar' }} Paciente
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="resetForm()"
+        *ngIf="isEditing"
+      >
+        Cancelar
+      </button>
+    </div>
+  </form>
+
+  
+</div>
+
+<div class="container mt-4" style="max-width: 8000px;">
+
+  <!-- Lista de Pacientes -->
+  <div class="table-responsive" *ngIf="patients?.length; else emptyState">
+    <table class="table table-striped align-middle">
+      <thead>
+        <tr>
+          <th>Foto</th>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>C.I.</th>
+          <th>Teléfono</th>
+          <th>Dirección</th>
+          <th>Fecha de Nacimiento</th>
+          <th class="text-nowrap">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let patient of patients; trackBy: trackById">
+          <td>
+            <img
+              *ngIf="patient.face_image; else noAvatar"
+              [src]="imageBaseUrl + patient.face_image"
+              class="img-thumbnail"
+              style="max-width: 50px; height: auto;"
+              [alt]="'Rostro de ' + patient.name"
+              loading="lazy"
+            >
+            <ng-template #noAvatar>
+              <div class="bg-light text-muted d-inline-flex justify-content-center align-items-center rounded"
+                   style="width:50px; height:50px;">
+                <span class="bi bi-person"></span>
+              </div>
+            </ng-template>
+          </td>
+          <td>{{ patient.name }}</td>
+          <td>{{ patient.email }}</td>
+          <td>{{ patient.ci }}</td>
+          <td>{{ patient.phone }}</td>
+          <td>{{ patient.address }}</td>
+          <td>{{ patient.birth_date | date:'dd/MM/yyyy' }}</td>
+          <td class="text-nowrap">
+            <button class="btn btn-sm btn-info me-2" (click)="editPatient(patient)">
+              Editar
+            </button>
+            <button class="btn btn-sm btn-dark me-2" (click)="openMedicalHistoryFor(patient)">
+              Historial
+            </button>
+            <button class="btn btn-sm btn-danger" (click)="confirmDelete(patient.id!)">
+              Eliminar
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
+
+  <ng-template #emptyState>
+    <div class="alert alert-info">No hay pacientes registrados.</div>
+  </ng-template>
+</div>

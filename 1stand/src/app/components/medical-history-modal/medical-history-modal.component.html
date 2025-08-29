@@ -46,8 +46,8 @@
   
       <h5>Motivo de la Consulta</h5>
       <div class="mb-3">
-        <textarea class="form-control" id="reasonForConsultation" formControlName="reasonForConsultation" rows="2" required></textarea>
-        <div *ngIf="medicalHistoryForm.get('reasonForConsultation')?.invalid && medicalHistoryForm.get('reasonForConsultation')?.touched" class="text-danger">
+        <textarea class="form-control" id="consultationReason" formControlName="consultationReason" rows="2" required></textarea>
+        <div *ngIf="medicalHistoryForm.get('consultationReason')?.invalid && medicalHistoryForm.get('consultationReason')?.touched" class="text-danger">
           <small>El motivo de la consulta es requerido.</small>
         </div>
       </div>
@@ -55,12 +55,12 @@
   
       <h5>Resultados de Exámenes Clínicos</h5>
       <div class="mb-3">
-        <label for="extraOralExam" class="form-label">Examen Extraoral</label>
-        <textarea class="form-control" id="extraOralExam" formControlName="extraOralExam" rows="3"></textarea>
+        <label for="extraoralExam" class="form-label">Examen Extraoral</label>
+        <textarea class="form-control" id="extraoralExam" formControlName="extraoralExam" rows="3"></textarea>
       </div>
       <div class="mb-3">
-        <label for="intraOralExam" class="form-label">Examen Intraoral</label>
-        <textarea class="form-control" id="intraOralExam" formControlName="intraOralExam" rows="3"></textarea>
+        <label for="intraoralExam" class="form-label">Examen Intraoral</label>
+        <textarea class="form-control" id="intraoralExam" formControlName="intraoralExam" rows="3"></textarea>
       </div>
       <hr>
   
@@ -73,20 +73,20 @@
   
       <h5>Información Adicional</h5>
       <div class="mb-3">
-        <label for="treatments" class="form-label">Tratamientos Realizados</label>
-        <textarea class="form-control" id="treatments" formControlName="treatments" rows="3"></textarea>
+        <label for="treatmentsPerformed" class="form-label">Tratamientos Realizados</label>
+        <textarea class="form-control" id="treatmentsPerformed" formControlName="treatmentsPerformed" rows="3"></textarea>
       </div>
       <div class="mb-3">
-        <label for="medications" class="form-label">Medicamentos Actuales</label>
-        <textarea class="form-control" id="medications" formControlName="medications" rows="3"></textarea>
+        <label for="currentMedications" class="form-label">Medicamentos Actuales</label>
+        <textarea class="form-control" id="currentMedications" formControlName="currentMedications" rows="3"></textarea>
       </div>
       <div class="mb-3">
         <label for="allergies" class="form-label">Alergias</label>
         <textarea class="form-control" id="allergies" formControlName="allergies" rows="3"></textarea>
       </div>
       <div class="mb-3">
-        <label for="dentalHabits" class="form-label">Hábitos Bucales Relevantes</label>
-        <textarea class="form-control" id="dentalHabits" formControlName="dentalHabits" rows="3"></textarea>
+        <label for="relevantOralHabits" class="form-label">Hábitos Bucales Relevantes</label>
+        <textarea class="form-control" id="relevantOralHabits" formControlName="relevantOralHabits" rows="3"></textarea>
       </div>
   
       <div class="modal-footer">
@@ -95,5 +95,11 @@
           Guardar Historial
         </button>
       </div>
+      <!-- Mostrar el formulario en formato JSON para depuración -->
+      <!--
+      <pre class="mt-3 bg-light p-2">{{ medicalHistoryForm.getRawValue() | json }}</pre>
+      -->
     </form>
   </div>
+
+  

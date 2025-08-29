@@ -16,6 +16,10 @@ Route::get('/', function () {
 Route::get('/check', function () {
     return response()->json(['status' => 'API is working']);
 });
+
+// Rutas para TestController
+Route::apiResource('tests', TestController::class);
+
 // Rutas de autenticación
 Route::prefix('auth')->group(function () {
     Route::get('/test', [AuthController::class, 'test']);
@@ -24,33 +28,43 @@ Route::prefix('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 });
 
-// Rutas para TestController
-Route::apiResource('tests', TestController::class);
-
 //Route::post('/appointment', [AppointmentController::class, 'store']);
 /* ES ESTA RUTA LA QUE USA http://localhost:4200/appointment */
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('appointments', AppointmentController::class);
-});
-
-Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('doctors', DoctorController::class);
+    Route::apiResource('patients', PatientController::class);
+    Route::get('patients/{patient}/medical-history', [PatientController::class, 'getPatientMedicalHistory']);
+    Route::put('patients/{patient}/medical-history', [PatientController::class, 'updatePatientMedicalHistory']);
 });
 
+// END POINTS MOVIL
+Route::prefix('mobile')->group(function () {
+    Route::post('/verify-patient', [MobileController::class, 'verifyPatient']);
+    Route::post('/queue-ticket', [MobileController::class, 'generateQueueTicket']);
+});
+
+/*
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('patients', PatientController::class);
 });
+*/
 /*
 Route::post('/patients', [PatientController::class, 'store']);
 Route::get('/patients', function () {
     return ['message' => 'Ruta GET funcionando'];
 });
 */
-// END POINTS MOVIL
-Route::prefix('mobile')->group(function () {
-    Route::post('/verify-patient', [MobileController::class, 'verifyPatient']);
-    Route::post('/queue-ticket', [MobileController::class, 'generateQueueTicket']);
+/* **
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('patients', PatientController::class);
+    // Rutas personalizadas para el historial médico
+    Route::get('patients/{patient}/medical-history', [PatientController::class, 'getPatientMedicalHistory']);
+    Route::put('patients/{patient}/medical-history', [PatientController::class, 'updatePatientMedicalHistory']);
 });
+* **/
+// END POINTS MOVIL
 //ruta x que no es necesaria al parecer
 //Route::post('/appointments', [AppointmentController::class, 'store'])->middleware('auth:sanctum');
 /*

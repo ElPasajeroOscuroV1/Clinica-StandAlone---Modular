@@ -1,3 +1,9 @@
+.appointments-container {
+  display: grid; /* Activa CSS Grid */
+  grid-template-columns: 1fr 1fr; /* Crea dos columnas de igual ancho */
+  place-items: center; /* Centra los elementos horizontal y verticalmente */
+  gap: 20px; /* Añade un espacio entre las columnas */
+}
 /* Estilos generales para el contenedor principal */
 .appointments-container {
   display: flex;
@@ -171,4 +177,98 @@ button[type="submit"]:disabled {
   .appointments-list {
     min-width: 100%;
   }
+}
+
+/* Estilos para el estado de pago */
+.payment-status {
+  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 8px;
+  color: white;
+}
+
+.status-paid {
+  background-color: #28a745; /* Verde para Pagado */
+}
+
+.status-pending {
+  background-color: #ffc107; /* Amarillo para Pendiente */
+}
+
+.status-canceled {
+  background-color: #dc3545; /* Rojo para Cancelado */
+}
+/* Mejoras de estilo general para los botones y tarjetas */
+.appointment-card {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  background-color: #fff;
+}
+
+.appointment-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.appointment-actions button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.appointment-actions button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.appointment-actions .delete-btn {
+  background-color: #dc3545;
+}
+
+.appointment-actions .delete-btn:hover {
+  background-color: #c82333;
+}
+
+.appointment-actions button:not(.delete-btn) {
+  background-color: #007bff;
+}
+
+.appointment-actions button:not(.delete-btn):hover {
+  background-color: #0069d9;
+}
+
+.alert {
+  padding: 12px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  color: #155724;
+  border-color: #c3e6cb;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+  border-color: #f5c6cb;
+}
+
+.appointments-list h2, .form-section h2 {
+  color: #333;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
 }

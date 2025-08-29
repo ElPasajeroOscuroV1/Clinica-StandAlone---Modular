@@ -1,100 +1,111 @@
 <div class="appointments-container">
-    <div class="form-section">
-      <h2>Programar Nueva Cita</h2>
+  
+  <div class="form-section">
+    <h2>Programar Nueva Cita</h2>
 
-      <div *ngIf="successMessage" class="alert alert-success">
-        {{ successMessage }}
-      </div>
-
-      <div *ngIf="errorMessage" class="alert alert-danger">
-        {{ errorMessage }}
-      </div>
-
-      <form [formGroup]="appointmentForm" (ngSubmit)="onSubmit()">
-        <!--
-        <div class="form-group">
-          <label for="patient_name">Nombre del Paciente</label>
-          <input
-            type="text"
-            id="patient_name"
-            formControlName="patient_name"
-            class="form-control"
-            placeholder="Ingrese el nombre del paciente"
-          >
-        </div>
-        -->
-        <div class="form-group">
-          <label for="patient_id">Paciente</label>
-          <select
-            id="patient_id"
-            formControlName="patient_id"
-            class="form-control"
-            (change)="onPatientSelect($event)"
-          >
-            <option value="">Seleccione un paciente</option>
-            <option *ngFor="let patient of patients" [value]="patient.id">{{ patient.name }}</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label for="doctor">Doctor</label>
-          <select
-            id="doctor"
-            formControlName="doctor"
-            class="form-control"
-          >
-            <option value="">Seleccione un doctor</option>
-            <option *ngFor="let doctor of doctors" [value]="doctor.name">{{ doctor.name }} - {{ doctor.specialty }}</option>
-          </select>
-        </div>
-  
-        <div class="form-group">
-          <label for="date">Fecha</label>
-          <input
-            type="date"
-            id="date"
-            formControlName="date"
-            class="form-control"
-          >
-        </div>
-  
-        <div class="form-group">
-          <label for="time">Hora</label>
-          <input
-            type="time"
-            id="time"
-            formControlName="time"
-            class="form-control"
-          >
-        </div>
-  
-        <div class="form-group">
-          <label for="reason">Motivo de la Cita</label>
-          <textarea
-            id="reason"
-            formControlName="reason"
-            class="form-control"
-            placeholder="Describa el motivo de la cita"
-          ></textarea>
-        </div>
-  
-        <button type="submit" [disabled]="!appointmentForm.valid || isLoading">
-          {{ isLoading ? 'Programando...' : 'Programar Cita' }}
-        </button>
-      </form>
+    <div *ngIf="successMessage" class="alert alert-success">
+      {{ successMessage }}
     </div>
-  
-    <div class="appointments-list">
-      <h2>Citas Programadas</h2>
-      <div class="appointment-card" *ngFor="let appointment of appointments; let i = index">
-        <div class="appointment-details">
-          <h3>{{ appointment.patient_name }}</h3>
-          <p><strong>Doctor:</strong> {{ appointment.doctor }}</p>
-          <p><strong>Fecha:</strong> {{ appointment.date | date:'dd/MM/yyyy' }}</p>
-          <p><strong>Hora:</strong> {{ appointment.time }}</p>
-          <p><strong>Motivo:</strong> {{ appointment.reason }}</p>
-        </div>
-        <button class="delete-btn" (click)="deleteAppointment(i)">Cancelar Cita</button>
+
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+
+    <form [formGroup]="appointmentForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="patient_id">Paciente</label>
+        <select
+          id="patient_id"
+          formControlName="ci"
+          class="form-control"
+          (change)="onPatientSelect($event)"
+        >
+          <option value="">Seleccione un paciente</option>
+          <option *ngFor="let patient of patients" [value]="patient.ci">{{ patient.name }}</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="doctor">Doctor</label>
+        <select
+          id="doctor_id"
+          formControlName="doctor_id"
+          class="form-control"
+        >
+          <option value="">Seleccione un doctor</option>
+          <option *ngFor="let doctor of doctors" [value]="doctor.id">{{ doctor.name }} - {{ doctor.specialty }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="date">Fecha</label>
+        <input
+          type="date"
+          id="date"
+          formControlName="date"
+          class="form-control"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="time">Hora</label>
+        <input
+          type="time"
+          id="time"
+          formControlName="time"
+          class="form-control"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="reason">Motivo de la Cita</label>
+        <textarea
+          id="reason"
+          formControlName="reason"
+          class="form-control"
+          placeholder="Describa el motivo de la cita"
+        ></textarea>
+      </div>
+
+      <button type="submit" [disabled]="!appointmentForm.valid || isLoading">
+        {{ isLoading ? 'Programando...' : 'Programar Cita' }}
+      </button>
+    </form>
+  </div>
+<!--CALENDARIO-->
+  <div class="calendar-container">
+    <full-calendar [options]="calendarOptions"></full-calendar>
+  </div>
+
+  <div class="appointments-list">
+    <h2>Citas Programadas</h2>
+    <div class="appointment-card" *ngFor="let appointment of appointments; let i = index">
+      <div class="appointment-details">
+        <h3>{{ appointment.patient_name }}</h3>
+        <p><strong>Doctor:</strong> {{ appointment.doctor?.name }} - {{ appointment.doctor?.specialty }}</p>
+        <p><strong>Fecha:</strong> {{ appointment.date }}</p>
+        <p><strong>Hora:</strong> {{ appointment.time }}</p>
+        <p><strong>Motivo:</strong> {{ appointment.reason }}</p>
+        
+        <p>
+          <strong>Estado de Pago: </strong>
+          <span 
+            [ngClass]="{
+              'status-paid': appointment.payment_status === 'Pagado', 
+              'status-pending': appointment.payment_status === 'Pendiente', 
+              'status-canceled': appointment.payment_status === 'Cancelado'
+            }"
+            class="payment-status"
+          >
+            {{ appointment.payment_status }}
+          </span>
+        </p>
+
+      </div>
+      <div class="appointment-actions">
+        <button class="delete-btn" (click)="deleteAppointment(appointment.id)">Cancelar Cita</button>
+        <button (click)="togglePaymentStatus(appointment)">Cambiar Estado de Pago</button>
       </div>
     </div>
   </div>
+</div>

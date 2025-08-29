@@ -10,10 +10,8 @@ class AppointmentController extends Controller
 {
     public function index()
     {
-        //
-        //return Appointment::all();
         try {
-            $appointments = Appointment::all();
+            $appointments = Appointment::with('doctor')->get();
             return response()->json($appointments);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error fetching appointments'], 500);
@@ -22,56 +20,45 @@ class AppointmentController extends Controller
 
     public function store(Request $request)
     {
-        /* VERSION 1
         $validatedData = $request->validate([
-            'patient_name' => 'required|string|max:255',
-            'doctor' => 'required|string|max:255',
+            'patient_name' => 'required|string',
+            'ci' => 'required|integer', // Cambiado a integer
+            'doctor_id' => 'required|exists:doctors,id',
             'date' => 'required|date',
-            'time' => 'required|string',
-            'description' => 'nullable|string'
+            'time' => 'required',
+            'reason' => 'required|string',
+            'payment_status' => 'nullable|string|max:255'
         ]);
 
         $appointment = Appointment::create($validatedData);
 
-        return response()->json($appointment, 201);
-
-        */
-        // VERSION 2 FUNCIONAL
-        $request->validate([
-            'patient_name' => 'required|string',
-            'doctor' => 'required|string',
-            'date' => 'required|date',
-            'time' => 'required',
-            'reason' => 'required|string'
-        ]);
-
-        return Appointment::create($request->all());
+        return response()->json($appointment->load('doctor'), 201);
     }
 
     public function show(Appointment $appointment)
     {
-        //
         return $appointment;
     }
 
     public function update(Request $request, Appointment $appointment)
     {
-        //
-        $request->validate([
+        $validatedData = $request->validate([
             'patient_name' => 'required|string',
-            'doctor' => 'required|string',
+            'ci' => 'required|integer', // Cambiado a integer
+            'doctor_id' => 'required|exists:doctors,id',
             'date' => 'required|date',
             'time' => 'required',
-            'reason' => 'required|string'
+            'reason' => 'required|string',
+            'payment_status' => 'nullable|string|max:255'
         ]);
 
-        $appointment->update($request->all());
-        return $appointment;
+        $appointment->update($validatedData); 
+        $appointment->load('doctor');
+        return response()->json($appointment);
     }
 
     public function destroy(Appointment $appointment)
     {
-        //
         $appointment->delete();
         return response()->json(null, 204);
     }

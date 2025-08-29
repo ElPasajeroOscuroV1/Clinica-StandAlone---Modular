@@ -10,12 +10,8 @@ import { catchError, finalize, tap } from 'rxjs/operators';
 // Agregar esta interfaz después de los imports
 interface AuthResponse {
   token: string;
-  // Agrega otros campos si la respuesta del backend incluye más información
 }
-//@Injectable({
-//  providedIn: 'root'
-//})
-//
+
 export const authGuard = () => {
   const router = inject(Router);
 
@@ -37,11 +33,7 @@ export class AuthService {
   register(userData: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/auth/register`, userData);
   }
-  /*
-  login(credentials: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/auth/login`, credentials);
-  }
-  */
+  
   login(credentials: any): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, credentials).pipe(
       tap((response: AuthResponse) => {
@@ -55,13 +47,7 @@ export class AuthService {
       })
     );
   }
-  /*
-  logout(): Observable<any> {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('token');
-    return this.http.post(`${this.apiUrl}/auth/logout`, {});
-  }
-  */
+  
   logout(): Observable<any> {
     const token = localStorage.getItem('token');
     

@@ -7,6 +7,7 @@ use App\Models\Patient;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Arr; // arriba del archivo
 
 
 class PatientController extends Controller
@@ -36,8 +37,22 @@ class PatientController extends Controller
             'phone' => 'required|string|max:20',
             'address' => 'required|string|max:255',
             'birth_date' => 'required|date',
-            'medical_history' => 'nullable|string',
+            // 'medical_history' => 'nullable|string',
             'face_image' => 'required|string' // Para la imagen en base64
+        ]);
+
+        // Validar los campos de historia médica por separado
+        $medicalHistoryValidated = $request->validate([
+            'medical_background' => 'nullable|string',
+            'dental_background' => 'nullable|string',
+            'consultation_reason' => 'nullable|string',
+            'extraoral_exam' => 'nullable|string',
+            'intraoral_exam' => 'nullable|string',
+            'odontogram' => 'nullable|string',
+            'treatments_performed' => 'nullable|string',
+            'current_medications' => 'nullable|string',
+            'allergies' => 'nullable|string',
+            'relevant_oral_habits' => 'nullable|string'
         ]);
 
         // Procesar la imagen base64
@@ -56,7 +71,14 @@ class PatientController extends Controller
             $validated['face_image'] = 'faces/' . $imageName;
         }
 
-        return Patient::create($validated);
+        $patient = Patient::create($validated);
+
+        // Crear la historia médica asociada al paciente
+        $patient->medicalHistory()->create($medicalHistoryValidated);
+
+        return $patient;
+
+        //return Patient::create($validated);
     }
 
     /**
@@ -122,4 +144,89 @@ class PatientController extends Controller
         $patient->delete();
         return response()->noContent();
     }
+
+    /**
+     * Get the medical history for a specific patient.
+     */
+    public function getPatientMedicalHistory(Patient $patient)
+    {
+        //return response()->json(['medical_history' => $patient->medical_history]);
+        //return response()->json($patient->medicalHistory);
+        /*
+        try {
+            $medicalHistory = $patient->medicalHistory; // Intenta cargar la relación
+
+            if ($medicalHistory) {
+                return response()->json($medicalHistory);
+            } else {
+                // Si no hay historial médico, devuelve un objeto vacío o un 404
+                return response()->json([], 200); // O 404 si prefieres indicar que no se encontró
+            }
+        } catch (\Exception $e) {
+            // Registra el error para depuración
+            \Illuminate\Support\Facades\Log::error('Error al obtener historial médico para paciente ' . $patient->id . ': ' . $e->getMessage());
+            return response()->json(['error' => 'Error interno del servidor al obtener historial médico.'], 500);
+        }
+        */
+        try {
+            $history = $patient->medicalHistory; // relación hasOne
+    
+            if ($history) {
+                return response()->json($history, 200);
+            }
+    
+            // Objeto por defecto (evita 500 y facilita patchValue)
+            return response()->json([
+                'medical_background'    => null,
+                'dental_background'     => null,
+                'consultation_reason'   => '',
+                'extraoral_exam'        => null,
+                'intraoral_exam'        => null,
+                'odontogram'            => null,
+                'treatments_performed'  => null,
+                'current_medications'   => null,
+                'allergies'             => null,
+                'relevant_oral_habits'  => null,
+            ], 200);
+        } catch (\Throwable $e) {
+            \Log::error("Error al obtener historial médico (patient {$patient->id}): ".$e->getMessage());
+            return response()->json(['error' => 'Error interno del servidor al obtener historial médico.'], 500);
+        }
+    }
+
+    /**
+     * Update the medical history for a specific patient.
+     */
+    public function updatePatientMedicalHistory(Request $request, Patient $patient)
+    {
+        /*
+        $validated = $request->validate([
+            'medical_history' => 'nullable|string',
+        ]);
+        */
+        $validated = $request->validate([
+            'medical_background' => 'nullable|string',
+            'dental_background' => 'nullable|string',
+            'consultation_reason' => 'required|nullable|string',
+            'extraoral_exam' => 'nullable|string',
+            'intraoral_exam' => 'nullable|string',
+            'odontogram' => 'nullable|string',
+            'treatments_performed' => 'nullable|string',
+            'current_medications' => 'nullable|string',
+            'allergies' => 'nullable|string',
+            'relevant_oral_habits' => 'nullable|string'
+        ]);
+        /*
+        $patient->update($validated);
+        */
+        $patient->medicalHistory()->updateOrCreate(
+            ['patient_id' => $patient->id],
+            $validated
+        );
+        /*
+        return response()->json(['medical_history' => $patient->medical_history]);
+        */
+        return response()->json($patient->medicalHistory);
+    }
+
 }

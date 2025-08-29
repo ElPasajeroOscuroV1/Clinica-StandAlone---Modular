@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\MedicalHistory;
+
 
 class Patient extends Model
 {
@@ -24,4 +26,9 @@ class Patient extends Model
     protected $casts = [
         'birth_date' => 'date'
     ];
+
+    public function medicalHistory()
+    {
+        return $this->hasOne(MedicalHistory::class);
+    }
 }
