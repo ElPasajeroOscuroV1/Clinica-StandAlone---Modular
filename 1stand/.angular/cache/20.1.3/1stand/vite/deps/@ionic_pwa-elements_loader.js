@@ -2,8 +2,8 @@ import {
   bootstrapLazy,
   promiseResolve,
   setNonce
-} from "./chunk-C3CNPM35.js";
-import "./chunk-7GOANPIK.js";
+} from "./chunk-Z65ERUAN.js";
+import "./chunk-N6ESDQJH.js";
 
 // node_modules/@ionic/pwa-elements/dist/esm/polyfills/index.js
 function applyPolyfills() {

@@ -5,61 +5,156 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Appointment;
+//$patient = \App\Models\Patient::findOrFail($request->patient_id);
 
 class AppointmentController extends Controller
 {
-    public function index()
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
     {
-        try {
-            $appointments = Appointment::with('doctor')->get();
-            return response()->json($appointments);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Error fetching appointments'], 500);
+        $query = Appointment::with('doctor', 'patient'); // No existe 'patient' en Appointment
+
+        // Filtrar por patient_name si se pasa como query param
+        if ($request->has('patient_id')) {
+            $query->where('patient_id', $request->patient_id);
         }
+
+        //$appointments = $query->get();
+        // Aquí obtenemos las citas y agregamos el nombre del paciente y del doctor
+        $appointments = $query->get()->map(function($appointment){
+            return [
+                'id' => $appointment->id,
+                'patient_id' => $appointment->patient_id,
+                'patient_name' => $appointment->patient ? $appointment->patient->name : null,
+                'doctor_id' => $appointment->doctor_id,
+                'doctor_name' => $appointment->doctor ? $appointment->doctor->name : null,
+                'date' => $appointment->date,
+                'time' => $appointment->time,
+                'reason' => $appointment->reason,
+                'payment_status' => $appointment->payment_status,
+            ];
+        });
+        return response()->json($appointments);
     }
 
+
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
+        try{
         $validatedData = $request->validate([
-            'patient_name' => 'required|string',
-            'ci' => 'required|integer', // Cambiado a integer
+            'patient_id' => 'required|exists:patients,id',
+            //'patient_name' => 'required|string|max:255',
+            //'ci' => 'required|string|max:255',
             'doctor_id' => 'required|exists:doctors,id',
             'date' => 'required|date',
             'time' => 'required',
-            'reason' => 'required|string',
-            'payment_status' => 'nullable|string|max:255'
+            //'status' => 'required|string|max:255',
+            'reason' => 'required|string|max:255',
+            'payment_status' => 'sometimes|in:Pendiente,Pagado,Cancelado',
         ]);
+
+        //$validatedData['patient_name'] = $patient->name;
+        // Buscar el paciente y poblar los campos derivados
+        //$patient = \App\Models\Patient::findOrFail($request->patient_id);
+        // Obtener datos del paciente para poblar automáticamente la columna 'ci'
+        $patient = \App\Models\Patient::findOrFail($validatedData['patient_id']);
+
+        //$validatedData['patient_name'] = $patient->name;
+        $validatedData['ci'] = $patient->ci;
 
         $appointment = Appointment::create($validatedData);
 
-        return response()->json($appointment->load('doctor'), 201);
+        return response()->json($appointment->load(['patient', 'doctor']), 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    public function show(Appointment $appointment)
+    /**
+     * Display the specified resource.
+     */
+    public function show($id)
     {
-        return $appointment;
-    }
+        $appointment = Appointment::with(['patient', 'doctor'])->find($id);
 
-    public function update(Request $request, Appointment $appointment)
-    {
-        $validatedData = $request->validate([
-            'patient_name' => 'required|string',
-            'ci' => 'required|integer', // Cambiado a integer
-            'doctor_id' => 'required|exists:doctors,id',
-            'date' => 'required|date',
-            'time' => 'required',
-            'reason' => 'required|string',
-            'payment_status' => 'nullable|string|max:255'
-        ]);
+        if (!$appointment) {
+            return response()->json(['message' => 'Appointment not found'], 404);
+        }
 
-        $appointment->update($validatedData); 
-        $appointment->load('doctor');
         return response()->json($appointment);
     }
 
-    public function destroy(Appointment $appointment)
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, $id)
     {
+        $appointment = Appointment::find($id);
+
+        if (!$appointment) {
+            return response()->json(['message' => 'Appointment not found'], 404);
+        }
+
+        $validatedData = $request->validate([
+            //'patient_name' => 'sometimes|string|max:255',
+            //'ci' => 'sometimes|string|max:255',
+            'patient_id' => 'required|exists:patients,id',
+            'doctor_id' => 'sometimes|exists:doctors,id',
+            'date' => 'sometimes|date',
+            'time' => 'sometimes',
+            //'status' => 'sometimes|string|max:255',
+            'reason' => 'sometimes|string|max:255',
+            'payment_status' => 'sometimes|in:Pendiente,Pagado,Cancelado',
+        ]);
+        // Si viene patient_id en el request, actualizamos también el nombre y ci
+        if ($request->has('patient_id')) {
+            $patient = \App\Models\Patient::findOrFail($request->patient_id);
+            $validatedData['patient_name'] = $patient->name;
+            $validatedData['ci'] = $patient->ci;
+        }
+
+        $appointment->update($validatedData);
+
+        return response()->json($appointment->load(['patient', 'doctor']));
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy($id)
+    {
+        $appointment = Appointment::find($id);
+
+        if (!$appointment) {
+            return response()->json(['message' => 'Appointment not found'], 404);
+        }
+
         $appointment->delete();
-        return response()->json(null, 204);
+
+        return response()->json(['message' => 'Appointment deleted successfully']);
+    }
+
+    public function getAppointmentsByPatient($patientId)
+    {
+        $appointments = Appointment::with('doctor')
+            ->where('patient_id', $patientId)
+            ->get()
+            ->map(function($appointment){
+                return [
+                    'id' => $appointment->id,
+                    'date' => $appointment->date,
+                    'doctor_id' => $appointment->doctor_id,
+                    'doctor_name' => $appointment->doctor ? $appointment->doctor->name : null
+                ];
+            });
+
+        return response()->json($appointments);
     }
 }

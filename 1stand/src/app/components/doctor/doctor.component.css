@@ -1,160 +1,191 @@
-/* Estilos generales */
+/* ====== Base y reset ====== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #ffffff;
+  color: #222222;
+  line-height: 1.5;
+  margin: 0;
+  padding: 1rem;
+}
+
+/* ====== Contenedores ====== */
 .container {
-    max-width: 900px;
-    background-color: #f8f9fa;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  margin: 0 auto 2rem auto;
+  background-color: #fefefe;
+  padding: 1.5rem 2rem;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ====== Títulos ====== */
+h2 {
+  color: #003366; /* Azul oscuro */
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+h3 {
+  text-align: center;
+  color: #003366; /* Azul oscuro */
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+/* ====== Labels ====== */
+label.form-label,
+label.form-check-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  color: #003366;
+}
+
+/* ====== Inputs y checkbox ====== */
+input.form-control,
+input.form-check-input {
+  font-size: 1rem;
+  border: 2px solid #003366;
+  border-radius: 5px;
+  padding: 0.5rem 0.75rem;
+  color: #222222;
+  background-color: #fff;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  width: 100%;
+}
+
+input.form-control:focus {
+  border-color: #0059b3;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 89, 179, 0.4);
+}
+
+/* Checkbox tamaño y foco */
+input.form-check-input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.3rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+input.form-check-input:focus {
+  outline: 3px solid #0059b3;
+  outline-offset: 2px;
+}
+
+/* ====== Botones ====== */
+.btn {
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 0.5rem 1.25rem;
+  font-size: 1rem;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  user-select: none;
+  display: inline-block;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 1.2;
+  min-width: 120px;
+}
+
+.btn-primary {
+  background-color: #003366;
+  color: #ffffff;
+  border-color: #003366;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: #0059b3;
+  border-color: #0059b3;
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(0, 89, 179, 0.5);
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: #ffffff;
+  border-color: #6c757d;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus {
+  background-color: #565e64;
+  border-color: #565e64;
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(86, 94, 100, 0.5);
+}
+
+.btn:disabled,
+.btn[disabled] {
+  background-color: #cccccc;
+  border-color: #cccccc;
+  color: #666666;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ====== Mensajes de error (si los agregas) ====== */
+.text-danger,
+.alert-danger {
+  color: #b00020;
+  background-color: #f9d6d5;
+  border: 1px solid #b00020;
+  padding: 0.5rem 0.75rem;
+  border-radius: 5px;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+/* ====== Tabla ====== */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  color: #222222;
+}
+
+.table th,
+.table td {
+  border: 1px solid #dee2e6;
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+  text-align: left;
+}
+
+.table thead th {
+  background-color: #003366;
+  color: #ffffff;
+  font-weight: 700;
+  user-select: none;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: #f2f6fc;
+}
+
+/* ====== Foco visible para accesibilidad ====== */
+:focus-visible {
+  outline: 3px solid #0059b3;
+  outline-offset: 2px;
+}
+
+/* ====== Responsive ====== */
+@media (max-width: 576px) {
+  .container {
+    padding: 1rem;
   }
-  
-  h2, h3 {
-    color: #2c3e50;
-    font-weight: 600;
-    margin-bottom: 20px;
+
+  .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
   }
-  
-  /* Estilos del formulario */
-  .form-label {
-    font-weight: 500;
-    color: #34495e;
-  }
-  
-  .form-control {
-    border-radius: 4px;
-    border-color: #ced4da;
-    transition: border-color 0.3s ease;
-  }
-  
-  .form-control:focus {
-    border-color: #3498db;
-    box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
-  }
-  
-  .form-check-input:checked {
-    background-color: #3498db;
-    border-color: #3498db;
-  }
-  
-  .form-check-label {
-    color: #34495e;
-  }
-  
-  /* Botones del formulario */
-  .btn-primary {
-    background-color: #2ecc71;
-    border-color: #2ecc71;
-    padding: 8px 20px;
-  }
-  
-  .btn-primary:hover {
-    background-color: #27ae60;
-    border-color: #27ae60;
-  }
-  
-  .btn-primary:disabled {
-    background-color: #95e8c0;
-    border-color: #95e8c0;
-    cursor: not-allowed;
-  }
-  
-  .btn-secondary {
-    background-color: #95a5a6;
-    border-color: #95a5a6;
-    padding: 8px 20px;
-  }
-  
-  .btn-secondary:hover {
-    background-color: #7f8c8d;
-    border-color: #7f8c8d;
-  }
-  
-  /* Estilos de la tabla */
-  .table-responsive {
-    margin-top: 20px;
-  }
-  
-  .table {
-    background-color: #ffffff;
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  
-  .table-striped tbody tr:nth-of-type(odd) {
-    background-color: #f1f3f5;
-  }
-  
-  .th, .td {
-    vertical-align: middle;
-    padding: 12px;
-    text-align: left;
-  }
-  
-  .th {
-    background-color: #3498db;
-    color: #ffffff;
-    font-weight: 600;
-  }
-  
-  .td {
-    color: #2c3e50;
-  }
-  
-  .btn-sm {
-    padding: 4px 12px;
-    font-size: 0.875rem;
-  }
-  
-  .btn-primary.me-2 {
-    margin-right: 8px;
-  }
-  
-  .btn-danger {
-    background-color: #e74c3c;
-    border-color: #e74c3c;
-  }
-  
-  .btn-danger:hover {
-    background-color: #c0392b;
-    border-color: #c0392b;
-  }
-  
-  /* Estados condicionales */
-  .td:nth-child(5) {
-    font-weight: 500;
-  }
-  
-  .td:nth-child(5):after {
-    content: '';
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    margin-left: 8px;
-    vertical-align: middle;
-  }
-  
-  .td:nth-child(5):where(:not(:contains("No disponible")))::after {
-    background-color: #2ecc71;
-  }
-  
-  .td:nth-child(5):contains("No disponible")::after {
-    background-color: #e74c3c;
-  }
-  
-  /* Respuesta a pantallas pequeñas */
-  @media (max-width: 768px) {
-    .container {
-      padding: 10px;
-    }
-  
-    .table th,
-    .table td {
-      padding: 8px;
-      font-size: 0.9rem;
-    }
-  
-    .btn {
-      padding: 6px 12px;
-      font-size: 0.875rem;
-    }
-  }
+}

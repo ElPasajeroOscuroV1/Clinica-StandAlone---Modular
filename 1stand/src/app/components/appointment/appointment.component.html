@@ -16,12 +16,12 @@
         <label for="patient_id">Paciente</label>
         <select
           id="patient_id"
-          formControlName="ci"
+          formControlName="patient_id"
           class="form-control"
           (change)="onPatientSelect($event)"
         >
           <option value="">Seleccione un paciente</option>
-          <option *ngFor="let patient of patients" [value]="patient.ci">{{ patient.name }}</option>
+          <option *ngFor="let patient of patients" [value]="patient.id">{{ patient.name }}</option>
         </select>
       </div>
       

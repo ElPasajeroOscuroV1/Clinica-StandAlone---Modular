@@ -59,8 +59,9 @@ export class AppointmentComponent implements OnInit {
   ) {
     // Inicialización del formulario con un estado por defecto
     this.appointmentForm = this.fb.group({
-      patient_name: ['', Validators.required],
-      ci: ['', [Validators.required, Validators.pattern('^[0-9]*$')]],
+      //patient_name: ['', Validators.required],
+      //ci: ['', [Validators.required, Validators.pattern('^[0-9]*$')]],
+      patient_id: ['', Validators.required],
       doctor_id: ['', Validators.required],
       date: ['', Validators.required],
       time: ['', Validators.required],
@@ -97,7 +98,9 @@ export class AppointmentComponent implements OnInit {
       next: ({ doctors, appointments }) => {
         this.doctors = doctors;
         // Mapea las citas para incluir el nombre del doctor
-        this.appointments = appointments.map(app => {
+        //this.appointments = appointments.map(app => {
+        this.appointments = (appointments ?? []).map(app => {
+
           const doctor = this.doctors.find(d => d.id === app.doctor_id);
           return {
             ...app,
@@ -105,7 +108,14 @@ export class AppointmentComponent implements OnInit {
               id: doctor?.id ?? 0,
               name: doctor?.name ?? 'Desconocido',
               specialty: doctor?.specialty ?? ''
+            },
+            patient: {
+              id: app.patient_id ?? 0,
+              name: app.patient_name ?? 'Desconocido',
+              //ci: app.ci ?? 'Desconocido'
+              ci: app.patient?.ci ?? 'Desconocido'
             }
+
           };
         });
         this.isLoading = false;
@@ -113,8 +123,11 @@ export class AppointmentComponent implements OnInit {
         /* CALENDARIO */
         this.calendarOptions.events = this.appointments.map(app => ({
           id: app.id,
-          title: `${app.patient_name} - ${app.reason}`,
-          start: `${app.date}T${app.time}`,
+          //title: `${app.patient_name} - ${app.reason}`,
+          title: `${app.patient_name ?? 'Desconocido'} - ${app.reason}`,
+          start: `${app.date}T${app.time}`
+          
+          //start: `${app.date}T${app.time}`,
           // Puedes añadir más propiedades si las necesitas, como color, etc.
         }));
       },
@@ -156,6 +169,7 @@ export class AppointmentComponent implements OnInit {
    * Completa el formulario con los datos del paciente seleccionado.
    * @param event El evento de cambio del selector.
    */
+  /*
   onPatientSelect(event: any): void {
     const selectedPatientCi = event.target.value;
     // Se corrige la comparación para asegurar que ambos valores son números
@@ -167,6 +181,16 @@ export class AppointmentComponent implements OnInit {
       });
     }
   }
+  */
+ onPatientSelect(event: any): void {
+  const patientId = Number(event.target.value);
+  const selectedPatient = this.patients.find(p => p.id === patientId);
+  if (selectedPatient) {
+    this.appointmentForm.patchValue({
+      patient_id: selectedPatient.id
+    });
+  }
+}
 
   /**
    * Envía el formulario para crear o actualizar una cita.
@@ -190,7 +214,7 @@ export class AppointmentComponent implements OnInit {
             throw new Error('El doctor no está disponible en ese horario. Por favor, seleccione otro.');
           }
         }),
-        switchMap(() => this.appointmentService.checkPatientAvailability(appointment.ci, appointment.date, appointment.time)),
+        switchMap(() => this.appointmentService.checkPatientAvailability(appointment.patient_id, appointment.date, appointment.time)),
         tap(isPatientAvailable => {
           if (!isPatientAvailable) {
             this.errorMessage = 'El paciente ya tiene una cita programada en ese horario. Por favor, seleccione otro.';
@@ -263,8 +287,9 @@ export class AppointmentComponent implements OnInit {
   onEdit(appointment: Appointment): void {
     this.selectedAppointment = appointment;
     this.appointmentForm.patchValue({
-      patient_name: appointment.patient_name,
-      ci: appointment.ci,
+      //patient_name: appointment.patient_name,
+      //ci: appointment.ci,
+      patient_id: appointment.patient_id,
       doctor_id: appointment.doctor_id,
       date: appointment.date,
       time: appointment.time,

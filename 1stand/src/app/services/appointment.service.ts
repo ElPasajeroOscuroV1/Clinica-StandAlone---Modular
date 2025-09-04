@@ -4,10 +4,13 @@ import { Observable, of, throwError } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 export interface Appointment {
+  patient: any;
+  patient_id: number;
   id?: number;
   ci: number; // Identificador único del paciente
   patient_name: string;
   doctor_id: number;
+  doctor_name?: string;
   doctor?: {
     id: number;
     name: string;
@@ -106,6 +109,8 @@ export class AppointmentService {
   }
 
   getAppointments(): Observable<Appointment[]> {
+    console.log('Llamando a GET /api/appointments con headers:', this.getHeaders());
+
     return this.http.get<Appointment[]>(this.apiUrl, { headers: this.getHeaders() });
   }
 
@@ -120,4 +125,11 @@ export class AppointmentService {
   deleteAppointment(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
   }
+
+  getAppointmentsByPatient(patientId: number) {
+    const url = `${this.apiUrl}?patient_id=${patientId}`;
+    console.log('Llamando a GET:', url, 'con headers:', this.getHeaders());
+    return this.http.get<Appointment[]>(url, { headers: this.getHeaders() });
+  }
+  
 }

@@ -1,0 +1,121 @@
+  <button class="btn btn-outline-secondary mb-3" (click)="exportToPDF()">Exportar a PDF</button>
+
+<div class="payment-container">
+  <h2>Control de Pagos</h2>
+
+  <div class="payment-form">
+    <h3>Registrar/Editar Pago</h3>
+
+    <form [formGroup]="paymentForm" (ngSubmit)="onSubmit()">
+      <!-- Paciente -->
+      <label for="patient" class="form-label">Paciente</label>
+      <select id="patient" formControlName="patient_id" class="form-control" required>
+        <option value="">Seleccione un paciente</option>
+        <option *ngFor="let patient of patients" [value]="patient.id">
+          {{ patient.id }} - {{ patient.name }}
+        </option>
+      </select>
+      <div class="text-danger mt-1" *ngIf="paymentForm.get('patient_id')?.invalid && paymentForm.get('patient_id')?.touched">
+        Seleccione un paciente.
+      </div>
+
+      <!-- Cita -->
+      <label for="appointment" class="form-label mt-3">Cita</label>
+      <select id="appointment" formControlName="appointment_id" class="form-control" required>
+        <option value="">Seleccione una cita</option>
+        <option *ngFor="let appointment of appointments" [value]="appointment.id">
+          {{ appointment.id }} - {{ appointment.date }} - {{ appointment.doctor_name }}
+        </option>
+      </select>
+      <div class="text-danger mt-1" *ngIf="paymentForm.get('appointment_id')?.invalid && paymentForm.get('appointment_id')?.touched">
+        Seleccione una cita.
+      </div>
+
+      <!-- Monto -->
+      <label for="amount" class="form-label mt-3">Monto</label>
+      <input id="amount" type="number" formControlName="amount" class="form-control" required />
+      <div class="text-danger mt-1" *ngIf="paymentForm.get('amount')?.invalid && paymentForm.get('amount')?.touched">
+        El monto es obligatorio.
+      </div>
+
+      <!-- Fecha de pago -->
+      <label for="date" class="form-label mt-3">Fecha de pago</label>
+      <input id="date" type="date" formControlName="date" class="form-control" required />
+      <div class="text-danger mt-1" *ngIf="paymentForm.get('date')?.invalid && paymentForm.get('date')?.touched">
+        La fecha de pago es obligatoria.
+      </div>
+
+      <!-- Método -->
+      <label for="method" class="form-label mt-3">Método</label>
+      <select id="method" formControlName="method" class="form-control" required>
+        <option value="Efectivo">Efectivo</option>
+        <option value="Tarjeta">Tarjeta</option>
+        <option value="Transferencia">Transferencia</option>
+      </select>
+
+      <!-- Estado -->
+      <label for="status" class="form-label mt-3">Estado</label>
+      <select id="status" formControlName="status" class="form-control" required>
+        <option value="Pendiente">Pendiente</option>
+        <option value="Pagado">Pagado</option>
+        <option value="Cancelado">Cancelado</option>
+      </select>
+
+      <!-- Botón -->
+      <button type="submit" [disabled]="paymentForm.invalid" class="btn btn-success mt-3">
+        {{ editingPaymentId ? 'Actualizar Pago' : 'Registrar Pago' }}
+      </button>
+    </form>
+  </div>
+</div>
+
+<div class="container mt-4" style="max-width: 1200px;">
+  <h3 class="titulo-centrado">Lista de Pagos</h3>
+
+  <table class="table table-striped table-hover align-middle">
+    <thead>
+      <tr>
+        <th>Paciente</th>
+        <th>Fecha de Cita</th>
+        <th>Fecha de Pago</th>
+        <th>Monto</th>
+        <th>Método</th>
+        <th>Estado</th>
+        <th style="width: 150px;">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let payment of payments">
+        <td>{{ payment.patient?.name }}</td>
+
+        <!-- Fecha de cita -->
+        <td>{{ payment.appointment?.date | date:'shortDate' }}</td>
+
+        <!-- Fecha de pago con estilo condicional (atrasado si es posterior a la cita) -->
+        <td [ngClass]="getPagoClass(payment)">
+          {{ payment.date | date:'shortDate' }}
+        </td>
+        
+
+
+        <td>{{ payment.amount | currency:'USD' }}</td>
+        <td>{{ payment.method }}</td>
+        <td>
+          <span
+            [ngClass]="{
+              'badge bg-success': payment.status === 'Pagado',
+              'badge bg-warning text-dark': payment.status === 'Pendiente',
+              'badge bg-danger': payment.status === 'Cancelado'
+            }"
+          >
+            {{ payment.status }}
+          </span>
+        </td>
+        <td>
+          <button class="btn btn-primary btn-sm me-2" (click)="editPayment(payment)">Editar</button>
+          <button class="btn btn-danger btn-sm" (click)="deletePayment(payment.id)">Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

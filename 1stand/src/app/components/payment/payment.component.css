@@ -1,0 +1,275 @@
+/* ====== Reset y base ====== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #ffffff;
+  color: #222222;
+  line-height: 1.5;
+  margin: 0;
+  padding: 1rem;
+}
+
+/* ====== Botón Exportar PDF ====== */
+.btn-outline-secondary {
+  display: inline-block;
+  font-weight: 600;
+  color: #003366;
+  background-color: transparent;
+  border: 2px solid #003366;
+  border-radius: 6px;
+  padding: 0.5rem 1.25rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  user-select: none;
+  margin-bottom: 1rem;
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus {
+  background-color: #003366;
+  color: #ffffff;
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(0, 51, 102, 0.5);
+}
+
+/* ====== Contenedor principal ====== */
+.payment-container {
+  max-width: 900px;
+  margin: 0 auto 3rem auto;
+  background-color: #fefefe;
+  padding: 2rem 2.5rem;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+/* ====== Títulos ====== */
+.payment-container h2,
+.payment-form h3,
+.titulo-centrado {
+  color: #003366;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* ====== Formulario ====== */
+.payment-form {
+  margin-bottom: 2rem;
+}
+
+/* Labels */
+label.form-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: #003366;
+}
+
+/* Selects e inputs */
+select.form-control,
+input.form-control {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  border: 2px solid #003366;
+  border-radius: 6px;
+  background-color: #fff;
+  color: #222222;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+select.form-control:focus,
+input.form-control:focus {
+  border-color: #0059b3;
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(0, 89, 179, 0.4);
+}
+
+/* Mensajes de error */
+.text-danger {
+  color: #b00020;
+  background-color: #f9d6d5;
+  border: 1px solid #b00020;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  font-weight: 600;
+  margin-top: 0.3rem;
+}
+
+/* Botón submit */
+.btn-success {
+  background-color: #007a33;
+  border: 2px solid #007a33;
+  color: #ffffff;
+  font-weight: 700;
+  padding: 0.6rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  user-select: none;
+  display: inline-block;
+  min-width: 180px;
+  margin-top: 1rem;
+}
+
+.btn-success:hover,
+.btn-success:focus:not(:disabled) {
+  background-color: #005d24;
+  border-color: #005d24;
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(0, 122, 51, 0.5);
+}
+
+.btn-success:disabled {
+  background-color: #a3d9b1;
+  border-color: #a3d9b1;
+  color: #555;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ====== Tabla ====== */
+.container.mt-4 {
+  max-width: 1200px;
+  margin: 0 auto 3rem auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #222222;
+  font-size: 1rem;
+}
+
+.table th,
+.table td {
+  border: 1px solid #dee2e6;
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+  text-align: left;
+}
+
+.table thead th {
+  background-color: #003366;
+  color: #ffffff;
+  font-weight: 700;
+  user-select: none;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: #f2f6fc;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #dbe9ff;
+  cursor: pointer;
+}
+
+/* Texto condicional para fecha de pago atrasada */
+.text-danger {
+  color: #b00020 !important;
+  font-weight: 700;
+}
+
+.text-muted {
+  color: #6c757d !important;
+}
+
+/* Badges de estado */
+.badge {
+  display: inline-block;
+  padding: 0.35em 0.65em;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: 0.5rem;
+  user-select: none;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+
+.bg-success {
+  background-color: #007a33;
+  color: #fff;
+}
+
+.bg-warning {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.bg-danger {
+  background-color: #b00020;
+  color: #fff;
+}
+
+/* Botones en tabla */
+.btn-primary,
+.btn-danger {
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.9rem;
+  min-width: 70px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  user-select: none;
+}
+
+.btn-primary {
+  background-color: #003366;
+  border: 2px solid #003366;
+  color: #fff;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: #0059b3;
+  border-color: #0059b3;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 89, 179, 0.5);
+}
+
+.btn-danger {
+  background-color: #b00020;
+  border: 2px solid #b00020;
+  color: #fff;
+}
+
+.btn-danger:hover,
+.btn-danger:focus {
+  background-color: #7a0015;
+  border-color: #7a0015;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(122, 0, 21, 0.5);
+}
+
+/* ====== Foco visible para accesibilidad ====== */
+:focus-visible {
+  outline: 3px solid #0059b3;
+  outline-offset: 2px;
+}
+
+/* ====== Responsive ====== */
+@media (max-width: 768px) {
+  .payment-container,
+  .container.mt-4 {
+    padding: 1rem 1.25rem;
+  }
+
+  .btn-outline-secondary,
+  .btn-success,
+  .btn-primary,
+  .btn-danger {
+    width: 100%;
+    margin-bottom: 0.75rem;
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+  }
+}

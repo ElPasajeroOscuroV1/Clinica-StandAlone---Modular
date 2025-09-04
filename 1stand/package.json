@@ -30,6 +30,8 @@
     "@tensorflow/tfjs": "^4.22.0",
     "bootstrap": "^5.3.7",
     "face-api.js": "^0.22.2",
+    "jspdf": "^3.0.2",
+    "jspdf-autotable": "^5.0.2",
     "opencv.js": "^1.2.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",

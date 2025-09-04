@@ -7,6 +7,9 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\DoctorController;
 use App\Http\Controllers\Api\PatientController;
+use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\TreatmentController;
+
 // Rutas existentes...
 // Ruta de prueba básica
 Route::get('/', function () {
@@ -30,11 +33,13 @@ Route::prefix('auth')->group(function () {
 
 //Route::post('/appointment', [AppointmentController::class, 'store']);
 /* ES ESTA RUTA LA QUE USA http://localhost:4200/appointment */
-
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('appointments', AppointmentController::class);
     Route::apiResource('doctors', DoctorController::class);
     Route::apiResource('patients', PatientController::class);
+    Route::apiResource('payments', PaymentController::class);
+    Route::apiResource('treatments', TreatmentController::class);
+
     Route::get('patients/{patient}/medical-history', [PatientController::class, 'getPatientMedicalHistory']);
     Route::put('patients/{patient}/medical-history', [PatientController::class, 'updatePatientMedicalHistory']);
 });
