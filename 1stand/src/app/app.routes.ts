@@ -7,6 +7,9 @@ import { AuthGuard } from './guards/auth.guard';
 import { DoctorComponent } from './components/doctor/doctor.component';
 import { PatientComponent } from './components/patient/patient.component';
 import { PaymentComponent } from './components/payment/payment.component';
+import { TreatmentComponent } from './components/treatment/treatment.component';
+import { MedicalAttentionComponent } from './components/medical-attention/medical-attention.component';
+import { MedicalHistoryComponent } from './components/medical-history/medical-history.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/login',
@@ -41,14 +44,23 @@ export const routes: Routes = [
     { path: 'payment',
         component: PaymentComponent 
     },
-
+    { path: 'treatment', 
+        component: TreatmentComponent 
+    },
+    { path: 'medical-attention',
+        component: MedicalAttentionComponent
+    },
+    { path: 'medical-history',
+        component: MedicalHistoryComponent
+    },
+    /*
     { path: 'treatments', 
         loadComponent: () => import('./components/treatment/treatment.component')
         .then(m => m.TreatmentComponent),
-        canActivate: [AuthGuard]   // 👈 proteger con el guard
+        //canActivate: [AuthGuard]   // 👈 proteger con el guard
  
     },
-
+    */
     //{ path: '', redirectTo: '/doctor', pathMatch: 'full' }, // Redirige a /doctor por defecto
     //{ path: '**', redirectTo: '/doctor' }, // Maneja rutas no encontradas
     { path: '**', redirectTo: '/login' } // Redirige a login para rutas no encontradas

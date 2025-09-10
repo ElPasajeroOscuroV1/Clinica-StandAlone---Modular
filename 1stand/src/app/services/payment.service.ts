@@ -1,26 +1,31 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
-import { Payment } from '../interfaces/payment.interface';
+import { Payment, RawPayment, CreatePaymentDto } from '../interfaces/payment.interface';
+/*
 interface RawPayment {
   id: number;
   patient_id: number;
   appointment_id: number;
+  treatment_id?: number;
   amount: string;
   date: string;
   method: string;
   status: string;
   patient: any;
   appointment: any;
+  treatment?: any;
 }
 export interface CreatePaymentDto {
   patient_id: number;
   appointment_id: number;
+  treatment_id?: number;
   amount: number;
   date: string;
   method: string;
   status: string;
 }
+*/
 
 @Injectable({ providedIn: 'root' })
 export class PaymentService {
@@ -45,6 +50,7 @@ export class PaymentService {
     const payload = {
       patient_id: payment.patientId,
       appointment_id: payment.appointmentId,
+      treatment_id: payment.treatmentId,
       amount: payment.amount,
       date: payment.date,
       method: payment.method,
@@ -65,12 +71,14 @@ export class PaymentService {
       id: raw.id,
       patientId: raw.patient_id,
       appointmentId: raw.appointment_id,
+      treatmentId: raw.treatment_id,
       amount: parseFloat(raw.amount),
       date: raw.date,
       method: raw.method,
       status: raw.status,
       patient: raw.patient,
-      appointment: raw.appointment
+      appointment: raw.appointment,
+      treatment: undefined
     };
   }
   

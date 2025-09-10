@@ -53,9 +53,16 @@ class TreatmentController extends Controller
     public function update(Request $request, string $id)
     {
         //
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'descripcion' => 'nullable|string',
+            'precio' => 'required|numeric',
+            'duracion' => 'required|integer'
+        ]);
+
         $treatment = Treatment::findOrFail($id);
 
-        $treatment->update($request->all());
+        $treatment->update($validated); // Usar los datos validados
 
         return response()->json($treatment, 200);
     }

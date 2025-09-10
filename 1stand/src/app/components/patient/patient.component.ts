@@ -12,13 +12,14 @@ import { MedicalHistoryModalComponent } from '../medical-history-modal/medical-h
 import { environment } from '../../../environments/environment';
 import { ChangeDetectorRef } from '@angular/core';
 
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 // ⚠️ Ajusta esta importación a tu estructura real
 // import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-patient',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, NgbModule],
   templateUrl: './patient.component.html',
   styleUrls: ['./patient.component.css']
 })
@@ -64,7 +65,8 @@ export class PatientComponent implements OnInit {
       address: ['', [Validators.required, Validators.maxLength(255)]],
       birth_date: ['', [Validators.required]],
       medical_history: [''],
-      face_image: [''] // Mantén este control para enviar base64 cuando haya nueva foto
+      face_image: [''], // Mantén este control para enviar base64 cuando haya nueva foto
+      medical_attention_id: ['']
     });
     console.log('Validador de CI:', this.patientForm.get('ci')?.validator);
 
@@ -198,8 +200,9 @@ export class PatientComponent implements OnInit {
     this.submitted = true;
     this.serverError = null;
 
-    console.log('onSubmit: patientForm.invalid antes de la validación:', this.patientForm.invalid);
-    console.log('onSubmit: patientForm.errors antes de la validación:', this.patientForm.errors);
+    console.log('onSubmit: Estado del formulario:', this.patientForm.value);
+    console.log('onSubmit: Formulario válido:', this.patientForm.valid);
+    console.log('onSubmit: Errores del formulario:', this.patientForm.errors);
 
     // Si el form es inválido, solo marca y corta
     if (this.patientForm.invalid) {
@@ -225,7 +228,6 @@ export class PatientComponent implements OnInit {
 
     // Evita doble envío
     if (this.loading) return;
-
     this.loading = true;
 
     // Prepara datos a enviar: solo manda base64 si es nueva captura/subida
@@ -234,8 +236,11 @@ export class PatientComponent implements OnInit {
     const patientData = {
       ...this.patientForm.value,
       // En algunos backends es mejor no enviar face_image si no hay cambio:
-      ...(faceImageToSend ? { face_image: faceImageToSend } : { face_image: undefined })
+      //...(faceImageToSend ? { face_image: faceImageToSend } : { face_image: undefined })
+      face_image: faceImageToSend // Enviar face_image explícitamente
     };
+    console.log('Datos enviados al backend:', patientData);
+    console.log('Fecha enviada:', patientData.birth_date);
 
     if (this.isEditing && this.currentPatientId) {
       this.patientService.updatePatient(this.currentPatientId, patientData, faceImageToSend)
@@ -261,6 +266,7 @@ export class PatientComponent implements OnInit {
             this.resetForm();
           },
           error: (error) => {
+            console.error('Error del backend:', error);
             if (error.status === 422 && error.error?.errors) {
               console.error('Errores de validación recibidos del backend:', error.error.errors);
             } else {
@@ -280,6 +286,7 @@ export class PatientComponent implements OnInit {
     // Mapea errores 422 del backend al formulario
     if (error?.status === 422 && error?.error?.errors) {
       const validationErrors = error.error.errors;
+      console.log('Errores de validación del backend:', validationErrors);
       Object.keys(validationErrors).forEach(key => {
         const control = this.patientForm.get(key);
         if (control) {
@@ -432,9 +439,10 @@ export class PatientComponent implements OnInit {
       return;
     }
 
-    const modalRef = this.modalService.open(MedicalHistoryModalComponent, { size: 'xl' });
+    const modalRef = this.modalService.open(MedicalHistoryModalComponent, { size: 'xl', backdrop: 'static', container: 'body', windowClass: 'modal-fullscreen' });
     modalRef.componentInstance.patientId = this.currentPatientId;
     modalRef.componentInstance.patientData = this.patientForm.value;
+    this.changeDetectorRef.detectChanges(); // Forzar detección de cambios
 
     modalRef.result.then((result: any) => {
       if (result === 'save') {

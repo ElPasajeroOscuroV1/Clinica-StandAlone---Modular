@@ -75,4 +75,5 @@ export class ApiService {
   isAuthenticated(): boolean {
     return !!this.token;  // Convierte el token a booleano (true si existe, false si es null)
   }
+  
 }

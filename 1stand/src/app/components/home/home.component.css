@@ -82,31 +82,17 @@ body, html {
   text-align: center;
 }
 
-/* ====== Tarjetas de acceso rápido - diseño horizontal ====== */
+/* ====== Tarjetas de acceso rápido - alineación a la izquierda ====== */
 .quick-access-cards {
   display: flex;
-  gap: 1.5rem;
-  overflow-x: auto;
+  flex-wrap: wrap; /* Permite que las tarjetas se envuelvan en filas */
+  justify-content: flex-start; /* Alinea las tarjetas al lado izquierdo */
+  gap: 1.5rem; /* Espacio entre tarjetas */
   padding-bottom: 0.5rem;
-  scroll-padding-left: 2rem;
-  -webkit-overflow-scrolling: touch;
-}
-
-.quick-access-cards::-webkit-scrollbar {
-  height: 8px;
-}
-
-.quick-access-cards::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 51, 102, 0.4);
-  border-radius: 4px;
-}
-
-.quick-access-cards::-webkit-scrollbar-track {
-  background-color: transparent;
 }
 
 .card {
-  flex: 0 0 220px;
+  flex: 0 0 200px; /* Ancho fijo de 220px por tarjeta */
   background-color: #ffffff;
   border-radius: 12px;
   padding: 1.75rem 1.5rem;
@@ -116,7 +102,6 @@ body, html {
   justify-content: space-between;
   transition: box-shadow 0.3s ease, transform 0.3s ease;
   user-select: none;
-  scroll-snap-align: start;
 }
 
 .card:hover,
@@ -245,8 +230,15 @@ body, html {
     gap: 0.75rem;
   }
 
-  /* Para pantallas pequeñas, el scroll horizontal ya permite ver las tarjetas */
-  .quick-access-cards,
+  /* Ajuste para pantallas pequeñas */
+  .quick-access-cards {
+    justify-content: flex-start; /* Alineación a la izquierda en pantallas pequeñas */
+  }
+
+  .card {
+    flex: 0 0 180px; /* Reduce el ancho de las tarjetas en pantallas pequeñas */
+  }
+
   .stats-grid {
     gap: 1rem;
   }

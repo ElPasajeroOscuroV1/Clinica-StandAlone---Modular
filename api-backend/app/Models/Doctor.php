@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Factories\hasMany;
+use App\Models\Appointment;
+use App\Models\Patient;
+use App\Models\MedicalAttention;
 
 class Doctor extends Model
 {
@@ -21,4 +25,9 @@ class Doctor extends Model
     protected $casts = [
         'available' => 'boolean'
     ];
+
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class);
+    }
 }

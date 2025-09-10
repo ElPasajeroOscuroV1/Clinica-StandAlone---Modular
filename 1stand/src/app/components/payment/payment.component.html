@@ -1,4 +1,4 @@
-  <button class="btn btn-outline-secondary mb-3" (click)="exportToPDF()">Exportar a PDF</button>
+<button class="btn btn-outline-secondary mb-3" (click)="exportToPDF()">Exportar a PDF</button>
 
 <div class="payment-container">
   <h2>Control de Pagos</h2>
@@ -7,6 +7,7 @@
     <h3>Registrar/Editar Pago</h3>
 
     <form [formGroup]="paymentForm" (ngSubmit)="onSubmit()">
+      
       <!-- Paciente -->
       <label for="patient" class="form-label">Paciente</label>
       <select id="patient" formControlName="patient_id" class="form-control" required>
@@ -30,6 +31,15 @@
       <div class="text-danger mt-1" *ngIf="paymentForm.get('appointment_id')?.invalid && paymentForm.get('appointment_id')?.touched">
         Seleccione una cita.
       </div>
+
+      <!-- Tratamiento -->
+      <label for="treatment" class="form-label mt-3">Tratamiento</label>
+      <select id="treatment" formControlName="treatment_id" class="form-control">
+        <option value="">Seleccione un tratamiento</option>
+        <option *ngFor="let treatment of treatments" [value]="treatment.id">
+          {{ treatment.id }} - {{ treatment.nombre }}
+        </option>
+      </select>
 
       <!-- Monto -->
       <label for="amount" class="form-label mt-3">Monto</label>
@@ -77,6 +87,7 @@
       <tr>
         <th>Paciente</th>
         <th>Fecha de Cita</th>
+        <th>Tratamiento</th>
         <th>Fecha de Pago</th>
         <th>Monto</th>
         <th>Método</th>
@@ -87,17 +98,9 @@
     <tbody>
       <tr *ngFor="let payment of payments">
         <td>{{ payment.patient?.name }}</td>
-
-        <!-- Fecha de cita -->
         <td>{{ payment.appointment?.date | date:'shortDate' }}</td>
-
-        <!-- Fecha de pago con estilo condicional (atrasado si es posterior a la cita) -->
-        <td [ngClass]="getPagoClass(payment)">
-          {{ payment.date | date:'shortDate' }}
-        </td>
-        
-
-
+        <td>{{ payment.treatment?.nombre || 'Sin tratamiento' }}</td>
+        <td [ngClass]="getPagoClass(payment)">{{ payment.date | date:'shortDate' }}</td>
         <td>{{ payment.amount | currency:'USD' }}</td>
         <td>{{ payment.method }}</td>
         <td>

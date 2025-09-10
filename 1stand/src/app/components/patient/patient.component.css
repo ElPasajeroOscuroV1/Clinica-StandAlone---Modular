@@ -31,6 +31,13 @@ h1, h2 {
   margin-bottom: 0.5rem;
 }
 
+h3 {
+  text-align: center;
+  color: #003366; /* Azul oscuro */
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
 /* ====== Labels ====== */
 label.form-label {
   display: block;

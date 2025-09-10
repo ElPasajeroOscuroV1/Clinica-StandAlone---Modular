@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Appointment;
+use App\Models\Patient;
+use App\Models\MedicalAttention;
+use App\Models\Treatment;
 
 class MedicalHistory extends Model
 {
@@ -21,11 +25,31 @@ class MedicalHistory extends Model
         'treatments_performed',
         'current_medications',
         'allergies',
-        'relevant_oral_habits'
+        'relevant_oral_habits',
+        'created_at',
+        'updated_at',
+        'medical_attention_id',
+        'details'
     ];
 
     public function patient()
     {
         return $this->belongsTo(Patient::class);
     }
+
+
+    public function medicalAttention() { 
+        return $this->belongsTo(MedicalAttention::class); 
+    }
+
+    public function treatments()
+    {
+        return $this->belongsToMany(Treatment::class);
+    }
+
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class);
+    }
+    
 }

@@ -79,6 +79,10 @@ input.form-check-input:focus {
   outline-offset: 2px;
 }
 
+input.form-check-input:checked {
+  background-color: #0059b3; /* Un azul más claro para que resalte */
+  border-color: #0059b3;
+}
 /* ====== Botones ====== */
 .btn {
   font-weight: 700;

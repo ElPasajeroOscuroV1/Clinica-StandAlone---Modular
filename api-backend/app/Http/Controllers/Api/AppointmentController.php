@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Appointment;
+use App\Models\Patient;
 //$patient = \App\Models\Patient::findOrFail($request->patient_id);
 
 class AppointmentController extends Controller
@@ -12,10 +13,21 @@ class AppointmentController extends Controller
     /**
      * Display a listing of the resource.
      */
+    public function indexByPatient(Patient $patient)
+    {
+        try {
+            $appointments = $patient->appointments; // Usa la relación definida en el modelo Patient
+            return response()->json($appointments);
+        } catch (\Exception $e) {
+            \Log::error('Error al obtener citas para paciente ' . $patient->id . ': ' . $e->getMessage());
+            return response()->json(['error' => 'Error interno'], 500);
+        }
+    }
+
     public function index(Request $request)
     {
-        $query = Appointment::with('doctor', 'patient'); // No existe 'patient' en Appointment
-
+        $query = Appointment::with('doctor', 'patient'); // Corrección: 'patient' debería estar definido en la relación
+        
         // Filtrar por patient_name si se pasa como query param
         if ($request->has('patient_id')) {
             $query->where('patient_id', $request->patient_id);

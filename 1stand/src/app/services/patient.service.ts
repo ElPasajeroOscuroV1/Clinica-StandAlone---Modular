@@ -121,5 +121,14 @@ export class PatientService {
     return throwError(() => new Error(errorMessage));
   }
   
+  // Obtener todos los historiales clínicos
+  getAllMedicalHistories(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/medical-histories`, {
+      headers: this.getHeaders()
+    }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
 
 }

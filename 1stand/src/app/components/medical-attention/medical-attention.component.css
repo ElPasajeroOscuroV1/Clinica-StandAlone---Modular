@@ -1,0 +1,182 @@
+/* Contenedor general */
+form {
+  max-width: 700px;
+  margin: 1.5rem auto;
+  padding: 1.5rem;
+  background-color: #f9fafb;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Estilos para mat-form-field */
+mat-form-field {
+  width: 100%;
+  margin-bottom: 1.25rem;
+}
+
+/* Etiquetas */
+mat-label {
+  font-weight: 600;
+  color: #1a202c; /* Gris oscuro para buen contraste */
+  font-size: 1rem;
+}
+
+/* Selects */
+mat-select {
+  background-color: #fff;
+  border-radius: 6px;
+  border: 1.5px solid #cbd5e0; /* Gris claro */
+  transition: border-color 0.3s ease;
+  font-size: 1rem;
+  color: #2d3748;
+  min-height: 40px;
+}
+
+/* Focus accesible */
+mat-select:focus-within {
+  border-color: #3182ce; /* Azul accesible */
+  outline: 3px solid #90cdf4;
+  outline-offset: 2px;
+}
+
+/* Opciones */
+mat-option {
+  font-size: 1rem;
+  color: #2d3748;
+}
+
+/* Botones */
+button[mat-raised-button] {
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.6rem 1.4rem;
+  border-radius: 8px;
+  box-shadow: 0 3px 6px rgba(49, 130, 206, 0.4);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  margin-right: 1rem;
+  min-width: 140px;
+}
+
+/* Botón primario */
+button[mat-raised-button][color="primary"] {
+  background-color: #3182ce;
+  color: #fff;
+}
+
+button[mat-raised-button][color="primary"]:hover,
+button[mat-raised-button][color="primary"]:focus-visible {
+  background-color: #2b6cb0;
+  box-shadow: 0 4px 12px rgba(49, 130, 206, 0.6);
+  outline: none;
+}
+
+/* Botón cancelar */
+button[mat-raised-button]:not([color="primary"]) {
+  background-color: #e2e8f0;
+  color: #2d3748;
+}
+
+button[mat-raised-button]:not([color="primary"]):hover,
+button[mat-raised-button]:not([color="primary"]):focus-visible {
+  background-color: #cbd5e0;
+  outline: none;
+}
+
+/* Tabla */
+mat-table {
+  width: 100%;
+  margin-top: 2rem;
+  border-collapse: separate;
+  border-spacing: 0 0.5rem;
+  font-size: 1rem;
+  color: #2d3748;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  /* Para que la tabla no se desborde en móviles */
+  overflow-x: auto;
+  display: block;
+}
+
+/* Encabezados */
+th.mat-header-cell {
+  font-weight: 700;
+  background-color: #3182ce;
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 8px 8px 0 0;
+  text-align: left;
+  user-select: none;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/* Celdas */
+td.mat-cell {
+  background-color: #edf2f7;
+  padding: 0.75rem 1rem;
+  border-left: 4px solid transparent;
+  border-radius: 0 0 8px 8px;
+  transition: background-color 0.3s ease;
+}
+
+/* Hover fila */
+tr.mat-row:hover td.mat-cell {
+  background-color: #bee3f8;
+  border-left-color: #3182ce;
+  cursor: pointer;
+}
+
+/* Botones de acción en tabla */
+td.mat-cell button.mat-icon-button {
+  color: #3182ce;
+  transition: color 0.3s ease;
+}
+
+td.mat-cell button.mat-icon-button[color="warn"] {
+  color: #e53e3e;
+}
+
+td.mat-cell button.mat-icon-button:hover,
+td.mat-cell button.mat-icon-button:focus-visible {
+  color: #2c5282;
+  outline: none;
+}
+
+td.mat-cell button.mat-icon-button[color="warn"]:hover,
+td.mat-cell button.mat-icon-button[color="warn"]:focus-visible {
+  color: #9b2c2c;
+  outline: none;
+}
+
+/* Foco visible para accesibilidad */
+button:focus-visible,
+mat-select:focus-visible,
+mat-option:focus-visible {
+  outline: 3px solid #90cdf4;
+  outline-offset: 2px;
+}
+
+/* Mensajes de error (si usas validaciones visuales) */
+.mat-form-field-subscript-wrapper .mat-error {
+  color: #e53e3e;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  form {
+    margin: 1rem;
+    padding: 1rem;
+  }
+
+  button[mat-raised-button] {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  mat-table {
+    font-size: 0.9rem;
+  }
+}

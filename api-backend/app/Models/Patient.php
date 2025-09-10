@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\MedicalHistory;
+use App\Models\Appointment;
+use App\Models\MedicalAttention;
+
 
 
 class Patient extends Model
@@ -19,7 +22,7 @@ class Patient extends Model
         'phone',
         'address',
         'birth_date',
-        'medical_history',
+        //'medical_history',
         'face_image'
     ];
 
@@ -30,5 +33,13 @@ class Patient extends Model
     public function medicalHistory()
     {
         return $this->hasOne(MedicalHistory::class);
+    }
+
+    public function appointments() { 
+        return $this->hasMany(Appointment::class); 
+    }
+
+    public function medicalHistories() {
+        return $this->hasMany(MedicalHistory::class); 
     }
 }

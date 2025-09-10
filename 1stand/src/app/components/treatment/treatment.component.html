@@ -1,6 +1,6 @@
 <div class="container mt-4">
   <h2>Gestión de Tratamientos</h2>
-
+  <h2>Registrar tratamiento</h2>
   <!-- Formulario -->
   <form (ngSubmit)="saveTreatment()" #tForm="ngForm" class="mb-4">
     <div class="mb-2">
@@ -10,10 +10,10 @@
       <textarea [(ngModel)]="treatmentForm.descripcion" name="descripcion" placeholder="Descripción" class="form-control"></textarea>
     </div>
     <div class="mb-2">
-      <input type="number" [(ngModel)]="treatmentForm.precio" name="precio" placeholder="Precio" class="form-control" required>
+      <input type="text" [(ngModel)]="treatmentForm.precio" name="precio" placeholder="Precio" class="form-control" required>
     </div>
     <div class="mb-2">
-      <input type="number" [(ngModel)]="treatmentForm.duracion" name="duracion" placeholder="Duración (minutos)" class="form-control" required>
+      <input type="text" [(ngModel)]="treatmentForm.duracion" name="duracion" placeholder="Duración (minutos)" class="form-control" required>
     </div>
 
     <button type="submit" class="btn btn-primary">
@@ -25,12 +25,14 @@
   </form>
 
   <!-- Tabla -->
+  <h2>Lista de tratamientos</h2>
   <div *ngIf="loading">Cargando tratamientos...</div>
   <table class="table table-striped" *ngIf="!loading">
     <thead>
       <tr>
         <th>ID</th>
         <th>Nombre</th>
+        <th>Descripción</th> <!-- Nueva columna -->
         <th>Precio</th>
         <th>Duración</th>
         <th>Acciones</th>
@@ -40,10 +42,11 @@
       <tr *ngFor="let t of treatments">
         <td>{{ t.id }}</td>
         <td>{{ t.nombre }}</td>
+        <td>{{ t.descripcion || 'Sin descripción' }}</td> <!-- Mostrar descripción -->
         <td>{{ t.precio | currency }}</td>
         <td>{{ t.duracion }} min</td>
         <td>
-          <button (click)="editTreatment(t)" class="btn btn-warning btn-sm">Editar</button>
+          <button (click)="editTreatment(t)" class="btn btn-primary btn-sm">Editar</button>
           <button (click)="deleteTreatment(t.id!)" class="btn btn-danger btn-sm ms-2">Eliminar</button>
         </td>
       </tr>

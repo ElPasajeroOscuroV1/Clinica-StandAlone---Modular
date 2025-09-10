@@ -1,0 +1,79 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <h2>Atencion medica</h2>
+  <h3>Registro de atencion</h3>
+  <mat-form-field>
+    <mat-label>Paciente</mat-label>
+    <mat-select formControlName="patient_id" (selectionChange)="onPatientChange()">
+      <mat-option *ngFor="let patient of patients" [value]="patient.id">{{ patient.name }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Cita Médica</mat-label>
+    <mat-select formControlName="appointment_id">
+      <mat-option *ngFor="let app of appointments" [value]="app.id">
+        {{ app.date }} {{ app.time }} - {{ getDoctorName(app.id) }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Tratamientos</mat-label>
+    <mat-select formControlName="treatment_ids" multiple>
+      <mat-option *ngFor="let treat of treatments" [value]="treat.id">{{ treat.nombre }} ({{ treat.precio }} USD)</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <button type="submit" mat-raised-button color="primary">
+    {{ editingAttention ? 'Actualizar Atención' : 'Guardar Atención' }}
+  </button>
+  <button type="button" mat-raised-button (click)="resetForm()" *ngIf="editingAttention">Cancelar</button>
+</form>
+
+<h2>Lista de Atenciones Médicas</h2>
+<mat-table [dataSource]="medicalAttentions">
+  <ng-container matColumnDef="id">
+    <mat-header-cell *matHeaderCellDef>ID</mat-header-cell>
+    <mat-cell *matCellDef="let element">{{ element.id }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="patient_id">
+    <mat-header-cell *matHeaderCellDef>Paciente</mat-header-cell>
+    <mat-cell *matCellDef="let element">{{ getPatientName(element.patient_id) }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="appointment_id">
+    <mat-header-cell *matHeaderCellDef>Cita</mat-header-cell>
+    <mat-cell *matCellDef="let element">{{ getAppointmentDate(element.appointment_id) }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="doctor">
+    <mat-header-cell *matHeaderCellDef>Doctor</mat-header-cell>
+    <mat-cell *matCellDef="let element">{{ getDoctorName(element.appointment_id) }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="treatments">
+    <mat-header-cell *matHeaderCellDef>Tratamientos</mat-header-cell>
+    <mat-cell *matCellDef="let element">{{ getTreatmentNames(element) }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="total_cost">
+    <mat-header-cell *matHeaderCellDef>Costo Total</mat-header-cell>
+    <mat-cell *matCellDef="let element">{{ element.total_cost || 0 }} USD</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="actions">
+    <mat-header-cell *matHeaderCellDef>Acciones</mat-header-cell>
+    <mat-cell *matCellDef="let element">
+      <button mat-icon-button color="primary" (click)="editAttention(element)">
+        <mat-icon>edit</mat-icon>
+      </button>
+      <button mat-icon-button color="warn" (click)="deleteAttention(element.id)">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </mat-cell>
+  </ng-container>
+
+  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+</mat-table>

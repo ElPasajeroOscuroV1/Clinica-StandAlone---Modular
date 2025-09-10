@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Payment;
 
 class PaymentController extends Controller
 {
@@ -14,7 +15,9 @@ class PaymentController extends Controller
     {
         //
         //return \App\Models\Payment::all();
-        return \App\Models\Payment::with(['patient', 'appointment'])->get();
+        return \App\Models\Payment::with(['patient', 'appointment', 'treatment'])->get();
+        return response()->json($payments);
+
 
     }
 
@@ -27,6 +30,7 @@ class PaymentController extends Controller
         $validatedData = $request->validate([
             'patient_id' => 'required|exists:patients,id',
             'appointment_id' => 'required|exists:appointments,id',
+            'treatment_id' => 'nullable|exists:treatments,id',
             'amount' => 'required|numeric|min:0',
             'date' => 'required|date',
             'method' => 'required|string|max:255',
@@ -35,7 +39,7 @@ class PaymentController extends Controller
 
         $payment = \App\Models\Payment::create($validatedData);
 
-        return response()->json($payment->load(['patient', 'appointment']), 201);
+        return response()->json($payment->load(['patient', 'appointment', 'treatment']), 201);
     }
 
     /**
@@ -64,7 +68,7 @@ class PaymentController extends Controller
         $payment = \App\Models\Payment::findOrFail($id);
         $payment->update($validatedData);
 
-        return response()->json($payment->load(['patient', 'appointment']), 200);
+        return response()->json($payment->load(['patient', 'appointment', 'treatment']), 200);
     }
 
     /**
@@ -73,5 +77,7 @@ class PaymentController extends Controller
     public function destroy(string $id)
     {
         //
+        Payment::findOrFail($id)->delete();
+        return response()->json(null, 204);
     }
 }

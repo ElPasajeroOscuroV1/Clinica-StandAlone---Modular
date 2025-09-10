@@ -1,72 +1,80 @@
 <div class="home-container">
-    <!-- Barra de navegación -->
-    <nav class="navbar">
-      <div class="nav-brand">Clínica Odontologica</div>
-      <div class="nav-menu">
-        <button class="nav-link" routerLink="/register">Registrar Usuario</button>
-        <button class="nav-link" (click)="logout()">Cerrar Sesión</button>
-      </div>
-    </nav>
-  
-    <!-- Dashboard principal -->
-    <div class="dashboard">
-      <h1>Panel de Control</h1>
-      
-      <!-- Tarjetas de acceso rápido -->
-      <div class="quick-access-cards">
-        <div class="card">
-          <h3>Pacientes</h3>
-          <p>Gestionar pacientes</p>
-          <!-- <button>Ver Pacientes</button> -->
-          <button routerLink="/patient">Ver Pacientes</button>
+  <!-- Barra de navegación -->
+  <nav class="navbar">
+    <div class="nav-brand">Clínica Odontológica</div>
+    <div class="nav-menu">
+      <button class="nav-link" routerLink="/register">Registrar Usuario</button>
+      <button class="nav-link" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </nav>
 
-        </div>
-  
-        <div class="card">
-          <h3>Citas</h3>
-          <p>Administrar citas</p>
-          <button routerLink="/appointment">Ver Citas</button>
-        </div>
-  
-        <div class="card">
-          <h3>Médicos</h3>
-          <p>Gestionar médicos</p>
-          <!-- <button>Ver Médicos</button> -->
-          <button routerLink="/doctor">Ver Medicos</button>
-        </div>
-  
-        <div class="card">
-          <h3>Historias Clínicas</h3>
-          <p>Acceder a historias</p>
-          <button>Ver Historias</button>
-        </div>
+  <!-- Dashboard principal -->
+  <div class="dashboard">
+    <h1>Panel de Control</h1>
 
-        <div class="card">
-          <h3>Pagos</h3>
-          <p>Control de pagos</p>
-          <button routerLink="/payment">Ver Pagos</button>
-        </div>
+    <!-- Tarjetas de acceso rápido -->
+    <div class="quick-access-cards">
+      <div class="card">
+        <h3>Pacientes</h3>
+        <p>Gestionar pacientes</p>
+        <button routerLink="/patient">Ver Pacientes</button>
       </div>
 
-      
-  
-      <!-- Sección de estadísticas -->
-      <div class="statistics-section">
-        <h2>Resumen</h2>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <h4>Citas Hoy</h4>
-            <p class="stat-number">0</p>
-          </div>
-          <div class="stat-card">
-            <h4>Pacientes Totales</h4>
-            <p class="stat-number">0</p>
-          </div>
-          <div class="stat-card">
-            <h4>Médicos Activos</h4>
-            <p class="stat-number">0</p>
-          </div>
+      <div class="card">
+        <h3>Citas</h3>
+        <p>Administrar citas</p>
+        <button routerLink="/appointment">Ver Citas</button>
+      </div>
+
+      <div class="card">
+        <h3>Médicos</h3>
+        <p>Gestionar médicos</p>
+        <button routerLink="/doctor">Ver Médicos</button>
+      </div>
+
+      <div class="card">
+        <h3>Historias Clínicas</h3>
+        <p>Acceder a historias</p>
+        <button routerLink="/medical-history">Ver Historias</button>
+      </div>
+
+      <div class="card">
+        <h3>Pagos</h3>
+        <p>Control de pagos</p>
+        <button routerLink="/payment">Ver Pagos</button>
+      </div>
+
+      <div class="card">
+        <h3>Tratamientos</h3>
+        <p>Gestionar tratamientos</p>
+        <button routerLink="/treatment">Ver Tratamientos</button>
+      </div>
+
+      <!-- Nueva tarjeta para Atención Médica -->
+      <div class="card">
+        <h3>Atención Médica</h3>
+        <p>Gestionar atenciones médicas</p>
+        <button routerLink="/medical-attention">Ver Atenciones</button>
+      </div>
+    </div>
+
+    <!-- Sección de estadísticas -->
+    <div class="statistics-section">
+      <h2>Resumen</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h4>Citas Hoy</h4>
+          <p class="stat-number">0</p>
+        </div>
+        <div class="stat-card">
+          <h4>Pacientes Totales</h4>
+          <p class="stat-number">0</p>
+        </div>
+        <div class="stat-card">
+          <h4>Médicos Activos</h4>
+          <p class="stat-number">0</p>
         </div>
       </div>
     </div>
   </div>
+</div>

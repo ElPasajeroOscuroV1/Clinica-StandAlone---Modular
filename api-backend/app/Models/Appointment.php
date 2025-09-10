@@ -32,14 +32,8 @@ class Appointment extends Model
     {
         return $this->belongsTo(Patient::class);
     }
-
-    // App\Models\Appointment.php
-    /*
-    protected $appends = ['patient_name'];
-
-    public function getPatientNameAttribute()
-    {
-        return $this->patient ? $this->patient->name : null;
+    
+    public function medicalAttention() { 
+        return $this->hasOne(MedicalAttention::class); 
     }
-    */
 }
