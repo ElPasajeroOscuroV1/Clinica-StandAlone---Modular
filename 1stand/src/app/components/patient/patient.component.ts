@@ -29,7 +29,10 @@ export class PatientComponent implements OnInit {
   isEditing = false;
   currentPatientId?: number;
 
-  imageBaseUrl = environment.apiBaseUrl.replace(/\/$/, '') + '/storage/';
+  //imageBaseUrl = environment.apiBaseUrl.replace(/\/$/, '') + '/storage/';
+  //imageBaseUrl = environment.apiBaseUrl.replace(/\/api$/, '') + '/storage/';
+
+  imageBaseUrl = 'http://localhost:8000/storage/';
 
 
   loading = false;
@@ -434,24 +437,50 @@ export class PatientComponent implements OnInit {
   // HISTORIAL
   // ==========
   openMedicalHistoryModal(): void {
-    if (!this.currentPatientId && !this.isEditing) {
+    if (!this.currentPatientId) {
       alert('Primero debe registrar al paciente para gestionar su historial clínico.');
       return;
     }
 
-    const modalRef = this.modalService.open(MedicalHistoryModalComponent, { size: 'xl', backdrop: 'static', container: 'body', windowClass: 'modal-fullscreen' });
-    modalRef.componentInstance.patientId = this.currentPatientId;
-    modalRef.componentInstance.patientData = this.patientForm.value;
-    this.changeDetectorRef.detectChanges(); // Forzar detección de cambios
+    this.loading = true;
 
-    modalRef.result.then((result: any) => {
-      if (result === 'save') {
-        console.log('Historial guardado desde el modal');
+    // Cargar historiales del paciente
+    this.patientService.getPatientMedicalHistory(this.currentPatientId).subscribe({
+      next: (histories) => {
+        const modalRef = this.modalService.open(MedicalHistoryModalComponent, {
+          size: 'xl',
+          backdrop: 'static',
+          container: 'body',
+          windowClass: 'modal-fullscreen'
+        });
+
+        // Pasar datos al modal
+        modalRef.componentInstance.patientId = this.currentPatientId;
+        modalRef.componentInstance.patientData = this.patientForm.value;
+        modalRef.componentInstance.patientHistories = histories; // ⚡ Aquí cargamos los historiales
+        modalRef.componentInstance.selectedHistory = histories.length ? histories[0] : null;
+
+        // Detectar cuando se cierre el modal
+        modalRef.result.then((result: any) => {
+          if (result === 'save' || result === 'create' || result === 'update') {
+            console.log('Historial guardado desde el modal');
+            this.loadPatients(); // refresca la lista de pacientes si quieres
+          }
+        }, (reason: any) => {
+          console.log(`Modal dismissed: ${reason}`);
+        });
+      },
+      error: (err) => {
+        console.error('Error cargando historiales:', err);
+        alert('No se pudieron cargar los historiales del paciente.');
+      },
+      complete: () => {
+        this.loading = false;
       }
-    }, (reason: any) => {
-      console.log(`Modal dismissed: ${reason}`);
     });
   }
+
+
 
   openMedicalHistoryFor(patient: Patient): void {
     const ref = this.modalService.open(MedicalHistoryModalComponent, { size: 'xl', backdrop: 'static' });
@@ -473,4 +502,9 @@ export class PatientComponent implements OnInit {
   // UTILIDAD
   // =========
   trackById = (_: number, item: { id?: number }) => item.id ?? _;
+
+  loadPatientHistories(patientId: number) {
+    return this.patientService.getPatientMedicalHistory(patientId);
+  }
+
 }

@@ -82,7 +82,7 @@ export class PatientService {
       catchError(this.handleError) // Añade esto
     );
   }
-
+  /*
   // Nuevo método para actualizar (o crear si no existe) el historial clínico
   updatePatientMedicalHistory(patientId: number, historyData: any): Observable<any> { // Ajusta el tipo de retorno
     return this.http.put(`${this.apiUrl}/${patientId}/medical-history`, historyData, {
@@ -91,7 +91,7 @@ export class PatientService {
       catchError(this.handleError) // Añade esto
     );
   }
-  
+  */
   // ============== FUNCIÓN DE MANEJO DE ERRORES ==============
   private handleError(error: HttpErrorResponse): Observable<never> {
     console.error('Error en PatientService:', error); // Consologuea el error completo para depuración
@@ -129,6 +129,33 @@ export class PatientService {
       catchError(this.handleError)
     );
   }
+
+  // Crear historial nuevo
+  createPatientMedicalHistory(patientId: number, data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${patientId}/medical-history`, data);
+  }
+  /*
+  // Editar historial existente
+  updatePatientMedicalHistory(patientId: number, historyId: number, data: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${patientId}/medical-history/${historyId}`, data);
+  }
+  */
+  /* Este es el método que necesitas corregir para la edición
+  updatePatientMedicalHistory(historyId: number, data: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/medical-histories/${historyId}`, data, {
+      headers: this.getHeaders()
+    });
+  }
+  */
+  updatePatientMedicalHistory(patientId: number, historyId: number, historyData: any): Observable<any> {
+    // Llamamos a la ruta que actualiza un historial específico
+    return this.http.put(
+      `http://localhost:8000/api/patients/${patientId}/medical-history/${historyId}`,
+      historyData,
+      { headers: this.getHeaders() }
+    );
+  }
+
 
 
 }

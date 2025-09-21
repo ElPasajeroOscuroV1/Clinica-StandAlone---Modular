@@ -15,13 +15,12 @@ class MedicalAttention extends Model
     protected $fillable = [
         'patient_id',
         'appointment_id',
-        'treatment_ids', // Cambia a plural
-        'total_cost', // Agrega este si no está
+        'total_cost',
         'notes'
     ];
 
     protected $casts = [
-        'total_cost' => 'decimal:2', // Para manejar decimales correctamente
+        'total_cost' => 'decimal:2',
     ];
 
     public function patient() { 
@@ -33,12 +32,11 @@ class MedicalAttention extends Model
     }
 
     public function treatments() {
-        return $this->belongsToMany(Treatment::class, 'medical_attention_treatment') // Especifica la tabla pivot si es personalizada
-            ->withTimestamps(); // Si quieres timestamps en la pivot
+        // ✅ CORRECCIÓN: Elimina el nombre de la tabla pivote para que Laravel use la convención por defecto.
+        return $this->belongsToMany(Treatment::class);
     }
 
     public function medicalHistory() { 
         return $this->hasOne(MedicalHistory::class); 
     }
-    
 }

@@ -1,140 +1,89 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap'; // Si usas NgbModal
-import { PatientService } from '../../services/patient.service'; // Asumiendo que el servicio maneja también el historial
-import { Patient } from '../../interfaces/patient.interface'; // Reusa la interfaz de Patient o crea una específica para historial
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap'; // Asegúrate de importar NgbModule
+import { NgbActiveModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { PatientService } from '../../services/patient.service';
+import { MedicalHistoryService } from '../../services/medical-history.service';
+
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 @Component({
   selector: 'app-medical-history-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NgbModule ],
+  imports: [CommonModule, ReactiveFormsModule, NgbModule],
   templateUrl: './medical-history-modal.component.html',
   styleUrls: ['./medical-history-modal.component.css']
 })
 export class MedicalHistoryModalComponent implements OnInit {
-  @Input() patientId: number | undefined;
-  @Input() patientData: any; // Para mostrar datos personales del paciente
+  @Input() patientId!: number;
+  @Input() patientData: any;
+  @Input() patientHistories: any[] = [];
+  @Input() selectedHistory: any;
+
   medicalHistoryForm: FormGroup;
   loadingHistory = false;
 
-  // Variables para odontograma, si lo implementas
-  // teethStatus: any = {}; // Mapa para el estado de cada diente
-
   constructor(
     private fb: FormBuilder,
-    public activeModal: NgbActiveModal, // Para controlar el modal de NgbModal
-    private patientService: PatientService
+    public activeModal: NgbActiveModal,
+    private patientService: PatientService,
+    private medicalHistoryService: MedicalHistoryService
   ) {
     this.medicalHistoryForm = this.fb.group({
-      // Datos personales del paciente (solo para mostrar, no editar aquí)
       patientName: [{ value: '', disabled: true }],
       patientEmail: [{ value: '', disabled: true }],
       patientCi: [{ value: '', disabled: true }],
-
-      // Antecedentes Médicos y Odontológicos
       medicalBackground: ['', Validators.maxLength(1000)],
       dentalBackground: ['', Validators.maxLength(1000)],
-
-      // Motivo de la consulta
       consultationReason: ['', Validators.required],
-
-      // Resultados de exámenes clínicos
       extraoralExam: [''],
       intraoralExam: [''],
-
-      // Odontograma (puede ser un JSON string o un objeto más complejo)
-      odontogram: [''], // Esto requerirá una lógica más compleja en la UI
-
-      // Secciones adicionales
-      treatmentsPerformed: [''], // Podría ser un FormArray de tratamientos
-      currentMedications: [''], // Podría ser un FormArray de medicamentos
+      odontogram: [''],
+      treatmentsPerformed: [''],
+      currentMedications: [''],
       allergies: [''],
       relevantOralHabits: [''],
     });
   }
 
-  // Convierte las claves del backend (snake_case) a las del formulario (camelCase)
-  private mapApiToForm(h: any) {
-    return {
-      medicalBackground:    h?.medical_background    ?? '',
-      dentalBackground:     h?.dental_background     ?? '',
-      consultationReason:   h?.consultation_reason   ?? '',
-      extraoralExam:        h?.extraoral_exam        ?? '',
-      intraoralExam:        h?.intraoral_exam        ?? '',
-      odontogram:           h?.odontogram            ?? '',
-      treatmentsPerformed:  h?.treatments_performed  ?? '',
-      currentMedications:   h?.current_medications   ?? '',
-      allergies:            h?.allergies             ?? '',
-      relevantOralHabits:   h?.relevant_oral_habits  ?? '',
-    };
-  }
-
   ngOnInit(): void {
-    if (this.patientId) {
-      //this.loadMedicalHistory(this.patientId);
-      // Cargar datos personales del paciente en el formulario para visualización
-      // 2.1) Mostrar datos del paciente en los inputs deshabilitados (cabecera)
-      if (this.patientData) {
-        this.medicalHistoryForm.patchValue({
-          patientName: this.patientData.name,
-          patientEmail: this.patientData.email,
-          patientCi: this.patientData.ci
-        });
-      }
-      // 2.2) Cargar el historial desde el backend
-      this.loadMedicalHistory(this.patientId);
+    if (this.patientData) {
+      this.medicalHistoryForm.patchValue({
+        patientName: this.patientData.name,
+        patientEmail: this.patientData.email,
+        patientCi: this.patientData.ci
+      });
+    }
+
+    if (this.selectedHistory) {
+      this.applyHistory(this.selectedHistory);
     }
   }
 
-  loadMedicalHistory(patientId: number): void {
-    this.loadingHistory = true;
-    /*
-    // Debes tener un método en tu servicio para obtener el historial clínico de un paciente
-    this.patientService.getPatientMedicalHistory(patientId).subscribe({
-      next: (history) => {
-        this.medicalHistoryForm.patchValue(history); // Asume que la estructura del historial coincide
-        this.loadingHistory = false;
-        // Si hay un odontograma, parsearlo y cargarlo
-        // if (history.odontogram) { this.teethStatus = JSON.parse(history.odontogram); }
-      },
-      error: (err) => {
-        console.error('Error cargando historial clínico:', err);
-        this.loadingHistory = false;
-        // Manejar error, ej. mostrar un mensaje al usuario
-      }
+  applyHistory(history: any) {
+    this.selectedHistory = history;
+    this.medicalHistoryForm.patchValue({
+      medicalBackground: history.medical_background ?? '',
+      dentalBackground: history.dental_background ?? '',
+      consultationReason: history.consultation_reason ?? '',
+      extraoralExam: history.extraoral_exam ?? '',
+      intraoralExam: history.intraoral_exam ?? '',
+      odontogram: history.odontogram ?? '',
+      treatmentsPerformed: history.treatments_performed ?? '',
+      currentMedications: history.current_medications ?? '',
+      allergies: history.allergies ?? '',
+      relevantOralHabits: history.relevant_oral_habits ?? '',
     });
-    */
-    this.patientService.getPatientMedicalHistory(patientId).subscribe({
-      next: (raw) => {
-        // Si por alguna razón el backend devuelve [], conviértelo a objeto vacío
-        const apiObj = Array.isArray(raw) ? {} : (raw || {});
-        // Mapeamos a las claves del formulario
-        const formValues = this.mapApiToForm(apiObj);
+  }
 
-        // OPCIÓN C (mi preferida por robustez):
-        this.medicalHistoryForm.reset({
-          patientName: this.patientData?.name ?? '',
-          patientEmail: this.patientData?.email ?? '',
-          patientCi: this.patientData?.ci ?? '',
-          ...formValues
-        });
-
-        console.log('RAW desde API:', apiObj);              // <- claves snake_case
-        console.log('MAP a Form (camelCase):', formValues); // <- lo que vas a patchValue
-  
-        //this.medicalHistoryForm.patchValue(formValues);
-        console.log('VALOR DEL FORM tras patch:', this.medicalHistoryForm.getRawValue());
-
-        console.log('✅ Historial cargado desde API:', apiObj);
-        this.loadingHistory = false;
-      },
-      error: (err) => {
-        console.error('❌ Error cargando historial clínico:', err);
-        this.loadingHistory = false;
-      }
-    });
+  onHistoryChange(event: any) {
+    const historyId = +event.target.value;
+    const found = this.patientHistories.find(h => h.id === historyId);
+    if (found) {
+      this.applyHistory(found);
+      console.log('Historial seleccionado:', found);
+    }
   }
 
   saveMedicalHistory(): void {
@@ -143,15 +92,7 @@ export class MedicalHistoryModalComponent implements OnInit {
       return;
     }
 
-    this.loadingHistory = true;
-    //const historyData = this.medicalHistoryForm.getRawValue(); // Usa getRawValue para incluir campos disabled
     const formValues = this.medicalHistoryForm.getRawValue();
-
-    // Aquí deberías tener un método en tu servicio para guardar/actualizar el historial clínico
-    // Si el odontograma es un objeto, conviértelo a JSON string antes de enviar
-    // historyData.odontogram = JSON.stringify(this.teethStatus);
-
-    // Mapear los nombres de campo del frontend a los nombres de campo del backend
     const historyData = {
       medical_background: formValues.medicalBackground,
       dental_background: formValues.dentalBackground,
@@ -163,26 +104,45 @@ export class MedicalHistoryModalComponent implements OnInit {
       current_medications: formValues.currentMedications,
       allergies: formValues.allergies,
       relevant_oral_habits: formValues.relevantOralHabits,
+      patient_id: this.patientId,
     };
 
-    this.patientService.updatePatientMedicalHistory(this.patientId!, historyData).subscribe({
-      next: (response) => {
-        console.log('Historial clínico guardado con éxito', response);
-        this.loadingHistory = false;
-        this.activeModal.close('save'); // Cerrar el modal indicando éxito
-      },
-      error: (err) => {
-        console.error('Error guardando historial clínico:', err);
-        this.loadingHistory = false;
-        // Manejar error
-      }
-    });
+    if (this.selectedHistory?.id) {
+      // ✅ Actualiza la versión específica de la historia
+      this.medicalHistoryService.updateMedicalHistory(
+        this.selectedHistory.id,
+        historyData
+      ).subscribe({
+        next: () => this.activeModal.close('update'),
+        error: (err) => console.error('❌ Error actualizando historia:', err)
+      });
+    } else {
+      // sigue usando create con patientService o pásalo también a medicalHistoryService
+      this.patientService.createPatientMedicalHistory(this.patientId, historyData).subscribe({
+        next: () => this.activeModal.close('create'),
+        error: (err) => console.error(err)
+      });
+    }
   }
+
+
 
   closeModal(): void {
-    this.activeModal.dismiss('cancel'); // Cerrar el modal sin guardar
+    this.activeModal.dismiss('cancel');
   }
 
-  // Métodos para interactuar con el odontograma si lo implementas
-  // toggleToothStatus(toothId: string, surface: string) { ... }
+  exportModalToPDF(): void {
+    const modalElement = document.getElementById('modalContent');
+    if (!modalElement) return;
+
+    html2canvas(modalElement, { scale: 2 }).then(canvas => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`HistoriaClinica_${this.patientData.name}.pdf`);
+    });
+  }
 }

@@ -23,7 +23,6 @@ class MedicalAttentionController extends Controller
      */
     public function store(Request $request)
     {
-        //
         $validated = $request->validate([
             'patient_id' => 'required|exists:patients,id',
             'appointment_id' => 'required|exists:appointments,id',
@@ -34,15 +33,18 @@ class MedicalAttentionController extends Controller
         $attention = MedicalAttention::create($validated);
         $attention->treatments()->attach($validated['treatment_ids']);
 
-        // Calcular costo total
-        $totalCost = $attention->treatments->sum('cost');
+        // 1. Recargar la relación 'treatments' en el modelo $attention.
+        $attention->load('treatments');
+
+        // 2. Ahora, el cálculo del costo total funcionará correctamente.
+        $totalCost = $attention->treatments->sum('precio');
         $attention->update(['total_cost' => $totalCost]);
 
         // Guardar en historial
         MedicalHistory::create([
             'patient_id' => $attention->patient_id,
             'medical_attention_id' => $attention->id,
-            'details' => 'Atención médica registrada con tratamientos: ' . implode(', ', $attention->treatments->pluck('name')->toArray()),
+            'details' => 'Atención médica registrada con tratamientos: ' . implode(', ', $attention->treatments->pluck('nombre')->toArray()),
         ]);
 
         return response()->json($attention->load(['treatments']), 201);
