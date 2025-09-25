@@ -43,6 +43,11 @@ class MedicalHistoryController extends Controller
                 'details' => 'nullable|string',
             ]);
 
+            // Asegúrate de que patient_id coincida con el {patient} de la URL
+            //if ($validated['patient_id'] != $patient) {
+            //    return response()->json(['message' => 'El patient_id no coincide con la URL'], 422);
+            //}
+
             $validated['created_at'] = now();
             $validated['updated_at'] = now();
 

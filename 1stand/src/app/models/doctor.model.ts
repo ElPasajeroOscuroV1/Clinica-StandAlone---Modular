@@ -5,4 +5,5 @@ export interface Doctor {
     email: string;
     phone: string;
     available: boolean;
+    password?: string;
 }

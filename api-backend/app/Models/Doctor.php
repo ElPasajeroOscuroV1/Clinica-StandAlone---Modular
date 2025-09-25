@@ -19,7 +19,8 @@ class Doctor extends Model
         'specialty',
         'email',
         'phone',
-        'available'
+        'available',
+        'user_id'
     ];
 
     protected $casts = [

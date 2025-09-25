@@ -41,7 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('patients/{patient}/appointments', [AppointmentController::class, 'indexByPatient']);
     Route::get('/doctors', [DoctorController::class, 'index']); // Opcional, considera eliminar si usas apiResource
     Route::put('patients/{patient}/medical-history/{id}', [MedicalHistoryController::class, 'update']);
-
+    Route::post('patients/{patient}/medical-history', [MedicalHistoryController::class, 'store']);
     // Rutas para MedicalHistory
     Route::get('/medical-histories', [MedicalHistoryController::class, 'index']);
     Route::post('/medical-histories', [MedicalHistoryController::class, 'store']);

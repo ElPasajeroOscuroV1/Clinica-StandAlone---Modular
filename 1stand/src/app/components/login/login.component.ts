@@ -112,11 +112,15 @@ export class LoginComponent implements OnInit {
     }
 
     this.apiService.login({ email: this.email, password: this.password }).subscribe({
+      
       next: (response: any) => {
+        console.log('Usuario recibido:', response.user);
+        console.log('RESPUESTA LOGIN:', response);
         if (response.status === 'success') {
           localStorage.setItem('isLoggedIn', 'true');
           localStorage.setItem('token', response.token);
           localStorage.setItem('user', JSON.stringify(response.user)); // Guardar datos del usuario si el backend los envía
+          localStorage.setItem('role', response.user.role);
           this.router.navigate(['/home']);
         } else {
           alert('Credenciales incorrectas');

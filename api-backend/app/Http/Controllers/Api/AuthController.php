@@ -29,7 +29,8 @@ class AuthController extends Controller
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => Hash::make($request->password)
+                'password' => Hash::make($request->password),
+                'role' => $request->role
             ]);
 
             // Generar token
@@ -39,7 +40,7 @@ class AuthController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Usuario registrado exitosamente',
-                'user' => $user->only(['id', 'name', 'email']),
+                'user' => $user->only(['id', 'name', 'email', 'role']),
                 'token' => $token
             ], 201);
 
@@ -76,7 +77,7 @@ class AuthController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Login exitoso',
-                'user' => $user->only(['id', 'name', 'email']),
+                'user' => $user->only(['id', 'name', 'email', 'role']),
                 'token' => $token
             ]);
         } catch (\Exception $e) {

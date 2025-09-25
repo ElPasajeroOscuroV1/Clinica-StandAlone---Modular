@@ -23,7 +23,7 @@ export class DoctorService {
   getDoctor(id: number): Observable<Doctor> {
     return this.http.get<Doctor>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
   }
-
+  /*
   createDoctor(doctor: Doctor): Observable<Doctor> {
     return this.http.post<Doctor>(this.apiUrl, doctor, { headers: this.getHeaders() });
   }
@@ -31,6 +31,16 @@ export class DoctorService {
   updateDoctor(id: number, doctor: Doctor): Observable<Doctor> {
     return this.http.put<Doctor>(`${this.apiUrl}/${id}`, doctor, { headers: this.getHeaders() });
   }
+  */
+
+  createDoctor(doctor: any): Observable<any> {
+    return this.http.post<any>(this.apiUrl, doctor, { headers: this.getHeaders() });
+  }
+  
+  updateDoctor(id: number, doctor: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, doctor, { headers: this.getHeaders() });
+  }
+  
 
   deleteDoctor(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });

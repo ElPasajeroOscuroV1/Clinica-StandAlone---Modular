@@ -1,6 +1,6 @@
 import {
   _animationsDisabled
-} from "./chunk-JYE75VW5.js";
+} from "./chunk-BKJFENNI.js";
 import {
   MatCommonModule,
   _CdkPrivateStyleLoader,
@@ -8,11 +8,11 @@ import {
   isFakeMousedownFromScreenReader,
   isFakeTouchstartFromScreenReader,
   normalizePassiveListenerOptions
-} from "./chunk-ZYIESLJV.js";
+} from "./chunk-M2Q2F5PY.js";
 import {
   Platform,
   coerceElement
-} from "./chunk-PRODL6N3.js";
+} from "./chunk-RIHJMIIE.js";
 import {
   ChangeDetectionStrategy,
   Component,
@@ -689,4 +689,4 @@ export {
   _StructuralStylesLoader,
   MatRippleModule
 };
-//# sourceMappingURL=chunk-YSN4JKEF.js.map
+//# sourceMappingURL=chunk-QNA6ABWX.js.map

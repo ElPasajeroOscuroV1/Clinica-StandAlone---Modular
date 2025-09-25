@@ -11,15 +11,33 @@
   <!-- Selección de historial -->
   <div class="mb-3 mt-2">
     <label for="historySelect" class="form-label"><strong>Seleccionar versión del historial:</strong></label>
-    <select id="historySelect" class="form-select" (change)="onHistoryChange($event)">
-      <option *ngFor="let h of patientHistories" [value]="h.id" [selected]="h.id === selectedHistory?.id">
+    <div class="d-flex gap-2">
+      <select id="historySelect" class="form-select" (change)="onHistoryChange($event)">
+        <option [selected]="!selectedHistory" value="new">➕ Nueva versión</option>
+      <option *ngFor="let h of (patientHistories || [])" [value]="h.id" [selected]="h.id === selectedHistory?.id">
         {{ h.created_at | date:'short' }} - {{ h.consultation_reason }}
       </option>
-    </select>
+      </select>
+      <button type="button" class="btn btn-outline-primary" (click)="startNewVersion()">Nueva versión</button>
+    </div>
   </div>
+
 
   <!-- Cuerpo -->
   <div class="modal-body border p-3 rounded" style="background-color: #f8f9fa;">
+    <!-- Resumen de la versión seleccionada -->
+    <div class="mb-3" *ngIf="selectedHistory">
+      <h5 style="color:#0d6efd; border-bottom:1px solid #0d6efd;">Resumen de la versión seleccionada</h5>
+      <div class="row">
+        <div class="col-md-4"><small class="text-muted">Fecha:</small> {{ selectedHistory.created_at | date:'dd/MM/yyyy HH:mm' }}</div>
+        <div class="col-md-8"><small class="text-muted">Motivo:</small> {{ selectedHistory.consultation_reason }}</div>
+      </div>
+      <div class="row mt-2">
+        <div class="col-md-6"><small class="text-muted">Alergias:</small> {{ selectedHistory.allergies || '-' }}</div>
+        <div class="col-md-6"><small class="text-muted">Medicamentos actuales:</small> {{ selectedHistory.current_medications || '-' }}</div>
+      </div>
+    </div>
+
     <!-- Datos personales -->
     <h5 style="color:#0d6efd; border-bottom:1px solid #0d6efd;">Datos Personales</h5>
     <div class="row mb-3">
@@ -96,8 +114,9 @@
 <div class="modal-footer">
   <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
   <button class="btn btn-success" (click)="exportModalToPDF()">Exportar a PDF</button>
-  <button type="submit" class="btn btn-primary" [disabled]="medicalHistoryForm.invalid || loadingHistory" (click)="saveMedicalHistory()">
-    Guardar Historial
+  <button type="submit" class="btn btn-primary" [disabled]="medicalHistoryForm.invalid || loadingHistory">
+    <span *ngIf="loadingHistory" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+    {{ loadingHistory ? 'Guardando...' : 'Guardar Historial' }}
   </button>
 </div>
 </form>

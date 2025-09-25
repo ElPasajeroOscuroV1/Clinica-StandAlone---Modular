@@ -73,6 +73,7 @@ export class AuthService {
   setSession(authResult: any) {
     localStorage.setItem('token', authResult.token);
     localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('role', authResult.user.role);
   }
 
   isLoggedIn(): boolean {

@@ -32,6 +32,7 @@ export class MedicalHistoryComponent implements OnInit {
   histories: MedicalHistory[] = [];
   loading = false;
   errorMessage: string | null = null;
+  successMessage: string | null = null;
 
   constructor(
     private historyService: MedicalHistoryService,
@@ -45,6 +46,7 @@ export class MedicalHistoryComponent implements OnInit {
   loadHistories(): void {
     this.loading = true;
     this.errorMessage = null;
+    this.successMessage = null;
 
     this.historyService.getAllMedicalHistories().subscribe({
       next: (res) => {
@@ -84,8 +86,13 @@ export class MedicalHistoryComponent implements OnInit {
     });
 
     modalRef.result.then((result) => {
-      if (result === 'save') {
+      if (result === 'save' || result === 'update') {
+        this.successMessage = 'Historial clínico actualizado correctamente.';
         this.loadHistories();
+        // Limpiar el mensaje después de 3 segundos
+        setTimeout(() => {
+          this.successMessage = null;
+        }, 3000);
       }
     }).catch(() => {});
   }

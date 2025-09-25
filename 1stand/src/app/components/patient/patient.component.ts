@@ -447,6 +447,7 @@ export class PatientComponent implements OnInit {
     // Cargar historiales del paciente
     this.patientService.getPatientMedicalHistory(this.currentPatientId).subscribe({
       next: (histories) => {
+        const list = (histories as any)?.data ?? histories ?? [];
         const modalRef = this.modalService.open(MedicalHistoryModalComponent, {
           size: 'xl',
           backdrop: 'static',
@@ -457,8 +458,8 @@ export class PatientComponent implements OnInit {
         // Pasar datos al modal
         modalRef.componentInstance.patientId = this.currentPatientId;
         modalRef.componentInstance.patientData = this.patientForm.value;
-        modalRef.componentInstance.patientHistories = histories; // ⚡ Aquí cargamos los historiales
-        modalRef.componentInstance.selectedHistory = histories.length ? histories[0] : null;
+        modalRef.componentInstance.patientHistories = Array.isArray(list) ? list : [];
+        modalRef.componentInstance.selectedHistory = Array.isArray(list) && list.length ? list[0] : null;
 
         // Detectar cuando se cierre el modal
         modalRef.result.then((result: any) => {
@@ -483,17 +484,38 @@ export class PatientComponent implements OnInit {
 
 
   openMedicalHistoryFor(patient: Patient): void {
-    const ref = this.modalService.open(MedicalHistoryModalComponent, { size: 'xl', backdrop: 'static' });
-    ref.componentInstance.patientId = patient.id;
-    ref.componentInstance.patientData = {
-      name: patient.name,
-      email: patient.email,
-      ci: patient.ci
-    };
+    // Cargar historiales del paciente antes de abrir el modal (para mostrar versiones)
+    this.patientService.getPatientMedicalHistory(patient.id!).subscribe({
+      next: (res) => {
+        const list = (res as any)?.data ?? res ?? [];
 
-    ref.closed.subscribe((reason) => {
-      if (reason === 'save') {
-        this.loadPatients();
+        const ref = this.modalService.open(MedicalHistoryModalComponent, { size: 'xl', backdrop: 'static' });
+        ref.componentInstance.patientId = patient.id!;
+        ref.componentInstance.patientData = {
+          name: patient.name,
+          email: patient.email,
+          ci: patient.ci
+        };
+        ref.componentInstance.patientHistories = Array.isArray(list) ? list : [];
+        ref.componentInstance.selectedHistory = Array.isArray(list) && list.length ? list[0] : null;
+
+        ref.closed.subscribe((reason) => {
+          if (reason === 'save' || reason === 'create' || reason === 'update') {
+            this.loadPatients();
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Error cargando historiales del paciente:', err);
+        const ref = this.modalService.open(MedicalHistoryModalComponent, { size: 'xl', backdrop: 'static' });
+        ref.componentInstance.patientId = patient.id!;
+        ref.componentInstance.patientData = {
+          name: patient.name,
+          email: patient.email,
+          ci: patient.ci
+        };
+        ref.componentInstance.patientHistories = [];
+        ref.componentInstance.selectedHistory = null;
       }
     });
   }

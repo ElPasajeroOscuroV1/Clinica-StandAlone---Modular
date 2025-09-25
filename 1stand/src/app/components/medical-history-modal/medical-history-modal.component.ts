@@ -59,6 +59,25 @@ export class MedicalHistoryModalComponent implements OnInit {
     if (this.selectedHistory) {
       this.applyHistory(this.selectedHistory);
     }
+
+    // Fallback: si no recibimos historiales desde el componente padre, los cargamos aquí
+    if ((!this.patientHistories || this.patientHistories.length === 0) && this.patientId) {
+      this.loadingHistory = true;
+      this.patientService.getPatientMedicalHistory(this.patientId).subscribe({
+        next: (res: any) => {
+          const list = (res?.data ?? res ?? []) as any[];
+          this.patientHistories = Array.isArray(list) ? list : [];
+          this.selectedHistory = this.patientHistories.length ? this.patientHistories[0] : null;
+          if (this.selectedHistory) {
+            this.applyHistory(this.selectedHistory);
+          }
+          this.loadingHistory = false;
+        },
+        error: () => {
+          this.loadingHistory = false;
+        }
+      });
+    }
   }
 
   applyHistory(history: any) {
@@ -78,7 +97,12 @@ export class MedicalHistoryModalComponent implements OnInit {
   }
 
   onHistoryChange(event: any) {
-    const historyId = +event.target.value;
+    const value = event.target.value;
+    if (value === 'new') {
+      this.startNewVersion();
+      return;
+    }
+    const historyId = +value;
     const found = this.patientHistories.find(h => h.id === historyId);
     if (found) {
       this.applyHistory(found);
@@ -91,6 +115,8 @@ export class MedicalHistoryModalComponent implements OnInit {
       this.medicalHistoryForm.markAllAsTouched();
       return;
     }
+
+    this.loadingHistory = true;
 
     const formValues = this.medicalHistoryForm.getRawValue();
     const historyData = {
@@ -113,16 +139,46 @@ export class MedicalHistoryModalComponent implements OnInit {
         this.selectedHistory.id,
         historyData
       ).subscribe({
-        next: () => this.activeModal.close('update'),
-        error: (err) => console.error('❌ Error actualizando historia:', err)
+        next: () => {
+          this.loadingHistory = false;
+          this.activeModal.close('update');
+        },
+        error: (err) => {
+          this.loadingHistory = false;
+          console.error('❌ Error actualizando historia:', err);
+        }
       });
     } else {
-      // sigue usando create con patientService o pásalo también a medicalHistoryService
+      // Creación de nueva versión
       this.patientService.createPatientMedicalHistory(this.patientId, historyData).subscribe({
-        next: () => this.activeModal.close('create'),
-        error: (err) => console.error(err)
+        next: () => {
+          this.loadingHistory = false;
+          this.activeModal.close('create');
+        },
+        error: (err) => {
+          this.loadingHistory = false;
+          console.error(err);
+        }
       });
     }
+  }
+
+  startNewVersion(): void {
+    this.selectedHistory = null as any;
+    this.medicalHistoryForm.patchValue({
+      medicalBackground: '',
+      dentalBackground: '',
+      consultationReason: '',
+      extraoralExam: '',
+      intraoralExam: '',
+      odontogram: '',
+      treatmentsPerformed: '',
+      currentMedications: '',
+      allergies: '',
+      relevantOralHabits: ''
+    });
+    this.medicalHistoryForm.markAsPristine();
+    this.medicalHistoryForm.markAsUntouched();
   }
 
 

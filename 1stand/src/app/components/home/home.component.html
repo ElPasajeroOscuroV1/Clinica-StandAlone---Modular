@@ -14,49 +14,54 @@
 
     <!-- Tarjetas de acceso rápido -->
     <div class="quick-access-cards">
-      <div class="card">
+      <!-- Pacientes -->
+      <div class="card" *ngIf="role === 'administrador' || role === 'recepcionista'">
         <h3>Pacientes</h3>
         <p>Gestionar pacientes</p>
         <button routerLink="/patient">Ver Pacientes</button>
       </div>
 
-      <div class="card">
+      <!-- Citas -->
+      <div class="card" *ngIf="role === 'administrador' || role === 'recepcionista'">
         <h3>Citas</h3>
         <p>Administrar citas</p>
         <button routerLink="/appointment">Ver Citas</button>
       </div>
 
-      <div class="card">
+      <!-- Médicos -->
+      <div class="card" *ngIf="role === 'administrador'">
         <h3>Médicos</h3>
         <p>Gestionar médicos</p>
         <button routerLink="/doctor">Ver Médicos</button>
       </div>
 
-      <div class="card">
+      <!-- Historias Clínicas -->
+      <div class="card" *ngIf="role === 'administrador' || role === 'doctor'">
         <h3>Historias Clínicas</h3>
         <p>Acceder a historias</p>
         <button routerLink="/medical-history">Ver Historias</button>
       </div>
 
-      <div class="card">
+      <!-- Pagos -->
+      <div class="card" *ngIf="role === 'administrador' || role === 'recepcionista'">
         <h3>Pagos</h3>
         <p>Control de pagos</p>
         <button routerLink="/payment">Ver Pagos</button>
       </div>
 
-      <div class="card">
+      <!-- Tratamientos -->
+      <div class="card" *ngIf="role === 'administrador'">
         <h3>Tratamientos</h3>
         <p>Gestionar tratamientos</p>
         <button routerLink="/treatment">Ver Tratamientos</button>
       </div>
 
-      <!-- Nueva tarjeta para Atención Médica -->
-      <div class="card">
+      <!-- Atención Médica -->
+      <div class="card" *ngIf="role === 'administrador' || role === 'doctor'">
         <h3>Atención Médica</h3>
         <p>Gestionar atenciones médicas</p>
         <button routerLink="/medical-attention">Ver Atenciones</button>
       </div>
-    </div>
 
     <!-- Sección de estadísticas -->
     <div class="statistics-section">

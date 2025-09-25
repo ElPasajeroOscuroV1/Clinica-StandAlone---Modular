@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Doctor;
-
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class DoctorController extends Controller
 {
@@ -23,17 +24,39 @@ class DoctorController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // 1️⃣ Crear el usuario
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'specialty' => 'required|string|max:255',
-            'email' => 'required|email|unique:doctors',
+            'email' => 'required|email|unique:users',
             'phone' => 'required|string|max:20',
-            'available' => 'boolean'
+            'available' => 'boolean',
+            'password' => 'required|string|min:6'
         ]);
 
-        $doctor = Doctor::create($validatedData);
-        return response()->json($doctor, 201);
+        $user = User::create([
+            'name' => $validatedData['name'],
+            'email' => $validatedData['email'],
+            'password' => Hash::make($validatedData['password']),
+            'role' => 'doctor'
+        ]);
+
+        // 2️⃣ Crear el doctor y vincularlo con el usuario
+        $doctor = Doctor::create([
+            'name' => $validatedData['name'],
+            'specialty' => $validatedData['specialty'],
+            'email' => $validatedData['email'],
+            'phone' => $validatedData['phone'],
+            'available' => $validatedData['available'] ?? true,
+            'user_id' => $user->id
+        ]);
+
+        return response()->json([
+            'doctor' => $doctor,
+            'user' => $user
+        ], 201);
+        //$doctor = Doctor::create($validatedData);
+        //return response()->json($doctor, 201);
     }
 
     /**

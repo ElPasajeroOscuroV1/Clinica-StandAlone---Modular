@@ -26,7 +26,8 @@ export class DoctorComponent implements OnInit {
       specialty: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       phone: ['', Validators.required],
-      available: [true]
+      available: [true],
+      password: ['', Validators.required]
     });
   }
 

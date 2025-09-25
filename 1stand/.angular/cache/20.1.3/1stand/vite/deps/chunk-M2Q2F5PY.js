@@ -2,10 +2,10 @@ import {
   Platform,
   coerceElement,
   coerceNumberProperty
-} from "./chunk-PRODL6N3.js";
+} from "./chunk-RIHJMIIE.js";
 import {
   BidiModule
-} from "./chunk-C4XF3WMH.js";
+} from "./chunk-OUAW4FCQ.js";
 import {
   APP_ID,
   ApplicationRef,
@@ -3177,4 +3177,4 @@ export {
   removeAriaReferencedId,
   MatCommonModule
 };
-//# sourceMappingURL=chunk-ZYIESLJV.js.map
+//# sourceMappingURL=chunk-M2Q2F5PY.js.map

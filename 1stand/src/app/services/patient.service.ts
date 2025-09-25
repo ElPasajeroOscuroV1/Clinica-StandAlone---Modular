@@ -76,7 +76,8 @@ export class PatientService {
 
   // Nuevo método para obtener el historial clínico de un paciente
   getPatientMedicalHistory(patientId: number): Observable<any> { // Ajusta el tipo de retorno si lo conoces
-    return this.http.get(`${this.apiUrl}/${patientId}/medical-history`, {
+    // Usamos el endpoint que devuelve TODAS las versiones del historial (array)
+    return this.http.get(`${this.apiUrl}/${patientId}/medical-histories`, {
       headers: this.getHeaders()
     }).pipe(
       catchError(this.handleError) // Añade esto
@@ -132,7 +133,13 @@ export class PatientService {
 
   // Crear historial nuevo
   createPatientMedicalHistory(patientId: number, data: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${patientId}/medical-history`, data);
+      // Opción B: usar endpoint global /medical-histories y enviar patient_id en el body
+      const payload = { ...data, patient_id: patientId };
+      return this.http.post(`${this.baseUrl}/api/medical-histories`, payload, {
+          headers: this.getHeaders()
+      }).pipe(
+          catchError(this.handleError)
+      );
   }
   /*
   // Editar historial existente
@@ -148,11 +155,14 @@ export class PatientService {
   }
   */
   updatePatientMedicalHistory(patientId: number, historyId: number, historyData: any): Observable<any> {
-    // Llamamos a la ruta que actualiza un historial específico
+    // Opción B: actualizar vía /medical-histories/{id} incluyendo patient_id requerido por backend
+    const payload = { ...historyData, patient_id: patientId };
     return this.http.put(
-      `http://localhost:8000/api/patients/${patientId}/medical-history/${historyId}`,
-      historyData,
+      `${this.baseUrl}/api/medical-histories/${historyId}`,
+      payload,
       { headers: this.getHeaders() }
+    ).pipe(
+      catchError(this.handleError)
     );
   }
 
