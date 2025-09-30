@@ -106,13 +106,22 @@ export class MedicalHistoryComponent implements OnInit {
           medical_attention_id: history.medical_attention_id || null
         };
         
-        // Obtener información del doctor si hay medical_attention_id
+        // Obtener información del doctor y appointment_id si hay medical_attention_id
         if (history.medical_attention_id) {
           console.log('🔍 Obteniendo información del doctor para medical_attention_id:', history.medical_attention_id);
           this.medicalAttentionService.getMedicalAttention(history.medical_attention_id).subscribe({
             next: (attention: any) => {
               console.log('📋 Atención médica obtenida:', attention);
               let doctorId: number | null = null;
+              
+              // Actualizar selectedHistory con el appointment_id correcto
+              if (attention.appointment_id) {
+                modalRef.componentInstance.selectedHistory = {
+                  ...modalRef.componentInstance.selectedHistory,
+                  appointment_id: attention.appointment_id
+                };
+                console.log('📅 Appointment ID actualizado en selectedHistory:', attention.appointment_id);
+              }
               
               // Intentar obtener doctor_id de diferentes fuentes
               if (attention.appointment?.doctor_id) {

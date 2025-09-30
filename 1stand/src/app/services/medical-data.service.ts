@@ -27,18 +27,21 @@ export class MedicalDataService {
   updateMedicalAttentionFromHistory(updatedHistory: any) {
     const currentAttentions = this.medicalAttentionsSource.getValue();
     const updatedAttentions = currentAttentions.map(attention => {
-      if (attention.medical_history_id === updatedHistory.id) {
+      // Buscar por medical_attention_id en lugar de medical_history_id
+      if (updatedHistory.medical_attention_id && attention.id === updatedHistory.medical_attention_id) {
+        console.log('🔄 Sincronizando atención médica ID:', attention.id, 'con historia ID:', updatedHistory.id);
         return {
           ...attention,
           diagnosis: updatedHistory.diagnosis ?? attention.diagnosis,
           preEnrollment: updatedHistory.pre_enrollment ?? attention.preEnrollment,
           otherTreatments: updatedHistory.other_treatments ?? attention.otherTreatments,
+          medical_history_id: updatedHistory.id, // Actualizar la referencia al ID de la historia
           // Asegúrate de que otros campos relevantes de MedicalAttention se actualicen aquí
         };
       }
       return attention;
     });
     this.medicalAttentionsSource.next(updatedAttentions);
-    console.log('MedicalDataService: Atención médica actualizada desde historial y notificada.');
+    console.log('MedicalDataService: Atención médica actualizada desde historial y notificada.', updatedAttentions);
   }
 }

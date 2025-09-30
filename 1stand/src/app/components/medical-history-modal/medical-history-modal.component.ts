@@ -430,21 +430,25 @@ export class MedicalHistoryModalComponent implements OnInit, OnChanges {
         details: formValues.details || ''
       };
     
-      const isUpdate = !!this.selectedHistory?.id;
-    
-      const save$ = isUpdate
-        ? this.medicalHistoryService.updateMedicalHistory(this.selectedHistory.id, historyData)
-        : this.medicalHistoryService.createMedicalHistory(this.patientId, historyData);
-    
-      save$.pipe(
-        switchMap((response) => {
-          // Si es una creación, la respuesta contendrá el ID de la nueva historia
-          if (!isUpdate && response && response.data) {
-            historyData.id = response.data.id; // Asignar el ID de la historia recién creada
-          }
-          return this.updateMedicalAttentionFromHistory$(historyData);
-        })
-      ).subscribe({
+    const isUpdate = !!this.selectedHistory?.id;
+  
+    const save$ = isUpdate
+      ? this.medicalHistoryService.updateMedicalHistory(this.selectedHistory.id, historyData)
+      : this.medicalHistoryService.createMedicalHistory(this.patientId, historyData);
+  
+    save$.pipe(
+      switchMap((response) => {
+        // Si es una creación, la respuesta contendrá el ID de la nueva historia
+        if (!isUpdate && response && response.data) {
+          historyData.id = response.data.id; // Asignar el ID de la historia recién creada
+        }
+        console.log('💾 Historia guardada, procediendo a sincronizar atención médica...');
+        console.log('📋 Datos a sincronizar:', historyData);
+        console.log('🆔 Medical Attention ID:', historyData.medical_attention_id);
+        console.log('📅 Appointment ID:', historyData.appointment_id);
+        return this.updateMedicalAttentionFromHistory$(historyData);
+      })
+    ).subscribe({
         next: () => {
           this.loadingHistory = false;
           this.medicalDataService.updateMedicalAttentionFromHistory(historyData); // Notificar a MedicalDataService
@@ -487,26 +491,40 @@ export class MedicalHistoryModalComponent implements OnInit, OnChanges {
 
 // Agrega este helper:
   private updateMedicalAttentionFromHistory$(historyData: any) {
-    if (!historyData.medical_attention_id || !this.selectedHistory?.appointment_id) {
+    // Obtener appointment_id desde historyData o selectedHistory
+    const appointmentId = historyData.appointment_id || this.selectedHistory?.appointment_id;
+    
+    if (!historyData.medical_attention_id || !appointmentId) {
+      console.log('⚠️ No se puede sincronizar atención médica:');
+      console.log('  - medical_attention_id:', historyData.medical_attention_id);
+      console.log('  - appointment_id:', appointmentId);
       return of(null); // nada que sincronizar
     }
+    
     const treatmentIds = Array.isArray(historyData.treatments_performed)
       ? historyData.treatments_performed
           .map((name: string) => this.availableTreatments.find(t => t.nombre === name)?.id ?? null)
           .filter((id: number|null) => id != null)
       : [];
 
-    if (treatmentIds.length === 0) return of(null);
+    if (treatmentIds.length === 0) {
+      console.log('⚠️ No hay tratamientos para sincronizar');
+      return of(null);
+    }
 
     const attentionUpdateData: any = {
       patient_id: this.patientId,
-      appointment_id: this.selectedHistory.appointment_id,
+      appointment_id: appointmentId,
       diagnosis: historyData.diagnosis,
       pre_enrollment: historyData.pre_enrollment,
       other_treatments: historyData.other_treatments,
       treatment_ids: treatmentIds,
       medical_history_id: historyData.id // Incluir el ID de la historia médica
     };
+    
+    console.log('✅ Sincronizando atención médica con ID:', historyData.medical_attention_id);
+    console.log('📋 Datos de sincronización:', attentionUpdateData);
+    
     return this.medicalAttentionService.updateMedicalAttention(historyData.medical_attention_id, attentionUpdateData);
   }
   

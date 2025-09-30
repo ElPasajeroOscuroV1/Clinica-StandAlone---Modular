@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Doctor; // <-- Importar el modelo Doctor
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log; // <-- Importar el facade Log
 
 class AuthController extends Controller
 {
@@ -33,6 +35,23 @@ class AuthController extends Controller
                 'role' => $request->role
             ]);
 
+            // Si el rol es 'doctor', crear un registro en la tabla de doctores
+            if ($request->role === 'doctor') {
+                $doctor = new Doctor();
+                $doctor->name = $user->name;
+                $doctor->email = $user->email;
+                $doctor->user_id = $user->id;
+                // Asignar valores por defecto para campos no proporcionados en el registro
+                $doctor->specialty = 'General'; // O un valor por defecto apropiado
+                // Asegurarse de que phone sea un string o null, y que la columna en la BD sea nullable
+                $doctor->phone = is_string($request->phone) ? $request->phone : null;
+                $doctor->available = true; // Por defecto, el doctor está disponible
+                $doctor->save();
+
+                // Opcional: puedes querer asociar el doctor al usuario si la relación está definida
+                // $user->doctor()->save($doctor); // Si la relación hasOne está configurada correctamente
+            }
+
             // Generar token
             $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -45,10 +64,17 @@ class AuthController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
+            // Log the error for debugging purposes
+            Log::error('Error during registration process', [
+                'message' => $e->getMessage(),
+                'user_input' => $request->all(),
+                'exception_details' => $e // Log the full exception object if possible
+            ]);
+
             return response()->json([
                 'status' => 'error',
                 'message' => 'Error en el registro',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage() // Expose the error message to the client for debugging
             ], 400);
         }
     }

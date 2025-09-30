@@ -38,36 +38,29 @@ export class MedicalAttentionService {
     return this.http.get<Treatment[]>(`${this.baseUrl}/treatments`, { headers: this.getAuthHeaders() });
   }
 
-  //getMedicalAttentions(): Observable<MedicalAttention[]> {
-  //  return this.http.get<MedicalAttention[]>(`${this.baseUrl}/medical-attentions`, { headers: this.getAuthHeaders() });
-  //}
-  /*
-  getMedicalAttentions(): Observable<MedicalAttention[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/medical-attentions`).pipe(
-      map(data =>
-        data.map(att => ({
-          ...att,
-          diagnosis: att.diagnosis || att.diagnostico || '',
-          preEnrollment: att.pre_enrollment,
-          otherTreatments: att.other_treatments,
-        }))
-      )
-    );
-  }
-  */
   getMedicalAttentions(): Observable<MedicalAttention[]> {
     return this.http.get<any[]>(`${this.baseUrl}/medical-attentions`, { headers: this.getAuthHeaders() }).pipe(
       map(data =>
         data.map(att => {
           const mh = (att as any).medicalHistory;
+          // Ensure appointment is mapped correctly
+          const appointmentData = att.appointment || null; // Directly use the appointment data from the response
+
           return {
             ...att,
             // Lógica de sincronización: Prioriza los datos de la historia médica si existen.
             diagnosis: mh?.diagnosis ?? att.diagnosis ?? '',
-            preEnrollment: mh?.pre_enrollment ?? att.pre_enrollment ?? '',
-            otherTreatments: mh?.other_treatments ?? att.other_treatments ?? [],
+            preEnrollment: mh?.pre_enrollment ?? att.preEnrollment ?? '',
+            otherTreatments: mh?.other_treatments ?? att.otherTreatments ?? [],
             // Los tratamientos de la atención son la fuente principal
             treatments: att.treatments,
+            // Map the appointment data
+            appointment: appointmentData ? {
+              id: appointmentData.id,
+              date: appointmentData.date,
+              time: appointmentData.time,
+              doctor_id: appointmentData.doctor_id // Ensure doctor_id is mapped
+            } : undefined // Set to undefined if no appointment data
           };
         })
       )
@@ -78,9 +71,6 @@ export class MedicalAttentionService {
     return this.http.get<MedicalAttention>(`${this.baseUrl}/medical-attentions/${id}`, { headers: this.getAuthHeaders() });
   }
 
-  //createMedicalAttention(data: MedicalAttention): Observable<MedicalAttention> {
-  //  return this.http.post<MedicalAttention>(`${this.baseUrl}/medical-attentions`, data, { headers: this.getAuthHeaders() });
-  //}
   createMedicalAttention(attention: MedicalAttention) {
     const payload = {
       ...attention,
