@@ -24,11 +24,11 @@ class MedicalHistoryController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function store(Request $request, $patientId)
     {
         try {
             $validated = $request->validate([
-                'patient_id' => 'required|exists:patients,id',
+                'patient_id' => 'required|exists:patients,id|in:' . $patientId, // Valida que coincida con la URL
                 'consultation_reason' => 'required|string',
                 'allergies' => 'nullable|string',
                 'medical_background' => 'nullable|string',
@@ -36,23 +36,30 @@ class MedicalHistoryController extends Controller
                 'extraoral_exam' => 'nullable|string',
                 'intraoral_exam' => 'nullable|string',
                 'odontogram' => 'nullable|string',
-                'treatments_performed' => 'nullable|string',
+                'treatments_performed' => 'nullable|array', // Permitir array
                 'current_medications' => 'nullable|string',
                 'relevant_oral_habits' => 'nullable|string',
                 'medical_attention_id' => 'nullable|exists:medical_attentions,id',
                 'details' => 'nullable|string',
+                'diagnosis' => 'nullable|string', // Añadido para consistencia
+                'pre_enrollment' => 'nullable|string', // Añadido para consistencia
+                'other_treatments' => 'nullable|array', // Añadido para consistencia
+                'other_treatments.*.name' => 'required_with:other_treatments|string',
+                'other_treatments.*.price' => 'required_with:other_treatments|numeric',
             ]);
-
-            // Asegúrate de que patient_id coincida con el {patient} de la URL
-            //if ($validated['patient_id'] != $patient) {
-            //    return response()->json(['message' => 'El patient_id no coincide con la URL'], 422);
-            //}
 
             $validated['created_at'] = now();
             $validated['updated_at'] = now();
 
+            // Convertir treatments_performed a string si es array
+            if (is_array($validated['treatments_performed'])) {
+                $validated['treatments_performed'] = implode(',', $validated['treatments_performed']);
+            }
+
             $history = MedicalHistory::create($validated);
-            return response()->json(['data' => $history], 201);
+            return response()->json(['data' => $history->load(['patient', 'medicalAttention'])], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['message' => 'Error de validación', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al crear historial', 'error' => $e->getMessage()], 500);
         }
@@ -61,6 +68,10 @@ class MedicalHistoryController extends Controller
     public function getByPatient($patientId)
     {
         try {
+            if (!Auth::check()) {
+                return response()->json(['message' => 'No autorizado'], 401);
+            }
+
             $histories = MedicalHistory::where('patient_id', $patientId)
                 ->with(['patient', 'medicalAttention'])
                 ->orderBy('created_at', 'desc')
@@ -94,17 +105,29 @@ class MedicalHistoryController extends Controller
                 'extraoral_exam' => 'nullable|string',
                 'intraoral_exam' => 'nullable|string',
                 'odontogram' => 'nullable|string',
-                'treatments_performed' => 'nullable|string',
+                'treatments_performed' => 'nullable|array', // Permitir array
                 'current_medications' => 'nullable|string',
                 'relevant_oral_habits' => 'nullable|string',
                 'medical_attention_id' => 'nullable|exists:medical_attentions,id',
                 'details' => 'nullable|string',
+                'diagnosis' => 'nullable|string', // Añadido
+                'pre_enrollment' => 'nullable|string', // Añadido
+                'other_treatments' => 'nullable|array', // Añadido
+                'other_treatments.*.name' => 'required_with:other_treatments|string',
+                'other_treatments.*.price' => 'required_with:other_treatments|numeric',
             ]);
+
+            // Convertir treatments_performed a string si es array
+            if (is_array($validated['treatments_performed'])) {
+                $validated['treatments_performed'] = implode(',', $validated['treatments_performed']);
+            }
 
             $validated['updated_at'] = now();
             $history->update($validated);
 
-            return response()->json(['data' => $history], 200);
+            return response()->json(['data' => $history->load(['patient', 'medicalAttention'])], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['message' => 'Error de validación', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al actualizar historial', 'error' => $e->getMessage()], 500);
         }
@@ -123,6 +146,27 @@ class MedicalHistoryController extends Controller
             return response()->json(['message' => 'Historial eliminado'], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al eliminar historial', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getByMedicalAttentionId($medicalAttentionId)
+    {
+        try {
+            if (!Auth::check()) {
+                return response()->json(['message' => 'No autorizado'], 401);
+            }
+
+            $history = MedicalHistory::where('medical_attention_id', $medicalAttentionId)
+                ->with(['patient', 'medicalAttention'])
+                ->first();
+
+            if (!$history) {
+                return response()->json(['message' => 'No se encontró historial para esta atención médica'], 404);
+            }
+
+            return response()->json(['data' => $history], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error al obtener historial', 'error' => $e->getMessage()], 500);
         }
     }
 }

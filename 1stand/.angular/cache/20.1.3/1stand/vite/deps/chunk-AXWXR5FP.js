@@ -1,21 +1,22 @@
 import {
+  BidiModule
+} from "./chunk-OUAW4FCQ.js";
+import {
+  _CdkPrivateStyleLoader
+} from "./chunk-WRIKQYAG.js";
+import {
   Platform,
   coerceElement,
   coerceNumberProperty
 } from "./chunk-RIHJMIIE.js";
 import {
-  BidiModule
-} from "./chunk-OUAW4FCQ.js";
-import {
   APP_ID,
-  ApplicationRef,
   CSP_NONCE,
   ChangeDetectionStrategy,
   Component,
   DOCUMENT,
   Directive,
   ElementRef,
-  EnvironmentInjector,
   EventEmitter,
   Injectable,
   InjectionToken,
@@ -29,7 +30,6 @@ import {
   ViewEncapsulation,
   afterNextRender,
   booleanAttribute,
-  createComponent,
   effect,
   inject,
   isSignal,
@@ -66,55 +66,6 @@ import {
 import {
   __spreadValues
 } from "./chunk-N6ESDQJH.js";
-
-// node_modules/@angular/cdk/fesm2022/style-loader.mjs
-var appsWithLoaders = /* @__PURE__ */ new WeakMap();
-var _CdkPrivateStyleLoader = class __CdkPrivateStyleLoader {
-  _appRef;
-  _injector = inject(Injector);
-  _environmentInjector = inject(EnvironmentInjector);
-  /**
-   * Loads a set of styles.
-   * @param loader Component which will be instantiated to load the styles.
-   */
-  load(loader) {
-    const appRef = this._appRef = this._appRef || this._injector.get(ApplicationRef);
-    let data = appsWithLoaders.get(appRef);
-    if (!data) {
-      data = {
-        loaders: /* @__PURE__ */ new Set(),
-        refs: []
-      };
-      appsWithLoaders.set(appRef, data);
-      appRef.onDestroy(() => {
-        appsWithLoaders.get(appRef)?.refs.forEach((ref) => ref.destroy());
-        appsWithLoaders.delete(appRef);
-      });
-    }
-    if (!data.loaders.has(loader)) {
-      data.loaders.add(loader);
-      data.refs.push(createComponent(loader, {
-        environmentInjector: this._environmentInjector
-      }));
-    }
-  }
-  static ɵfac = function _CdkPrivateStyleLoader_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || __CdkPrivateStyleLoader)();
-  };
-  static ɵprov = ɵɵdefineInjectable({
-    token: __CdkPrivateStyleLoader,
-    factory: __CdkPrivateStyleLoader.ɵfac,
-    providedIn: "root"
-  });
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(_CdkPrivateStyleLoader, [{
-    type: Injectable,
-    args: [{
-      providedIn: "root"
-    }]
-  }], null, null);
-})();
 
 // node_modules/@angular/cdk/fesm2022/private.mjs
 var _VisuallyHiddenLoader = class __VisuallyHiddenLoader {
@@ -388,6 +339,41 @@ var ObserversModule = class _ObserversModule {
       imports: [CdkObserveContent],
       exports: [CdkObserveContent],
       providers: [MutationObserverFactory]
+    }]
+  }], null, null);
+})();
+
+// node_modules/@angular/cdk/fesm2022/id-generator.mjs
+var counters = {};
+var _IdGenerator = class __IdGenerator {
+  _appId = inject(APP_ID);
+  /**
+   * Generates a unique ID with a specific prefix.
+   * @param prefix Prefix to add to the ID.
+   */
+  getId(prefix) {
+    if (this._appId !== "ng") {
+      prefix += this._appId;
+    }
+    if (!counters.hasOwnProperty(prefix)) {
+      counters[prefix] = 0;
+    }
+    return `${prefix}${counters[prefix]++}`;
+  }
+  static ɵfac = function _IdGenerator_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || __IdGenerator)();
+  };
+  static ɵprov = ɵɵdefineInjectable({
+    token: __IdGenerator,
+    factory: __IdGenerator.ɵfac,
+    providedIn: "root"
+  });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(_IdGenerator, [{
+    type: Injectable,
+    args: [{
+      providedIn: "root"
     }]
   }], null, null);
 })();
@@ -1983,41 +1969,6 @@ var A11yModule = class _A11yModule {
   }], () => [], null);
 })();
 
-// node_modules/@angular/cdk/fesm2022/id-generator.mjs
-var counters = {};
-var _IdGenerator = class __IdGenerator {
-  _appId = inject(APP_ID);
-  /**
-   * Generates a unique ID with a specific prefix.
-   * @param prefix Prefix to add to the ID.
-   */
-  getId(prefix) {
-    if (this._appId !== "ng") {
-      prefix += this._appId;
-    }
-    if (!counters.hasOwnProperty(prefix)) {
-      counters[prefix] = 0;
-    }
-    return `${prefix}${counters[prefix]++}`;
-  }
-  static ɵfac = function _IdGenerator_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || __IdGenerator)();
-  };
-  static ɵprov = ɵɵdefineInjectable({
-    token: __IdGenerator,
-    factory: __IdGenerator.ɵfac,
-    providedIn: "root"
-  });
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(_IdGenerator, [{
-    type: Injectable,
-    args: [{
-      providedIn: "root"
-    }]
-  }], null, null);
-})();
-
 // node_modules/@angular/cdk/fesm2022/typeahead.mjs
 var DEFAULT_TYPEAHEAD_DEBOUNCE_INTERVAL_MS = 200;
 var Typeahead = class {
@@ -3161,7 +3112,6 @@ export {
   _getEventTarget,
   normalizePassiveListenerOptions,
   FocusMonitor,
-  _CdkPrivateStyleLoader,
   _VisuallyHiddenLoader,
   coerceArray,
   MediaMatcher,
@@ -3175,6 +3125,7 @@ export {
   ActiveDescendantKeyManager,
   addAriaReferencedId,
   removeAriaReferencedId,
+  MATERIAL_SANITY_CHECKS,
   MatCommonModule
 };
-//# sourceMappingURL=chunk-M2Q2F5PY.js.map
+//# sourceMappingURL=chunk-AXWXR5FP.js.map

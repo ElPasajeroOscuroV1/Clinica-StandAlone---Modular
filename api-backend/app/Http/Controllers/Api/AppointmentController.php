@@ -169,4 +169,13 @@ class AppointmentController extends Controller
 
         return response()->json($appointments);
     }
+
+    public function appointmentsByDoctorPatient(Request $request, $patientId)
+    {
+        $doctorId = $request->user()->doctor_id;
+        return Appointment::where('patient_id', $patientId)
+            ->where('doctor_id', $doctorId)
+            ->get();
+    }
+
 }

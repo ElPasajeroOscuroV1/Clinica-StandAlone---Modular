@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\hasMany;
 use App\Models\Appointment;
 use App\Models\Patient;
 use App\Models\MedicalAttention;
+use App\Models\User;
 
 class Doctor extends Model
 {
@@ -31,4 +32,10 @@ class Doctor extends Model
     {
         return $this->hasMany(Appointment::class);
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
 }

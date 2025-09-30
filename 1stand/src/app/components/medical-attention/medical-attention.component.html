@@ -1,79 +1,200 @@
 <form [formGroup]="form" (ngSubmit)="onSubmit()">
-  <h2>Atencion medica</h2>
-  <h3>Registro de atencion</h3>
-  <mat-form-field>
+  <h2>Atención Médica</h2>
+  <h3>Registro de Atención</h3>
+
+  <!-- Selección de Paciente -->
+  <mat-form-field appearance="fill" class="full-width">
     <mat-label>Paciente</mat-label>
     <mat-select formControlName="patient_id" (selectionChange)="onPatientChange()">
-      <mat-option *ngFor="let patient of patients" [value]="patient.id">{{ patient.name }}</mat-option>
+      <mat-option *ngFor="let patient of patients" [value]="patient.id">
+        {{ patient.name }}
+      </mat-option>
     </mat-select>
+    
   </mat-form-field>
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="openMedicalHistoryModal(form.value.patient_id, form.value.appointment_id, form.value)">
+      Ver/Editar Historia Médica
+    </button>
 
-  <mat-form-field>
+  <!-- Selección de Cita -->
+  <mat-form-field appearance="fill" class="full-width">
     <mat-label>Cita Médica</mat-label>
     <mat-select formControlName="appointment_id">
       <mat-option *ngFor="let app of appointments" [value]="app.id">
-        {{ app.date }} {{ app.time }} - {{ getDoctorName(app.id) }}
+        {{ app.date }} {{ app.time }} - {{ getDoctorNameByAppointment(app) }}
       </mat-option>
     </mat-select>
   </mat-form-field>
 
-  <mat-form-field>
+
+  <!-- Diagnóstico -->
+  <mat-form-field appearance="fill" class="full-width">
+    <mat-label>Diagnóstico</mat-label>
+    <textarea matInput formControlName="diagnosis" placeholder="Ingrese el diagnóstico"></textarea>
+  </mat-form-field>
+
+  <!-- Selección de Tratamientos -->
+  <mat-form-field appearance="fill" class="full-width">
     <mat-label>Tratamientos</mat-label>
     <mat-select formControlName="treatment_ids" multiple>
-      <mat-option *ngFor="let treat of treatments" [value]="treat.id">{{ treat.nombre }} ({{ treat.precio }} USD)</mat-option>
+      <mat-option *ngFor="let treat of treatments" [value]="treat.id">
+        {{ treat.nombre }} ({{ treat.precio }} BS)
+      </mat-option>
     </mat-select>
   </mat-form-field>
 
-  <button type="submit" mat-raised-button color="primary">
-    {{ editingAttention ? 'Actualizar Atención' : 'Guardar Atención' }}
-  </button>
-  <button type="button" mat-raised-button (click)="resetForm()" *ngIf="editingAttention">Cancelar</button>
-</form>
-
-<h2>Lista de Atenciones Médicas</h2>
-<mat-table [dataSource]="medicalAttentions">
-  <ng-container matColumnDef="id">
-    <mat-header-cell *matHeaderCellDef>ID</mat-header-cell>
-    <mat-cell *matCellDef="let element">{{ element.id }}</mat-cell>
-  </ng-container>
-
-  <ng-container matColumnDef="patient_id">
-    <mat-header-cell *matHeaderCellDef>Paciente</mat-header-cell>
-    <mat-cell *matCellDef="let element">{{ getPatientName(element.patient_id) }}</mat-cell>
-  </ng-container>
-
-  <ng-container matColumnDef="appointment_id">
-    <mat-header-cell *matHeaderCellDef>Cita</mat-header-cell>
-    <mat-cell *matCellDef="let element">{{ getAppointmentDate(element.appointment_id) }}</mat-cell>
-  </ng-container>
-
-  <ng-container matColumnDef="doctor">
-    <mat-header-cell *matHeaderCellDef>Doctor</mat-header-cell>
-    <mat-cell *matCellDef="let element">{{ getDoctorName(element.appointment_id) }}</mat-cell>
-  </ng-container>
-
-  <ng-container matColumnDef="treatments">
-    <mat-header-cell *matHeaderCellDef>Tratamientos</mat-header-cell>
-    <mat-cell *matCellDef="let element">{{ getTreatmentNames(element) }}</mat-cell>
-  </ng-container>
-
-  <ng-container matColumnDef="total_cost">
-    <mat-header-cell *matHeaderCellDef>Costo Total</mat-header-cell>
-    <mat-cell *matCellDef="let element">{{ element.total_cost || 0 }} USD</mat-cell>
-  </ng-container>
-
-  <ng-container matColumnDef="actions">
-    <mat-header-cell *matHeaderCellDef>Acciones</mat-header-cell>
-    <mat-cell *matCellDef="let element">
-      <button mat-icon-button color="primary" (click)="editAttention(element)">
-        <mat-icon>edit</mat-icon>
-      </button>
-      <button mat-icon-button color="warn" (click)="deleteAttention(element.id)">
+  <!-- Otros tratamientos -->
+  <div formArrayName="otherTreatments">
+    <div *ngFor="let ot of otherTreatmentsFormArray.controls; let i = index" [formGroupName]="i">
+      <mat-form-field appearance="fill">
+        <mat-label>Otro tratamiento</mat-label>
+        <input matInput formControlName="name">
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Precio</mat-label>
+        <input matInput type="number" formControlName="price">
+      </mat-form-field>
+      <button mat-icon-button color="warn" type="button" (click)="removeOtherTreatment(i)">
         <mat-icon>delete</mat-icon>
       </button>
-    </mat-cell>
-  </ng-container>
+    </div>
+  </div>
 
-  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-  <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-</mat-table>
+  <div class="add-treatment-btn">
+    <button mat-raised-button color="accent" type="button" (click)="addOtherTreatment()">
+      <mat-icon>add</mat-icon>
+      Agregar otro tratamiento
+    </button>
+  </div>
+
+
+
+
+  <!-- Preinscripción -->
+  <mat-form-field appearance="fill" class="full-width">
+    <mat-label>Preinscripción</mat-label>
+    <textarea matInput formControlName="preEnrollment" placeholder="Ingrese información de preinscripción"></textarea>
+  </mat-form-field>
+
+  <!-- Botones de acción -->
+  <div class="actions">
+    <button type="submit" mat-raised-button color="primary">
+      {{ editingAttention ? 'Actualizar Atención' : 'Guardar Atención' }}
+    </button>
+    <button type="button" mat-raised-button color="warn" (click)="resetForm()" *ngIf="editingAttention">
+      Cancelar
+    </button>
+  </div>
+</form>
+
+<!-- Tabla de atenciones médicas -->
+<h2>Lista de Atenciones Médicas</h2>
+<div class="table-container">
+  <mat-table [dataSource]="medicalAttentions" class="mat-elevation-z8">
+
+    <!-- ID -->
+    <ng-container matColumnDef="id">
+      <mat-header-cell *matHeaderCellDef>ID</mat-header-cell>
+      <mat-cell *matCellDef="let element">{{ element.id }}</mat-cell>
+    </ng-container>
+
+    <!-- Paciente -->
+    <ng-container matColumnDef="patient_id">
+      <mat-header-cell *matHeaderCellDef>Paciente</mat-header-cell>
+      <mat-cell *matCellDef="let element">{{ getPatientName(element.patient_id) }}</mat-cell>
+      
+    </ng-container>
+      
+
+    <!-- Cita -->
+    <ng-container matColumnDef="appointment_id">
+      <mat-header-cell *matHeaderCellDef>Cita</mat-header-cell>
+      <mat-cell *matCellDef="let element">{{ getAppointmentDate(element.appointment_id) }}</mat-cell>
+    </ng-container>
+
+    <!-- Doctor -->
+    <ng-container matColumnDef="doctor">
+      <mat-header-cell *matHeaderCellDef>Doctor</mat-header-cell>
+      <!-- <mat-cell *matCellDef="let element">{{ getDoctorName(element.appointment_id) }}</mat-cell> -->
+      <mat-cell *matCellDef="let element">{{ getDoctorName(element) }}</mat-cell>
+    </ng-container>
+
+    <!-- Diagnóstico -->
+    <ng-container matColumnDef="diagnosis">
+      <mat-header-cell *matHeaderCellDef>Diagnóstico</mat-header-cell>
+      <mat-cell *matCellDef="let element">{{ element.diagnosis || 'Sin diagnóstico' }}</mat-cell>
+    </ng-container>
+
+    <!-- Tratamientos -->
+    <ng-container matColumnDef="treatments">
+      <mat-header-cell *matHeaderCellDef>Tratamientos</mat-header-cell>
+      <mat-cell *matCellDef="let element">
+        <ng-container *ngIf="element.treatments && element.treatments.length > 0; else noTreatments">
+          <ul style="margin: 0; padding-left: 16px;">
+            <li *ngFor="let t of element.treatments">
+              {{ t.nombre }} ({{ t.precio }} BS)
+            </li>
+          </ul>
+        </ng-container>
+        <ng-template #noTreatments>Sin tratamientos</ng-template>
+      </mat-cell>
+    </ng-container>
+
+
+
+    <!-- Otros tratamientos -->
+    <ng-container matColumnDef="other_treatments">
+      <mat-header-cell *matHeaderCellDef>Otros Tratamientos</mat-header-cell>
+      <mat-cell *matCellDef="let element">
+        <ng-container *ngIf="element.other_treatments && element.other_treatments.length > 0; else noOtros">
+          <ul style="margin: 0; padding-left: 16px;">
+            <li *ngFor="let ot of element.other_treatments">
+              {{ ot.name }} ({{ ot.price }} BS)
+            </li>
+          </ul>
+        </ng-container>
+        <ng-template #noOtros>Sin otros tratamientos</ng-template>
+      </mat-cell>
+    </ng-container>
+
+    <!-- Preinscripción -->
+    <ng-container matColumnDef="pre_enrollment">
+      <mat-header-cell *matHeaderCellDef>Preinscripción</mat-header-cell>
+      <mat-cell *matCellDef="let element">
+        {{ element.pre_enrollment || 'Sin datos' }}
+      </mat-cell>
+    </ng-container>
+
+    <!-- Costo total -->
+    <ng-container matColumnDef="total_cost">
+      <mat-header-cell *matHeaderCellDef>Costo Total</mat-header-cell>
+      <mat-cell *matCellDef="let element">{{ element.total_cost || 0 }} BS</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <mat-header-cell *matHeaderCellDef>Acciones</mat-header-cell>
+      <mat-cell *matCellDef="let element">
+        <button mat-icon-button color="primary" (click)="editAttention(element)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="deleteAttention(element.id)">
+          <mat-icon>delete</mat-icon>
+        </button>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="openMedicalHistoryModal(element.patient_id, element.appointment_id, element)">
+          Ver/Editar Historia Médica
+        </button>
+
+      </mat-cell> <!-- CIERRE DEL mat-cell -->
+    </ng-container>
+
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+  </mat-table>
+</div>

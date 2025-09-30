@@ -29,7 +29,15 @@ class MedicalHistory extends Model
         'created_at',
         'updated_at',
         'medical_attention_id',
-        'details'
+        'details',
+        'diagnosis',
+        'pre_enrollment',
+        'other_treatments'
+    ];
+
+    protected $casts = [
+        'other_treatments' => 'array',
+        'treatments_performed' => 'array',
     ];
 
     public function patient()

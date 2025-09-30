@@ -42,16 +42,24 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/doctors', [DoctorController::class, 'index']); // Opcional, considera eliminar si usas apiResource
     Route::put('patients/{patient}/medical-history/{id}', [MedicalHistoryController::class, 'update']);
     Route::post('patients/{patient}/medical-history', [MedicalHistoryController::class, 'store']);
+    Route::get('patients/{patientId}/medical-histories', [MedicalHistoryController::class, 'getByPatient']);
+    Route::post('patients/{patientId}/medical-history', [MedicalHistoryController::class, 'store']);
     // Rutas para MedicalHistory
     Route::get('/medical-histories', [MedicalHistoryController::class, 'index']);
     Route::post('/medical-histories', [MedicalHistoryController::class, 'store']);
     Route::put('/medical-histories/{id}', [MedicalHistoryController::class, 'update']);
     Route::delete('/medical-histories/{id}', [MedicalHistoryController::class, 'destroy']);
     Route::get('/patients/{patient}/medical-histories', [MedicalHistoryController::class, 'getByPatient']);
+    Route::get('/medical-histories/by-attention/{medicalAttentionId}', [MedicalHistoryController::class, 'getByMedicalAttentionId']);
+    // Rutas para Doctor
+    //Route::get('/doctor/patients', [DoctorController::class, 'patientsByDoctor']);
+    Route::get('/doctor/patients', [DoctorController::class, 'getPatientsByDoctor']);
+    Route::get('/doctor/patients/{patient}/appointments', [DoctorController::class, 'appointmentsByDoctorPatient']);
+
 });
 
 // END POINTS MOVIL
-Route::prefix('mobile')->group(function () {
-    Route::post('/verify-patient', [MobileController::class, 'verifyPatient']);
-    Route::post('/queue-ticket', [MobileController::class, 'generateQueueTicket']);
-});
+//Route::prefix('mobile')->group(function () {
+//    Route::post('/verify-patient', [MobileController::class, 'verifyPatient']);
+//    Route::post('/queue-ticket', [MobileController::class, 'generateQueueTicket']);
+//});

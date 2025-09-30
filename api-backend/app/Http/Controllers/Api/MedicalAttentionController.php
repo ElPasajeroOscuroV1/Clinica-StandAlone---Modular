@@ -12,10 +12,22 @@ class MedicalAttentionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
-        return MedicalAttention::with(['patient', 'appointment', 'treatments'])->get();
+        // Obtener el doctor_id del usuario logueado (asumiendo relación en User)
+        $doctorId = $request->user()->doctor_id ?? null;
+
+        $query = MedicalAttention::with(['patient', 'appointment', 'treatments']);
+
+        // Si hay doctor_id, filtramos solo las atenciones de ese doctor
+        if ($doctorId) {
+            $query->whereHas('appointment', function ($q) use ($doctorId) {
+                $q->where('doctor_id', $doctorId);
+            });
+        }
+
+        // Traer todo, incluyendo diagnosis
+        return $query->get(['id', 'patient_id', 'appointment_id', 'diagnosis', 'other_treatments', 'pre_enrollment', 'total_cost']);
     }
 
     /**
@@ -28,22 +40,45 @@ class MedicalAttentionController extends Controller
             'appointment_id' => 'required|exists:appointments,id',
             'treatment_ids' => 'required|array',
             'treatment_ids.*' => 'exists:treatments,id',
+            'diagnosis' => 'nullable|string',
+            'other_treatments' => 'nullable|array',
+            'other_treatments.*.name' => 'required_with:other_treatments|string',
+            'other_treatments.*.price' => 'required_with:other_treatments|numeric',
+            //'pre_enrollment' => 'boolean',
+            'pre_enrollment' => 'nullable|string',
         ]);
 
-        $attention = MedicalAttention::create($validated);
+        //$attention = MedicalAttention::create($validated);
+        $attention = MedicalAttention::create([
+            'patient_id' => $validated['patient_id'],
+            'appointment_id' => $validated['appointment_id'],
+            'diagnosis' => $validated['diagnosis'] ?? null,
+            'other_treatments' => $validated['other_treatments'] ?? [],
+            //'pre_enrollment' => $validated['pre_enrollment'] ?? false,
+            'pre_enrollment' => $validated['pre_enrollment'] ?? null,
+        ]);
+
         $attention->treatments()->attach($validated['treatment_ids']);
 
         // 1. Recargar la relación 'treatments' en el modelo $attention.
         $attention->load('treatments');
 
         // 2. Ahora, el cálculo del costo total funcionará correctamente.
-        $totalCost = $attention->treatments->sum('precio');
+        //$totalCost = $attention->treatments->sum('precio');
+        $totalCost = $attention->treatments->sum('precio') +
+             collect($validated['other_treatments'] ?? [])->sum('price');
+
         $attention->update(['total_cost' => $totalCost]);
 
-        // Guardar en historial
+        // Guardar en historial con datos sincronizados
         MedicalHistory::create([
             'patient_id' => $attention->patient_id,
             'medical_attention_id' => $attention->id,
+            'consultation_reason' => 'Consulta médica',
+            'diagnosis' => $validated['diagnosis'] ?? '',
+            'pre_enrollment' => $validated['pre_enrollment'] ?? '',
+            'other_treatments' => $validated['other_treatments'] ?? [],
+            'treatments_performed' => $attention->treatments->pluck('nombre')->toArray(),
             'details' => 'Atención médica registrada con tratamientos: ' . implode(', ', $attention->treatments->pluck('nombre')->toArray()),
         ]);
 
@@ -73,12 +108,22 @@ class MedicalAttentionController extends Controller
                 'appointment_id' => 'required|exists:appointments,id',
                 'treatment_ids' => 'required|array|min:1', // Asegura al menos un tratamiento
                 'treatment_ids.*' => 'exists:treatments,id',
+                'diagnosis' => 'nullable|string',
+                'other_treatments' => 'nullable|array',
+                'other_treatments.*.name' => 'required_with:other_treatments|string',
+                'other_treatments.*.price' => 'required_with:other_treatments|numeric',
+                //'pre_enrollment' => 'boolean',
+                'pre_enrollment' => 'nullable|string',
             ]);
 
             // Actualizar los campos básicos
             $attention->update([
                 'patient_id' => $validated['patient_id'],
                 'appointment_id' => $validated['appointment_id'],
+                'diagnosis' => $validated['diagnosis'] ?? null,
+                'other_treatments' => $validated['other_treatments'] ?? [],
+                //'pre_enrollment' => $validated['pre_enrollment'] ?? false,
+                'pre_enrollment' => $validated['pre_enrollment'] ?? null,
             ]);
 
             // Sincronizar tratamientos (reemplaza los existentes)
@@ -88,14 +133,20 @@ class MedicalAttentionController extends Controller
             $attention->load('treatments');
 
             // Recalcular costo total (asumiendo que 'cost' o 'precio' existe en Treatment)
-            $totalCost = $attention->treatments->sum('precio'); // Cambié 'cost' a 'precio' basado en tus datos de tratamientos
+            //$totalCost = $attention->treatments->sum('precio'); // Cambié 'cost' a 'precio' basado en tus datos de tratamientos
+            $totalCost = $attention->treatments->sum('precio') +
+                collect($validated['other_treatments'] ?? [])->sum('price');
             $attention->update(['total_cost' => $totalCost]);
 
-            // Actualizar historial médico
+            // Actualizar historial médico con datos sincronizados
             $attention->medicalHistory()->updateOrCreate(
                 ['medical_attention_id' => $attention->id],
                 [
                     'patient_id' => $attention->patient_id,
+                    'diagnosis' => $validated['diagnosis'] ?? '',
+                    'pre_enrollment' => $validated['pre_enrollment'] ?? '',
+                    'other_treatments' => $validated['other_treatments'] ?? [],
+                    'treatments_performed' => $attention->treatments->pluck('nombre')->toArray(),
                     'details' => 'Atención médica actualizada con tratamientos: ' . implode(', ', $attention->treatments->pluck('nombre')->toArray())
                 ]
             );

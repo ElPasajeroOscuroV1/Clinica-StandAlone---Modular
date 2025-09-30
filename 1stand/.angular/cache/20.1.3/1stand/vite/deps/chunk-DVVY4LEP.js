@@ -1,6 +1,6 @@
 import {
   MediaMatcher
-} from "./chunk-M2Q2F5PY.js";
+} from "./chunk-AXWXR5FP.js";
 import {
   ANIMATION_MODULE_TYPE,
   InjectionToken,
@@ -30,6 +30,17 @@ var LayoutModule = class _LayoutModule {
 
 // node_modules/@angular/material/fesm2022/animation.mjs
 var MATERIAL_ANIMATIONS = new InjectionToken("MATERIAL_ANIMATIONS");
+var AnimationCurves = class {
+  static STANDARD_CURVE = "cubic-bezier(0.4,0.0,0.2,1)";
+  static DECELERATION_CURVE = "cubic-bezier(0.0,0.0,0.2,1)";
+  static ACCELERATION_CURVE = "cubic-bezier(0.4,0.0,1,1)";
+  static SHARP_CURVE = "cubic-bezier(0.4,0.0,0.6,1)";
+};
+var AnimationDurations = class {
+  static COMPLEX = "375ms";
+  static ENTERING = "225ms";
+  static EXITING = "195ms";
+};
 var reducedMotion = null;
 function _getAnimationsState() {
   if (inject(MATERIAL_ANIMATIONS, { optional: true })?.animationsDisabled || inject(ANIMATION_MODULE_TYPE, { optional: true }) === "NoopAnimations") {
@@ -55,6 +66,10 @@ function _isTestEnvironment() {
 
 export {
   _isTestEnvironment,
+  MATERIAL_ANIMATIONS,
+  AnimationCurves,
+  AnimationDurations,
+  _getAnimationsState,
   _animationsDisabled
 };
-//# sourceMappingURL=chunk-BKJFENNI.js.map
+//# sourceMappingURL=chunk-DVVY4LEP.js.map

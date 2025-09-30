@@ -1,14 +1,15 @@
 import {
   _animationsDisabled
-} from "./chunk-BKJFENNI.js";
+} from "./chunk-DVVY4LEP.js";
 import {
-  MatCommonModule,
-  _CdkPrivateStyleLoader,
   _getEventTarget,
   isFakeMousedownFromScreenReader,
   isFakeTouchstartFromScreenReader,
   normalizePassiveListenerOptions
-} from "./chunk-M2Q2F5PY.js";
+} from "./chunk-AXWXR5FP.js";
+import {
+  _CdkPrivateStyleLoader
+} from "./chunk-WRIKQYAG.js";
 import {
   Platform,
   coerceElement
@@ -21,37 +22,17 @@ import {
   InjectionToken,
   Injector,
   Input,
-  NgModule,
   NgZone,
   ViewEncapsulation,
   inject,
   setClassMetadata,
   ɵɵclassProp,
   ɵɵdefineComponent,
-  ɵɵdefineDirective,
-  ɵɵdefineInjector,
-  ɵɵdefineNgModule
+  ɵɵdefineDirective
 } from "./chunk-4YGPQVDL.js";
 import {
   __spreadValues
 } from "./chunk-N6ESDQJH.js";
-
-// node_modules/@angular/cdk/fesm2022/platform.mjs
-var PlatformModule = class _PlatformModule {
-  static ɵfac = function PlatformModule_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || _PlatformModule)();
-  };
-  static ɵmod = ɵɵdefineNgModule({
-    type: _PlatformModule
-  });
-  static ɵinj = ɵɵdefineInjector({});
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(PlatformModule, [{
-    type: NgModule,
-    args: [{}]
-  }], null, null);
-})();
 
 // node_modules/@angular/material/fesm2022/ripple.mjs
 var RippleState;
@@ -657,36 +638,13 @@ var _StructuralStylesLoader = class __StructuralStylesLoader {
   }], null, null);
 })();
 
-// node_modules/@angular/material/fesm2022/ripple-module.mjs
-var MatRippleModule = class _MatRippleModule {
-  static ɵfac = function MatRippleModule_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || _MatRippleModule)();
-  };
-  static ɵmod = ɵɵdefineNgModule({
-    type: _MatRippleModule,
-    imports: [MatCommonModule, MatRipple],
-    exports: [MatRipple, MatCommonModule]
-  });
-  static ɵinj = ɵɵdefineInjector({
-    imports: [MatCommonModule, MatCommonModule]
-  });
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatRippleModule, [{
-    type: NgModule,
-    args: [{
-      imports: [MatCommonModule, MatRipple],
-      exports: [MatRipple, MatCommonModule]
-    }]
-  }], null, null);
-})();
-
 export {
+  RippleState,
+  RippleRef,
   defaultRippleAnimationConfig,
   RippleRenderer,
   MAT_RIPPLE_GLOBAL_OPTIONS,
   MatRipple,
-  _StructuralStylesLoader,
-  MatRippleModule
+  _StructuralStylesLoader
 };
-//# sourceMappingURL=chunk-QNA6ABWX.js.map
+//# sourceMappingURL=chunk-PZW2LFW6.js.map

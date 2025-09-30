@@ -15,3 +15,38 @@
 .modal-footer {
   padding: 1.5rem;
 }
+
+/* REGLAS CLAVE PARA LA RUPTURA DE TEXTO Y ESPACIADO */
+.resumen-version strong,
+.resumen-version span {
+    /* Clave para romper palabras sin espacios */
+    word-break: break-word; 
+    /* Compatibilidad con navegadores antiguos (IE/Edge) */
+    word-wrap: break-word; 
+    /* Alternativa moderna */
+    overflow-wrap: break-word; 
+    /* Asegura que el contenido pueda expandirse verticalmente */
+    min-width: 0; 
+    display: block; 
+    /* ANULA MÁRGENES DE BLOQUE DE BOOTSTRAP */
+    margin-top: 0; 
+    margin-bottom: 0; 
+}
+
+.resumen-version small {
+    /* ANULA MÁRGENES DE BLOQUE DE BOOTSTRAP */
+    margin-bottom: 0px !important; 
+    margin-top: 0; 
+    line-height: 1.2;
+    display: block; /* Opcional, pero asegura que ocupe su propia línea */
+}
+
+/* Espaciado para separar la fila de Fecha/Doctor del Motivo */
+.resumen-version .row {
+    margin-bottom: 0.75rem; /* Agrega un espacio visible entre filas */
+}
+
+/* Eliminar el padding inferior del elemento para que la separación venga solo de la fila */
+.resumen-item {
+    padding-bottom: 0px !important; 
+}

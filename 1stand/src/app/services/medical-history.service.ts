@@ -35,6 +35,13 @@ export class MedicalHistoryService {
     );
   }
 
+  getMedicalHistoryById(historyId: number): Observable<ApiResponse<MedicalHistory>> {
+    return this.http.get<ApiResponse<MedicalHistory>>(
+      `${this.apiUrl}/medical-histories/${historyId}`,
+      { headers: this.getHeaders(), withCredentials: true }
+    );
+  }
+
   createMedicalHistory(patientId: number, data: any): Observable<ApiResponse<MedicalHistory>> {
     return this.http.post<ApiResponse<MedicalHistory>>(
       `${this.apiUrl}/patients/${patientId}/medical-history`,
@@ -42,11 +49,20 @@ export class MedicalHistoryService {
       { headers: this.getHeaders(), withCredentials: true }
     );
   }
+  
+
 
   updateMedicalHistory(historyId: number, historyData: any): Observable<ApiResponse<MedicalHistory>> {
     return this.http.put<ApiResponse<MedicalHistory>>(
       `${this.apiUrl}/medical-histories/${historyId}`,
       historyData,
+      { headers: this.getHeaders(), withCredentials: true }
+    );
+  }
+
+  getTreatments(): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${this.apiUrl}/treatments`,
       { headers: this.getHeaders(), withCredentials: true }
     );
   }
@@ -57,4 +73,12 @@ export class MedicalHistoryService {
       { headers: this.getHeaders(), withCredentials: true }
     );
   }
+  
+  getMedicalHistoryByMedicalAttentionId(medicalAttentionId: number): Observable<ApiResponse<MedicalHistory>> {
+    return this.http.get<ApiResponse<MedicalHistory>>(
+      `${this.apiUrl}/medical-histories/by-attention/${medicalAttentionId}`,
+      { headers: this.getHeaders(), withCredentials: true }
+    );
+  }
+
 }

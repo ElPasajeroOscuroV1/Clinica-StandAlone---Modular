@@ -9,6 +9,22 @@ form {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+.add-treatment-btn {
+  margin-top: 12px;   /* espacio arriba del botón */
+  margin-bottom: 12px; /* espacio abajo del botón */
+  display: flex;
+  justify-content: flex-start; /* o center si lo quieres centrado */
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto; /* activa scroll horizontal */
+}
+
+mat-table {
+  min-width: 1200px; /* fuerza que la tabla tenga ancho mínimo */
+}
+
 /* Estilos para mat-form-field */
 mat-form-field {
   width: 100%;
@@ -108,7 +124,13 @@ th.mat-header-cell {
   user-select: none;
   position: sticky;
   top: 0;
+  white-space: nowrap;
   z-index: 1;
+}
+
+.mat-column-actions {
+  min-width: 250px; /* espacio suficiente para los botones de acciones */
+  text-align: center;
 }
 
 /* Celdas */

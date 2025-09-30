@@ -3,11 +3,12 @@ export interface Appointment {
   patient_id: number;
   patient_name: string | null;
   ci: string;
-  doctor_id: number;
+  doctor_id?: number;
   date: string;
   time: string; // Agregar esta propiedad
   reason: string;
   payment_status: string;
   created_at: string;
   updated_at: string;
+
 }

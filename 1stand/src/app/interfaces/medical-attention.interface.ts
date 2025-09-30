@@ -2,19 +2,21 @@ export interface MedicalAttention {
   id: number;
   patient_id: number;
   appointment_id: number;
+  diagnosis: string;
+  //preEnrollment?: boolean;
+  preEnrollment?: string;
+  otherTreatments?: { name: string; price: number }[];
   treatment_ids: number[];
   total_cost?: number;
   appointment?: {
     id: number;
     date: string;
     time: string;
-    // Otras propiedades de Appointment
+    doctor_id?: number;
   };
-  patient?: any; // Define Patient si lo tienes
   treatments?: {
     id: number;
     nombre: string;
     precio: string;
-    // Otras propiedades de Treatment
   }[];
 }

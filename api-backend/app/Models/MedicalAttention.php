@@ -16,11 +16,17 @@ class MedicalAttention extends Model
         'patient_id',
         'appointment_id',
         'total_cost',
-        'notes'
+        'notes',
+        'diagnosis',
+        'other_treatments',
+        'pre_enrollment'
     ];
 
     protected $casts = [
         'total_cost' => 'decimal:2',
+        'other_treatments' => 'array',
+        //'pre_enrollment' => 'boolean',
+        'pre_enrollment' => 'string',  
     ];
 
     public function patient() { 

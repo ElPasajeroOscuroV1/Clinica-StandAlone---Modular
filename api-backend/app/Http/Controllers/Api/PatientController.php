@@ -296,6 +296,15 @@ class PatientController extends Controller
         $history = MedicalHistory::create($data);
         return response()->json($history);
     }
+
+    public function patientsByDoctor(Request $request)
+    {
+        $doctorId = $request->user()->doctor_id;
+        return Patient::whereHas('appointments', function($q) use ($doctorId) {
+            $q->where('doctor_id', $doctorId);
+        })->get();
+    }
+
 }
 
 

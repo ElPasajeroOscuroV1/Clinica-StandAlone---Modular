@@ -7,24 +7,19 @@ use Illuminate\Http\Request;
 use App\Models\Doctor;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Patient;
+use App\Models\Appointment;
 
 class DoctorController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $doctors = Doctor::all();
         return response()->json($doctors);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        // 1️⃣ Crear el usuario
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'specialty' => 'required|string|max:255',
@@ -41,7 +36,6 @@ class DoctorController extends Controller
             'role' => 'doctor'
         ]);
 
-        // 2️⃣ Crear el doctor y vincularlo con el usuario
         $doctor = Doctor::create([
             'name' => $validatedData['name'],
             'specialty' => $validatedData['specialty'],
@@ -55,23 +49,13 @@ class DoctorController extends Controller
             'doctor' => $doctor,
             'user' => $user
         ], 201);
-        //$doctor = Doctor::create($validatedData);
-        //return response()->json($doctor, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Doctor $doctor)
     {
-        //
-        return $doctor;
-
+        return response()->json($doctor);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Doctor $doctor)
     {
         $validatedData = $request->validate([
@@ -86,12 +70,62 @@ class DoctorController extends Controller
         return response()->json($doctor);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Doctor $doctor)
     {
         $doctor->delete();
         return response()->json(null, 204);
+    }
+
+    // === Mantiene tu método original funcional para Angular ===
+    public function patientsByDoctor(Request $request)
+    {
+        $doctorId = $request->user()->doctor_id ?? null;
+
+        if (!$doctorId) {
+            return response()->json([], 200); // siempre devuelve JSON válido
+        }
+
+        $patients = Patient::whereHas('appointments', function ($q) use ($doctorId) {
+            $q->where('doctor_id', $doctorId);
+        })->get();
+
+        return response()->json($patients);
+    }
+
+    public function appointmentsByDoctorPatient(Request $request, $patientId)
+    {
+        $doctor = Doctor::where('user_id', $request->user()->id)->first();
+
+        if (!$doctor) {
+            return response()->json(['error' => 'No se encontró doctor'], 404);
+        }
+
+        $appointments = Appointment::where('patient_id', $patientId)
+            ->where('doctor_id', $doctor->id)
+            ->get();
+
+        return response()->json($appointments);
+    }
+
+    // Mantener getPatientsByDoctor también pero seguro para Angular
+    public function getPatientsByDoctor(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->role !== 'doctor') {
+            return response()->json([], 200); // devuelve JSON vacío
+        }
+
+        $doctor = Doctor::where('user_id', $user->id)->first();
+
+        if (!$doctor) {
+            return response()->json([], 200);
+        }
+
+        $patients = Patient::whereHas('appointments', function ($q) use ($doctor) {
+            $q->where('doctor_id', $doctor->id);
+        })->get();
+
+        return response()->json($patients);
     }
 }

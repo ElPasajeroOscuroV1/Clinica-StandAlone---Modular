@@ -1,123 +1,192 @@
 <form [formGroup]="medicalHistoryForm" (ngSubmit)="saveMedicalHistory()">
 
-<div id="modalContent" class="p-3" style="font-family: Arial, sans-serif; color: #333;">
+  <div id="modalContent" class="p-3" style="font-family: Arial, sans-serif; color: #333;">
 
-  <!-- Cabecera -->
-  <div class="modal-header" style="border-bottom: 2px solid #0d6efd;">
-    <h4 class="modal-title">Historial Clínico del Paciente: {{ patientData?.name }}</h4>
-    <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
+    <!-- Cabecera -->
+    <div class="modal-header" style="border-bottom: 2px solid #0d6efd;">
+      <h4 class="modal-title">Historial Clínico del Paciente: {{ patientData?.name }}</h4>
+      <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
+    </div>
+
+    <!-- Selección de historial -->
+    <div class="mb-3 mt-2">
+      <label for="historySelect" class="form-label"><strong>Seleccionar versión del historial:</strong></label>
+      <div class="d-flex gap-2">
+        <select id="historySelect" class="form-select" [formControl]="historySelectControl">
+          <option value="new">➕ Nueva versión</option>
+          <option *ngFor="let h of (patientHistories || [])" [value]="h.id">
+            {{ h.created_at | date:'short' }} - {{ h.consultation_reason }}
+          </option>
+        </select>
+        <button type="button" class="btn btn-outline-primary" (click)="startNewVersion()">Nueva versión</button>
+      </div>
+    </div>
+
+    <!-- Cuerpo -->
+    <div class="modal-body border p-3 rounded" style="background-color: #f8f9fa;">
+
+      <!-- Resumen de la versión seleccionada -->
+      <!-- Resumen de la versión seleccionada -->
+      <div class="mb-3 resumen-version" *ngIf="selectedHistory">
+        <h5 style="color:#0d6efd; border-bottom:1px solid #0d6efd;">Resumen de la versión seleccionada</h5>
+        <div class="container-fluid p-0">
+          <div class="row">
+            <div class="col-sm-6 col-lg-4 d-flex flex-column resumen-item">
+              <small class="text-muted">Fecha:</small>
+              <strong>{{ selectedHistory.created_at | date:'dd/MM/yyyy HH:mm' }}</strong>
+            </div>
+            <div class="col-sm-6 col-lg-4 d-flex flex-column resumen-item">
+              <small class="text-muted">Doctor(a):</small>
+              <strong>{{ selectedHistory.doctor_name || 'N/A' }}</strong>
+            </div>
+            <div class="col-12 col-lg-4 d-flex flex-column resumen-item">
+              <small class="text-muted">Motivo de la Consulta:</small>
+              <strong class="text-wrap text-break">{{ selectedHistory.consultation_reason || '-' }}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
+      <!-- Datos personales -->
+      <h5 style="color:#0d6efd; border-bottom:1px solid #0d6efd;">Datos Personales</h5>
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <p><strong>Nombre:</strong> {{ patientData?.name }}</p>
+        </div>
+        <div class="col-md-4">
+          <p><strong>Email:</strong> {{ patientData?.email }}</p>
+        </div>
+        <div class="col-md-4">
+          <p><strong>CI:</strong> {{ patientData?.ci }}</p>
+        </div>
+      </div>
+
+      <!-- Antecedentes -->
+      <h5 style="color:#0d6efd; border-bottom:1px solid #0d6efd;">Antecedentes</h5>
+      <div class="mb-2">
+        <label><strong>Médicos:</strong></label>
+        <textarea class="form-control" formControlName="medicalBackground"></textarea>
+      </div>
+      <div class="mb-2">
+        <label><strong>Odontológicos:</strong></label>
+        <textarea class="form-control" formControlName="dentalBackground"></textarea>
+      </div>
+
+      <!-- Motivo de consulta -->
+      <h5 style="color:#0d6efd; border-bottom:1px solid #0d6efd;">Motivo de la Consulta</h5>
+      <input type="text" class="form-control" formControlName="consultationReason" />
+      <div *ngIf="medicalHistoryForm.get('consultationReason')?.invalid && medicalHistoryForm.get('consultationReason')?.touched" class="text-danger">
+        El motivo de la consulta es obligatorio.
+      </div>
+
+      <!-- Diagnóstico -->
+      <h5 style="color:#0d6efd; border-bottom:1px solid #0d6efd;">Diagnóstico</h5>
+      <mat-form-field appearance="fill" class="w-100">
+        <mat-label>Diagnóstico</mat-label>
+        <textarea matInput formControlName="diagnosis"></textarea>
+      </mat-form-field>
+      <div *ngIf="medicalHistoryForm.get('diagnosis')?.invalid && medicalHistoryForm.get('diagnosis')?.touched" class="text-danger">
+        El diagnóstico es obligatorio.
+      </div>
+
+      <!-- Exámenes clínicos -->
+      <h5 style="color:#0d6efd; border-bottom:1px solid #0d6efd;">Resultados de Exámenes Clínicos</h5>
+      <div class="mb-2">
+        <label><strong>Extraoral:</strong></label>
+        <textarea class="form-control" formControlName="extraoralExam"></textarea>
+      </div>
+      <div class="mb-2">
+        <label><strong>Intraoral:</strong></label>
+        <textarea class="form-control" formControlName="intraoralExam"></textarea>
+      </div>
+
+      <!-- Odontograma -->
+      <h5 style="color:#0d6efd; border-bottom:1px solid #0d6efd;">Odontograma</h5>
+      <div class="odontogram-placeholder border p-3 mb-3 text-center text-muted">
+        <p>Aquí se visualizará el odontograma.</p>
+      </div>
+
+      <!-- Información adicional -->
+      <h5 style="color:#0d6efd; border-bottom:1px solid #0d6efd;">Información Adicional</h5>
+
+      <!-- Tratamientos Realizados -->
+      <div class="mb-3">
+        <label><strong>Tratamientos Realizados:</strong></label>
+        <mat-form-field appearance="fill" class="w-100">
+          <mat-label>Selecciona los tratamientos realizados</mat-label>
+          <mat-select formControlName="treatmentsPerformed" multiple>
+            <mat-option *ngFor="let treatment of availableTreatments" [value]="treatment.nombre">
+              {{ treatment.nombre }} ({{ treatment.precio }} BS)
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <small class="text-muted">Selecciona los tratamientos realizados</small>
+      </div>
+
+      <!-- Otros Tratamientos -->
+      <div formArrayName="otherTreatments" class="mb-3">
+        <div *ngFor="let ot of otherTreatmentsFormArray.controls; let i = index" [formGroupName]="i" class="d-flex align-items-center gap-2 mb-2">
+          <mat-form-field appearance="fill" class="flex-grow-1">
+            <mat-label>Otro tratamiento</mat-label>
+            <input matInput formControlName="name" />
+          </mat-form-field>
+          <mat-form-field appearance="fill" style="width: 120px;">
+            <mat-label>Precio</mat-label>
+            <input matInput type="number" formControlName="price" />
+          </mat-form-field>
+          <button mat-icon-button color="warn" type="button" (click)="removeOtherTreatment(i)" aria-label="Eliminar tratamiento">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+        <button mat-raised-button color="accent" type="button" (click)="addOtherTreatment()">
+          <mat-icon>add</mat-icon>
+          Agregar otro tratamiento
+        </button>
+      </div>
+
+      <!-- Medicamentos Actuales -->
+      <div class="mb-2">
+        <label><strong>Medicamentos Actuales:</strong></label>
+        <textarea class="form-control" formControlName="currentMedications"></textarea>
+      </div>
+
+      <!-- Alergias -->
+      <div class="mb-2">
+        <label><strong>Alergias:</strong></label>
+        <textarea class="form-control" formControlName="allergies"></textarea>
+      </div>
+
+      <!-- Hábitos Bucales Relevantes -->
+      <div class="mb-2">
+        <label><strong>Hábitos Bucales Relevantes:</strong></label>
+        <textarea class="form-control" formControlName="relevantOralHabits"></textarea>
+      </div>
+
+      <!-- Preinscripción -->
+      <mat-form-field appearance="fill" class="w-100 mt-3">
+        <mat-label>Preinscripción</mat-label>
+        <textarea matInput formControlName="preEnrollment"></textarea>
+      </mat-form-field>
+
+      <!-- Detalles Adicionales -->
+      <div class="mb-2 mt-3">
+        <label><strong>Detalles Adicionales:</strong></label>
+        <textarea class="form-control" formControlName="details" rows="3"></textarea>
+      </div>
+
+    </div>
   </div>
 
-  <!-- Selección de historial -->
-  <div class="mb-3 mt-2">
-    <label for="historySelect" class="form-label"><strong>Seleccionar versión del historial:</strong></label>
-    <div class="d-flex gap-2">
-      <select id="historySelect" class="form-select" (change)="onHistoryChange($event)">
-        <option [selected]="!selectedHistory" value="new">➕ Nueva versión</option>
-      <option *ngFor="let h of (patientHistories || [])" [value]="h.id" [selected]="h.id === selectedHistory?.id">
-        {{ h.created_at | date:'short' }} - {{ h.consultation_reason }}
-      </option>
-      </select>
-      <button type="button" class="btn btn-outline-primary" (click)="startNewVersion()">Nueva versión</button>
-    </div>
+  <!-- Footer -->
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+    <button type="button" class="btn btn-success" (click)="exportModalToPDF()">Exportar a PDF</button>
+    <button type="submit" class="btn btn-primary" [disabled]="medicalHistoryForm.invalid || loadingHistory">
+      <span *ngIf="loadingHistory" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+      {{ loadingHistory ? 'Guardando...' : 'Guardar Historial' }}
+    </button>
   </div>
 
-
-  <!-- Cuerpo -->
-  <div class="modal-body border p-3 rounded" style="background-color: #f8f9fa;">
-    <!-- Resumen de la versión seleccionada -->
-    <div class="mb-3" *ngIf="selectedHistory">
-      <h5 style="color:#0d6efd; border-bottom:1px solid #0d6efd;">Resumen de la versión seleccionada</h5>
-      <div class="row">
-        <div class="col-md-4"><small class="text-muted">Fecha:</small> {{ selectedHistory.created_at | date:'dd/MM/yyyy HH:mm' }}</div>
-        <div class="col-md-8"><small class="text-muted">Motivo:</small> {{ selectedHistory.consultation_reason }}</div>
-      </div>
-      <div class="row mt-2">
-        <div class="col-md-6"><small class="text-muted">Alergias:</small> {{ selectedHistory.allergies || '-' }}</div>
-        <div class="col-md-6"><small class="text-muted">Medicamentos actuales:</small> {{ selectedHistory.current_medications || '-' }}</div>
-      </div>
-    </div>
-
-    <!-- Datos personales -->
-    <h5 style="color:#0d6efd; border-bottom:1px solid #0d6efd;">Datos Personales</h5>
-    <div class="row mb-3">
-      <div class="col-md-4">
-        <p><strong>Nombre:</strong> {{ patientData?.name }}</p>
-      </div>
-      <div class="col-md-4">
-        <p><strong>Email:</strong> {{ patientData?.email }}</p>
-      </div>
-      <div class="col-md-4">
-        <p><strong>CI:</strong> {{ patientData?.ci }}</p>
-      </div>
-    </div>
-
-    <!-- Antecedentes -->
-    <h5 style="color:#0d6efd; border-bottom:1px solid #0d6efd;">Antecedentes</h5>
-    <div class="mb-2">
-      <label><strong>Médicos:</strong></label>
-      <textarea class="form-control" formControlName="medicalBackground"></textarea>
-    </div>
-    <div class="mb-2">
-      <label><strong>Odontológicos:</strong></label>
-      <textarea class="form-control" formControlName="dentalBackground"></textarea>
-    </div>
-
-
-    <!-- Motivo de consulta -->
-    <h5 style="color:#0d6efd; border-bottom:1px solid #0d6efd;">Motivo de la Consulta</h5>
-    <input type="text" class="form-control" formControlName="consultationReason" />
-
-
-    <!-- Exámenes clínicos -->
-    <h5 style="color:#0d6efd; border-bottom:1px solid #0d6efd;">Resultados de Exámenes Clínicos</h5>
-    <div class="mb-2">
-      <label><strong>Extraoral:</strong></label>
-      <textarea class="form-control" formControlName="extraoralExam"></textarea>
-    </div>
-    <div class="mb-2">
-      <label><strong>Intraoral:</strong></label>
-      <textarea class="form-control" formControlName="intraoralExam"></textarea>
-    </div>
-
-
-    <!-- Odontograma -->
-    <h5 style="color:#0d6efd; border-bottom:1px solid #0d6efd;">Odontograma</h5>
-    <div class="odontogram-placeholder border p-3 mb-3 text-center text-muted">
-      <p>Aquí se visualizará el odontograma.</p>
-    </div>
-
-    <!-- Información adicional -->
-    <h5 style="color:#0d6efd; border-bottom:1px solid #0d6efd;">Información Adicional</h5>
-    <div class="mb-2">
-      <label><strong>Tratamientos Realizados:</strong></label>
-      <textarea class="form-control" formControlName="treatmentsPerformed"></textarea>
-    </div>
-    <div class="mb-2">
-      <label><strong>Medicamentos Actuales:</strong></label>
-      <textarea class="form-control" formControlName="currentMedications"></textarea>
-    </div>
-    <div class="mb-2">
-      <label><strong>Alergias:</strong></label>
-      <textarea class="form-control" formControlName="allergies"></textarea>
-    </div>
-    <div class="mb-2">
-      <label><strong>Hábitos Bucales Relevantes:</strong></label>
-      <textarea class="form-control" formControlName="relevantOralHabits"></textarea>
-    </div>
-
-
-  </div>
-</div>
-
-<!-- Footer -->
-<div class="modal-footer">
-  <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
-  <button class="btn btn-success" (click)="exportModalToPDF()">Exportar a PDF</button>
-  <button type="submit" class="btn btn-primary" [disabled]="medicalHistoryForm.invalid || loadingHistory">
-    <span *ngIf="loadingHistory" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-    {{ loadingHistory ? 'Guardando...' : 'Guardar Historial' }}
-  </button>
-</div>
 </form>
-

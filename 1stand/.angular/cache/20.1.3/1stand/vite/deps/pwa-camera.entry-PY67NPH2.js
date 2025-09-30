@@ -3,7 +3,7 @@ import {
   getElement,
   h,
   registerInstance
-} from "./chunk-P63VOEP3.js";
+} from "./chunk-K5URQ2RD.js";
 import "./chunk-N6ESDQJH.js";
 
 // node_modules/@ionic/pwa-elements/dist/esm-es5/pwa-camera.entry.js
@@ -628,4 +628,4 @@ export {
    * limitations under the License.
    *)
 */
-//# sourceMappingURL=pwa-camera.entry-JZTFC43Y.js.map
+//# sourceMappingURL=pwa-camera.entry-PY67NPH2.js.map
