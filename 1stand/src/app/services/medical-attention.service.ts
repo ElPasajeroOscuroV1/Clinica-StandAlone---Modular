@@ -41,7 +41,7 @@ export class MedicalAttentionService {
   //getMedicalAttentions(): Observable<MedicalAttention[]> {
   //  return this.http.get<MedicalAttention[]>(`${this.baseUrl}/medical-attentions`, { headers: this.getAuthHeaders() });
   //}
-
+  /*
   getMedicalAttentions(): Observable<MedicalAttention[]> {
     return this.http.get<any[]>(`${this.baseUrl}/medical-attentions`).pipe(
       map(data =>
@@ -54,7 +54,26 @@ export class MedicalAttentionService {
       )
     );
   }
-
+  */
+  getMedicalAttentions(): Observable<MedicalAttention[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/medical-attentions`, { headers: this.getAuthHeaders() }).pipe(
+      map(data =>
+        data.map(att => {
+          const mh = (att as any).medicalHistory;
+          return {
+            ...att,
+            // Lógica de sincronización: Prioriza los datos de la historia médica si existen.
+            diagnosis: mh?.diagnosis ?? att.diagnosis ?? '',
+            preEnrollment: mh?.pre_enrollment ?? att.pre_enrollment ?? '',
+            otherTreatments: mh?.other_treatments ?? att.other_treatments ?? [],
+            // Los tratamientos de la atención son la fuente principal
+            treatments: att.treatments,
+          };
+        })
+      )
+    );
+  }
+  
   getMedicalAttention(id: number): Observable<MedicalAttention> {
     return this.http.get<MedicalAttention>(`${this.baseUrl}/medical-attentions/${id}`, { headers: this.getAuthHeaders() });
   }
@@ -69,12 +88,20 @@ export class MedicalAttentionService {
       pre_enrollment: attention.preEnrollment,
       other_treatments: attention.otherTreatments,
       treatment_ids: attention.treatment_ids,
+      medical_history_id: attention.medical_history_id, // Incluir medical_history_id
     };
-    return this.http.post(`${this.baseUrl}/medical-attentions`, payload);
+    return this.http.post<MedicalAttention>(`${this.baseUrl}/medical-attentions`, payload, { headers: this.getAuthHeaders() });
   }
 
   updateMedicalAttention(id: number, data: MedicalAttention): Observable<MedicalAttention> {
-    return this.http.put<MedicalAttention>(`${this.baseUrl}/medical-attentions/${id}`, data, { headers: this.getAuthHeaders() });
+    const payload = {
+      ...data,
+      pre_enrollment: data.preEnrollment,
+      other_treatments: data.otherTreatments,
+      treatment_ids: data.treatments?.map(t => t.id) || data.treatment_ids, // Asegurar que treatment_ids sea un array de IDs
+      medical_history_id: data.medical_history_id, // Incluir medical_history_id
+    };
+    return this.http.put<MedicalAttention>(`${this.baseUrl}/medical-attentions/${id}`, payload, { headers: this.getAuthHeaders() });
   }
 
   deleteMedicalAttention(id: number): Observable<void> {

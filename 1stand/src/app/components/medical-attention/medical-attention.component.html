@@ -15,7 +15,8 @@
     <button
       mat-raised-button
       color="primary"
-      (click)="openMedicalHistoryModal(form.value.patient_id, form.value.appointment_id, form.value)">
+      [disabled]="!form.value.patient_id || !form.value.appointment_id"
+      (click)="openMedicalHistoryModal(form.value.patient_id, form.value.appointment_id, editingAttention ? editingAttention : form.value)">
       Ver/Editar Historia Médica
     </button>
 
@@ -164,7 +165,7 @@
     <ng-container matColumnDef="pre_enrollment">
       <mat-header-cell *matHeaderCellDef>Preinscripción</mat-header-cell>
       <mat-cell *matCellDef="let element">
-        {{ element.pre_enrollment || 'Sin datos' }}
+        {{ element.preEnrollment || 'Sin datos' }}
       </mat-cell>
     </ng-container>
 

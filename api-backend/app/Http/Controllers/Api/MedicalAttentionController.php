@@ -17,7 +17,7 @@ class MedicalAttentionController extends Controller
         // Obtener el doctor_id del usuario logueado (asumiendo relación en User)
         $doctorId = $request->user()->doctor_id ?? null;
 
-        $query = MedicalAttention::with(['patient', 'appointment', 'treatments']);
+        $query = MedicalAttention::with(['patient', 'appointment', 'treatments', 'medicalHistory']);
 
         // Si hay doctor_id, filtramos solo las atenciones de ese doctor
         if ($doctorId) {
@@ -26,8 +26,8 @@ class MedicalAttentionController extends Controller
             });
         }
 
-        // Traer todo, incluyendo diagnosis
-        return $query->get(['id', 'patient_id', 'appointment_id', 'diagnosis', 'other_treatments', 'pre_enrollment', 'total_cost']);
+        // Traer todo, incluyendo las relaciones cargadas
+        return $query->get();
     }
 
     /**

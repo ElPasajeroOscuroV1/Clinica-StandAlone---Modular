@@ -17,7 +17,21 @@ class MedicalHistoryController extends Controller
                 return response()->json(['message' => 'No autorizado'], 401);
             }
 
-            $histories = MedicalHistory::with(['patient', 'medicalAttention'])->get();
+            $user = Auth::user();
+
+            if ($user->role === 'doctor') {
+                $doctorId = $user->doctor->id;
+
+                // Obtener historias médicas a través de las atenciones médicas del doctor
+                $histories = MedicalHistory::whereHas('medicalAttention.appointment', function ($query) use ($doctorId) {
+                    $query->where('doctor_id', $doctorId);
+                })->with(['patient', 'medicalAttention.appointment.doctor'])->get();
+
+            } else {
+                // Para otros roles (admin, etc.), obtener todos los historiales
+                $histories = MedicalHistory::with(['patient', 'medicalAttention.appointment.doctor'])->get();
+            }
+
             return response()->json(['data' => $histories], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al obtener historiales', 'error' => $e->getMessage()], 500);

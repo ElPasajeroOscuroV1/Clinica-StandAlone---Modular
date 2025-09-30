@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, FormControl } from '@angular/forms';
 import { MedicalAttentionService } from '../../services/medical-attention.service';
+import { MedicalDataService } from '../../services/medical-data.service';
+import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Patient } from '../../interfaces/patient.interface';
@@ -39,8 +41,10 @@ import { MedicalHistoryService } from '../../services/medical-history.service';
   templateUrl: './medical-attention.component.html',
   styleUrls: ['./medical-attention.component.css']
 })
-export class MedicalAttentionComponent implements OnInit {
+export class MedicalAttentionComponent implements OnInit, OnDestroy {
+  [x: string]: any;
   form: FormGroup;
+  private attentionsSubscription!: Subscription;
   patients: Patient[] = [];
   appointments: Appointment[] = [];
   treatments: Treatment[] = [];
@@ -65,7 +69,8 @@ export class MedicalAttentionComponent implements OnInit {
     private fb: FormBuilder,
     private medicalAttentionService: MedicalAttentionService,
     private modalService: NgbModal,
-    private medicalHistoryService: MedicalHistoryService
+    private medicalHistoryService: MedicalHistoryService,
+    private medicalDataService: MedicalDataService
   ) {
     this.form = this.fb.group({
       patient_id: ['', Validators.required],
@@ -80,8 +85,20 @@ export class MedicalAttentionComponent implements OnInit {
   ngOnInit() {
     this.loadPatients();
     this.loadTreatments();
-    this.loadDoctors(); // Cargar doctores
-    this.loadMedicalAttentions();
+    this.loadDoctors();
+
+    this.attentionsSubscription = this.medicalDataService.medicalAttentions$.subscribe(attentions => {
+      this.medicalAttentions = attentions;
+      console.log('MedicalAttentionComponent: medicalAttentions actualizadas:', this.medicalAttentions);
+    });
+
+    this.medicalDataService.loadMedicalAttentions();
+  }
+
+  ngOnDestroy() {
+    if (this.attentionsSubscription) {
+      this.attentionsSubscription.unsubscribe();
+    }
   }
 
   get otherTreatmentsFormArray(): FormArray {
@@ -122,7 +139,7 @@ export class MedicalAttentionComponent implements OnInit {
       }
     });
   }
-
+  /*
   loadMedicalAttentions() {
     this.medicalAttentionService.getMedicalAttentions().subscribe({
       next: (data: MedicalAttention[]) => {
@@ -137,7 +154,34 @@ export class MedicalAttentionComponent implements OnInit {
       }
     });
   }
-
+  */
+ /*
+  loadMedicalAttentions() {
+    this.medicalAttentionService.getMedicalAttentions().subscribe({
+      next: (data: MedicalAttention[]) => {
+        this.medicalAttentions = data.map(attention => {
+          const mh = (attention as any).medicalHistory; // relación cargada desde backend
+          return {
+            ...attention,
+            diagnosis: mh?.diagnosis ?? attention.diagnosis ?? '',
+            preEnrollment: mh?.pre_enrollment ?? attention.preEnrollment ?? '',
+            otherTreatments: mh?.other_treatments ?? attention.otherTreatments ?? [],
+            treatments: attention.treatments, // o sincroniza con mh.treatments_performed si quieres
+            appointment: attention.appointment || { id: attention.appointment_id, date: 'Sin fecha', time: '00:00:00', doctor_id: undefined }
+          };
+        });
+        console.log('Datos de medicalAttentions con historia clínica sincronizada:', this.medicalAttentions);
+      },
+      error: (err) => {
+        console.error('Error al cargar atenciones médicas:', err);
+      }
+    });
+  }
+  */
+  loadMedicalAttentions() {
+    this.medicalDataService.loadMedicalAttentions();
+  }
+  
   onPatientChange() {
     const patientId = this.form.get('patient_id')?.value;
     if (patientId) {
@@ -151,6 +195,7 @@ export class MedicalAttentionComponent implements OnInit {
       });
     }
   }
+  
 
   onSubmit() {
     if (this.form.valid) {
@@ -313,6 +358,17 @@ export class MedicalAttentionComponent implements OnInit {
       ci: patient.ci,
     };
 
+    modalRef.componentInstance.selectedHistory = {
+      appointment_id: formData.appointment_id,
+      preEnrollment: formData.pre_enrollment ?? '',
+      otherTreatments: formData.other_treatments ?? []
+    };
+    
+    const doctorId = formData?.appointment?.doctor_id ?? formData?.doctor_id ?? null;
+    const doctor = this.doctors.find(d => d.id === doctorId) || null;
+    modalRef.componentInstance.doctorData = doctor ? { id: doctor.id, name: doctor.name } : null;
+    
+
     // Si hay un medical_attention_id, buscar la historia médica existente
     if (formData.id) {
       console.log('🔍 Buscando historia médica específica para medical_attention_id:', formData.id);
@@ -320,13 +376,19 @@ export class MedicalAttentionComponent implements OnInit {
         next: (response) => {
           console.log('📋 Respuesta del servicio:', response);
           if (response.data) {
-            modalRef.componentInstance.selectedHistory = response.data;
+            //modalRef.componentInstance.selectedHistory = response.data;
+            modalRef.componentInstance.selectedHistory = {
+              ...response.data,
+              appointment_id: formData.appointment_id // <-- asegura el appointment_id
+            };
             console.log('✅ Historia médica específica encontrada:', response.data);
             
             // Forzar la carga de datos después de asignar selectedHistory
             setTimeout(() => {
               console.log('⏰ Forzando carga de datos después de encontrar historia existente');
-              modalRef.componentInstance.loadSelectedHistory(response.data);
+              //modalRef.componentInstance.loadSelectedHistory(response.data);
+              modalRef.componentInstance.loadSelectedHistory(modalRef.componentInstance.selectedHistory);
+
             }, 100);
           } else {
             // Si no existe, crear una nueva con los datos del formulario
@@ -348,12 +410,24 @@ export class MedicalAttentionComponent implements OnInit {
 
     modalRef.result.then(
       (result: any) => {
-        if (result === 'update' || result === 'create') {
-          this.loadMedicalAttentions();
+        if (result?.action === 'update' || result?.action === 'create') {
+          this.medicalDataService.loadMedicalAttentions();
+          
+          if (result.medicalAttentionId) {
+            // La suscripción se encargará de actualizar la tabla.
+            // Solo necesitamos encontrar la atención actualizada para el formulario.
+            this.medicalAttentionService.getMedicalAttention(result.medicalAttentionId).subscribe(updatedAttention => {
+              if (updatedAttention) {
+                this.editAttention(updatedAttention);
+                console.log('✅ Formulario de Medical Attention sincronizado con datos del modal.');
+              }
+            });
+          }
         }
       },
       () => {}
     );
+    
   }
 
   private createNewHistoryFromFormData(modalRef: any, patientId: number, formData: any): void {
@@ -369,6 +443,7 @@ export class MedicalAttentionComponent implements OnInit {
       other_treatments: Array.isArray(formData.otherTreatments) ? formData.otherTreatments : [],
       pre_enrollment: formData.preEnrollment || '',
       medical_attention_id: formData.id || null,
+      appointment_id: formData.appointment_id || null,
       allergies: '',
       medical_background: '',
       dental_background: '',
@@ -392,9 +467,31 @@ export class MedicalAttentionComponent implements OnInit {
       console.log('⏰ Forzando carga de datos después de asignar selectedHistory');
       modalRef.componentInstance.loadSelectedHistory(newHistory);
     }, 100);
+    
   }
 
 
-
+  updateHistory(updatedHistory: any) {
+    if (!this['selectedHistory']) return;
+  
+    // Actualizar en memoria
+    Object.assign(this['selectedHistory'], updatedHistory);
+  
+    // También actualizamos en la tabla
+    const index = this.medicalAttentions.findIndex(
+      att => att.id === this['selectedHistory'].id
+    );
+    if (index !== -1) {
+      this.medicalAttentions[index] = { ...this['selectedHistory'] };
+    }
+  
+    // Aquí llamarías al backend si corresponde
+    // Aquí llamarías al backend si corresponde
+    this['attentionService'].updateAttention(this['selectedHistory'].id, updatedHistory)
+      .subscribe(() => {
+        console.log('Historia actualizada en el servidor');
+      });
+  }
+  
 
 }

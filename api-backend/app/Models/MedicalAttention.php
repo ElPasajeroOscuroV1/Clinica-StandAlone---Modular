@@ -19,7 +19,8 @@ class MedicalAttention extends Model
         'notes',
         'diagnosis',
         'other_treatments',
-        'pre_enrollment'
+        'pre_enrollment',
+        'medical_history_id'
     ];
 
     protected $casts = [

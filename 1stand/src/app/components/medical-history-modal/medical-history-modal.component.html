@@ -37,7 +37,7 @@
             </div>
             <div class="col-sm-6 col-lg-4 d-flex flex-column resumen-item">
               <small class="text-muted">Doctor(a):</small>
-              <strong>{{ selectedHistory.doctor_name || 'N/A' }}</strong>
+              <strong>{{ selectedHistory?.doctor?.name || doctorData?.name || 'No asignado' }}</strong>
             </div>
             <div class="col-12 col-lg-4 d-flex flex-column resumen-item">
               <small class="text-muted">Motivo de la Consulta:</small>

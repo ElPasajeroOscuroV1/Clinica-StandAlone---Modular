@@ -7,6 +7,7 @@ export interface MedicalAttention {
   preEnrollment?: string;
   otherTreatments?: { name: string; price: number }[];
   treatment_ids: number[];
+  medical_history_id?: number; // Agregado para la relación con MedicalHistory
   total_cost?: number;
   appointment?: {
     id: number;

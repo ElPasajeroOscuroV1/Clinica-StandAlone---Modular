@@ -2,3 +2,8 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* Asegura que los overlays de Angular Material queden por encima del modal de ng-bootstrap */
+.cdk-overlay-container, .cdk-global-overlay-wrapper {
+    z-index: 2000 !important;
+  }

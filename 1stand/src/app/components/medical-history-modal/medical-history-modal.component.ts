@@ -1,10 +1,11 @@
-import { Component, OnInit, Input, OnChanges, SimpleChanges  } from '@angular/core';
+import { Component, OnInit, Input, OnChanges, SimpleChanges, EventEmitter, Output  } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, FormControl } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { NgbActiveModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { PatientService } from '../../services/patient.service';
 import { MedicalHistoryService } from '../../services/medical-history.service';
 import { MedicalAttentionService } from '../../services/medical-attention.service';
+import { MedicalDataService } from '../../services/medical-data.service'; // Importar MedicalDataService
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -16,6 +17,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatOptionModule } from '@angular/material/core';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { of, switchMap } from 'rxjs';
+import { MedicalHistory } from '../../interfaces/medical-history.interface'; // Importar MedicalHistory
 
 @Component({
   selector: 'app-medical-history-modal',
@@ -42,18 +45,21 @@ export class MedicalHistoryModalComponent implements OnInit, OnChanges {
   @Input() patientData: any;
   @Input() patientHistories: any[] = [];
   @Input() selectedHistory: any;
-
+  @Output() saveHistory = new EventEmitter<any>();
+  @Input() doctorData: { id: number, name: string } | null = null;
   availableTreatments: any[] = [];
   medicalHistoryForm: FormGroup;
   loadingHistory = false;
   historySelectControl = new FormControl('new'); // valor inicial 'new'
+  form: any;
 
   constructor(
     private fb: FormBuilder,
     public activeModal: NgbActiveModal,
     private patientService: PatientService,
     private medicalHistoryService: MedicalHistoryService,
-    private medicalAttentionService: MedicalAttentionService
+    private medicalAttentionService: MedicalAttentionService,
+    private medicalDataService: MedicalDataService // Inyectar MedicalDataService
   ) {
     this.medicalHistoryForm = this.fb.group({
       patientName: [{ value: '', disabled: true }],
@@ -268,8 +274,19 @@ export class MedicalHistoryModalComponent implements OnInit, OnChanges {
     } else {
       console.warn('other_treatments no es un array:', otherTreatments);
     }
+    if (history.medical_attention_id) {
+      this.medicalAttentionService.getMedicalAttention(history.medical_attention_id).subscribe({
+        next: (attention: any) => {
+          this.selectedHistory = {
+            ...(this.selectedHistory || {}),
+            doctor: { name: attention?.doctor?.name || this.doctorData?.name || 'Desconocido' }
+          };
+        }
+      });
+    }
   }
 
+  /*
   saveMedicalHistory(): void {
     if (this.medicalHistoryForm.invalid) {
       this.medicalHistoryForm.markAllAsTouched();
@@ -314,12 +331,21 @@ export class MedicalHistoryModalComponent implements OnInit, OnChanges {
     console.log('🔍 Es array otherTreatmentsPayload:', Array.isArray(otherTreatmentsPayload));
 
     if (this.selectedHistory?.id) {
-        this.medicalHistoryService.updateMedicalHistory(this.selectedHistory.id, historyData).subscribe({
+        //this.medicalHistoryService.updateMedicalHistory(this.selectedHistory.id, historyData).subscribe({
+          this.medicalHistoryService.updateMedicalHistory(this.selectedHistory.id, historyData).pipe(
+            switchMap(() => this.updateMedicalAttentionFromHistory$(historyData)) // <-- espera a atención
+          ).subscribe({
           next: () => {
-            // Actualizar también la atención médica si existe
             this.updateMedicalAttentionFromHistory(historyData);
             this.loadingHistory = false;
-            this.activeModal.close('update');
+            this.activeModal.close({
+              action: 'update',
+              medicalAttentionId: this.selectedHistory?.medical_attention_id ?? null,
+              appointmentId: this.selectedHistory?.appointment_id ?? null,
+              payload: historyData,
+              attentionSynced: true // <-- bandera de sincronización completa
+
+            });
           },
           error: (err) => {
             this.loadingHistory = false;
@@ -331,12 +357,20 @@ export class MedicalHistoryModalComponent implements OnInit, OnChanges {
           }
         });
       } else {
-        this.medicalHistoryService.createMedicalHistory(this.patientId, historyData).subscribe({
+        //this.medicalHistoryService.createMedicalHistory(this.patientId, historyData).subscribe({
+          this.medicalHistoryService.createMedicalHistory(this.patientId, historyData).pipe(
+            switchMap(() => this.updateMedicalAttentionFromHistory$(historyData))
+          ).subscribe({
           next: () => {
-            // Actualizar también la atención médica si existe
             this.updateMedicalAttentionFromHistory(historyData);
             this.loadingHistory = false;
-            this.activeModal.close('create');
+            this.activeModal.close({
+              action: 'create',
+              medicalAttentionId: this.selectedHistory?.medical_attention_id ?? null,
+              appointmentId: this.selectedHistory?.appointment_id ?? null,
+              payload: historyData,
+              attentionSynced: true
+            });
           },
           error: (err) => {
             this.loadingHistory = false;
@@ -348,6 +382,92 @@ export class MedicalHistoryModalComponent implements OnInit, OnChanges {
           }
         });
       }
+
+      // Emitir cambios al componente padre
+      if (this.medicalHistoryForm.valid) {
+        const updatedHistory = this.medicalHistoryForm.getRawValue();
+        this.saveHistory.emit(updatedHistory);
+      }
+
+    }
+    */
+    saveMedicalHistory(): void {
+      if (this.medicalHistoryForm.invalid) {
+        this.medicalHistoryForm.markAllAsTouched();
+        return;
+      }
+    
+      this.loadingHistory = true;
+    
+      const formValues = this.medicalHistoryForm.getRawValue();
+    
+      const otherTreatmentsPayload = Array.isArray(formValues.otherTreatments)
+        ? formValues.otherTreatments
+        : [];
+    
+      const historyData: MedicalHistory = { // Especificar el tipo MedicalHistory
+        id: this.selectedHistory?.id || 0, // Inicializar id, será 0 o el id existente
+        patient_id: this.patientId,
+        consultation_reason: formValues.consultationReason,
+        allergies: formValues.allergies,
+        created_at: this.selectedHistory?.created_at || new Date().toISOString(), // Mantener o generar fecha
+        patient: this.patientData, // Asignar patientData
+        medical_background: formValues.medicalBackground,
+        dental_background: formValues.dentalBackground,
+        extraoral_exam: formValues.extraoralExam,
+        intraoral_exam: formValues.intraoralExam,
+        odontogram: formValues.odontogram,
+        treatments_performed: Array.isArray(formValues.treatmentsPerformed)
+          ? formValues.treatmentsPerformed
+          : (formValues.treatmentsPerformed ? [formValues.treatmentsPerformed] : []),
+        current_medications: formValues.currentMedications,
+        diagnosis: formValues.diagnosis,
+        other_treatments: otherTreatmentsPayload,
+        relevant_oral_habits: formValues.relevantOralHabits,
+        pre_enrollment: formValues.preEnrollment,
+        medical_attention_id: this.selectedHistory?.medical_attention_id || null,
+        appointment_id: this.selectedHistory?.appointment_id || null,
+        details: formValues.details || ''
+      };
+    
+      const isUpdate = !!this.selectedHistory?.id;
+    
+      const save$ = isUpdate
+        ? this.medicalHistoryService.updateMedicalHistory(this.selectedHistory.id, historyData)
+        : this.medicalHistoryService.createMedicalHistory(this.patientId, historyData);
+    
+      save$.pipe(
+        switchMap((response) => {
+          // Si es una creación, la respuesta contendrá el ID de la nueva historia
+          if (!isUpdate && response && response.data) {
+            historyData.id = response.data.id; // Asignar el ID de la historia recién creada
+          }
+          return this.updateMedicalAttentionFromHistory$(historyData);
+        })
+      ).subscribe({
+        next: () => {
+          this.loadingHistory = false;
+          this.medicalDataService.updateMedicalAttentionFromHistory(historyData); // Notificar a MedicalDataService
+    
+          // Notifica al padre si lo necesitas
+          this.saveHistory.emit(this.medicalHistoryForm.getRawValue());
+    
+          this.activeModal.close({
+            action: isUpdate ? 'update' : 'create',
+            medicalAttentionId: this.selectedHistory?.medical_attention_id ?? null,
+            appointmentId: this.selectedHistory?.appointment_id ?? null,
+            payload: historyData,
+            attentionSynced: true
+          });
+        },
+        error: (err) => {
+          this.loadingHistory = false;
+          console.error('❌ Error guardando historia/atención:', err);
+          if (err?.error?.errors) {
+            console.error('🚫 Errores de validación:', err.error.errors);
+          }
+        }
+      });
     }
   /*
   onHistoryChange(event: any): void {
@@ -365,6 +485,31 @@ export class MedicalHistoryModalComponent implements OnInit, OnChanges {
   }
   */
 
+// Agrega este helper:
+  private updateMedicalAttentionFromHistory$(historyData: any) {
+    if (!historyData.medical_attention_id || !this.selectedHistory?.appointment_id) {
+      return of(null); // nada que sincronizar
+    }
+    const treatmentIds = Array.isArray(historyData.treatments_performed)
+      ? historyData.treatments_performed
+          .map((name: string) => this.availableTreatments.find(t => t.nombre === name)?.id ?? null)
+          .filter((id: number|null) => id != null)
+      : [];
+
+    if (treatmentIds.length === 0) return of(null);
+
+    const attentionUpdateData: any = {
+      patient_id: this.patientId,
+      appointment_id: this.selectedHistory.appointment_id,
+      diagnosis: historyData.diagnosis,
+      pre_enrollment: historyData.pre_enrollment,
+      other_treatments: historyData.other_treatments,
+      treatment_ids: treatmentIds,
+      medical_history_id: historyData.id // Incluir el ID de la historia médica
+    };
+    return this.medicalAttentionService.updateMedicalAttention(historyData.medical_attention_id, attentionUpdateData);
+  }
+  
   startNewVersion(): void {
     this.selectedHistory = null as any;
     this.medicalHistoryForm.reset({
@@ -414,7 +559,7 @@ export class MedicalHistoryModalComponent implements OnInit, OnChanges {
       pdf.save(`HistoriaClinica_${this.patientData?.name ?? 'Paciente'}.pdf`);
     });
   }
-
+  /*
   private updateMedicalAttentionFromHistory(historyData: any): void {
     // Solo actualizar si hay un medical_attention_id
     if (historyData.medical_attention_id) {
@@ -472,4 +617,5 @@ export class MedicalHistoryModalComponent implements OnInit, OnChanges {
       });
     }
   }
+  */
 }
