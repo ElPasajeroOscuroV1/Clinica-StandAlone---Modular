@@ -14,7 +14,11 @@ export interface MedicalAttention {
     date: string;
     time: string;
     doctor_id?: number;
+    reason?: string | null;
+    status?: string | null;
+    payment_status?: string | null;
   };
+  appointment_status?: string | null;
   treatments?: {
     id: number;
     nombre: string;

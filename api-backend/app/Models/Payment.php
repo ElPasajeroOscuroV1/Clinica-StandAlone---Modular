@@ -13,12 +13,18 @@ class Payment extends Model
     //
     protected $fillable = [
         'appointment_id',
-        'patient_id', 
-        'treatment_id',
-        'amount', 
-        'date', 
-        'method', 
+        'patient_id',
+        'treatments',
+        'other_treatments',
+        'amount',
+        'date',
+        'method',
         'status'
+    ];
+
+    protected $casts = [
+        'treatments' => 'array',
+        'other_treatments' => 'array',
     ];
     
     public function patient()
@@ -36,4 +42,3 @@ class Payment extends Model
         return $this->belongsTo(Treatment::class);
     }
 }
-

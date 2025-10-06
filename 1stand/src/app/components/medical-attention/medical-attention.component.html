@@ -1,8 +1,8 @@
 <form [formGroup]="form" (ngSubmit)="onSubmit()">
-  <h2>Atenci贸n M茅dica</h2>
-  <h3>Registro de Atenci贸n</h3>
+  <h2>Atenci髇 M閐ica</h2>
+  <h3>Registro de Atenci髇</h3>
 
-  <!-- Selecci贸n de Paciente -->
+  <!-- Selecci髇 de Paciente -->
   <mat-form-field appearance="fill" class="full-width">
     <mat-label>Paciente</mat-label>
     <mat-select formControlName="patient_id" (selectionChange)="onPatientChange()">
@@ -17,27 +17,34 @@
       color="primary"
       [disabled]="!form.value.patient_id || !form.value.appointment_id"
       (click)="openMedicalHistoryModal(form.value.patient_id, form.value.appointment_id, editingAttention ? editingAttention : form.value)">
-      Ver/Editar Historia M茅dica
+      Ver/Editar Historia M閐ica
     </button>
 
-  <!-- Selecci贸n de Cita -->
+  <!-- Selecci髇 de Cita -->
   <mat-form-field appearance="fill" class="full-width">
-    <mat-label>Cita M茅dica</mat-label>
+    <mat-label>Cita M閐ica</mat-label>
     <mat-select formControlName="appointment_id">
       <mat-option *ngFor="let app of appointments" [value]="app.id">
         {{ app.date }} {{ app.time }} - {{ getDoctorNameByAppointment(app) }}
       </mat-option>
     </mat-select>
   </mat-form-field>
+  <ng-container *ngIf="getAppointmentStatus(form.value.appointment_id) as appointmentStatus">
+    <div class="attention-status-badge">
+      <span [ngClass]="getAppointmentStatusClassFromValue(appointmentStatus)">
+        {{ getAppointmentStatusLabelFromValue(appointmentStatus) }}
+      </span>
+    </div>
+  </ng-container>
 
 
-  <!-- Diagn贸stico -->
+  <!-- Diagn髎tico -->
   <mat-form-field appearance="fill" class="full-width">
-    <mat-label>Diagn贸stico</mat-label>
-    <textarea matInput formControlName="diagnosis" placeholder="Ingrese el diagn贸stico"></textarea>
+    <mat-label>Diagn髎tico</mat-label>
+    <textarea matInput formControlName="diagnosis" placeholder="Ingrese el diagn髎tico"></textarea>
   </mat-form-field>
 
-  <!-- Selecci贸n de Tratamientos -->
+  <!-- Selecci髇 de Tratamientos -->
   <mat-form-field appearance="fill" class="full-width">
     <mat-label>Tratamientos</mat-label>
     <mat-select formControlName="treatment_ids" multiple>
@@ -74,16 +81,16 @@
 
 
 
-  <!-- Preinscripci贸n -->
+  <!-- Preinscripci髇 -->
   <mat-form-field appearance="fill" class="full-width">
-    <mat-label>Preinscripci贸n</mat-label>
-    <textarea matInput formControlName="preEnrollment" placeholder="Ingrese informaci贸n de preinscripci贸n"></textarea>
+    <mat-label>Preinscripci髇</mat-label>
+    <textarea matInput formControlName="preEnrollment" placeholder="Ingrese informaci髇 de preinscripci髇"></textarea>
   </mat-form-field>
 
-  <!-- Botones de acci贸n -->
+  <!-- Botones de acci髇 -->
   <div class="actions">
     <button type="submit" mat-raised-button color="primary">
-      {{ editingAttention ? 'Actualizar Atenci贸n' : 'Guardar Atenci贸n' }}
+      {{ editingAttention ? 'Actualizar Atenci髇' : 'Guardar Atenci髇' }}
     </button>
     <button type="button" mat-raised-button color="warn" (click)="resetForm()" *ngIf="editingAttention">
       Cancelar
@@ -91,8 +98,8 @@
   </div>
 </form>
 
-<!-- Tabla de atenciones m茅dicas -->
-<h2>Lista de Atenciones M茅dicas</h2>
+<!-- Tabla de atenciones m閐icas -->
+<h2>Lista de Atenciones M閐icas</h2>
 <div class="table-container">
   <mat-table [dataSource]="medicalAttentions" class="mat-elevation-z8">
 
@@ -123,10 +130,10 @@
       <mat-cell *matCellDef="let element">{{ getDoctorName(element) }}</mat-cell>
     </ng-container>
 
-    <!-- Diagn贸stico -->
+    <!-- Diagn髎tico -->
     <ng-container matColumnDef="diagnosis">
-      <mat-header-cell *matHeaderCellDef>Diagn贸stico</mat-header-cell>
-      <mat-cell *matCellDef="let element">{{ element.diagnosis || 'Sin diagn贸stico' }}</mat-cell>
+      <mat-header-cell *matHeaderCellDef>Diagn髎tico</mat-header-cell>
+      <mat-cell *matCellDef="let element">{{ element.diagnosis || 'Sin diagn髎tico' }}</mat-cell>
     </ng-container>
 
     <!-- Tratamientos -->
@@ -161,9 +168,9 @@
       </mat-cell>
     </ng-container>
 
-    <!-- Preinscripci贸n -->
+    <!-- Preinscripci髇 -->
     <ng-container matColumnDef="pre_enrollment">
-      <mat-header-cell *matHeaderCellDef>Preinscripci贸n</mat-header-cell>
+      <mat-header-cell *matHeaderCellDef>Preinscripci髇</mat-header-cell>
       <mat-cell *matCellDef="let element">
         {{ element.preEnrollment || 'Sin datos' }}
       </mat-cell>
@@ -173,6 +180,15 @@
     <ng-container matColumnDef="total_cost">
       <mat-header-cell *matHeaderCellDef>Costo Total</mat-header-cell>
       <mat-cell *matCellDef="let element">{{ element.total_cost || 0 }} BS</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="appointment_status">
+      <mat-header-cell *matHeaderCellDef>Estado Atenci髇</mat-header-cell>
+      <mat-cell *matCellDef="let element">
+        <span [ngClass]="getAppointmentStatusClassFromValue(getAppointmentStatus(element.appointment))">
+          {{ getAppointmentStatusLabelFromValue(getAppointmentStatus(element.appointment)) }}
+        </span>
+      </mat-cell>
     </ng-container>
 
     <ng-container matColumnDef="actions">
@@ -188,7 +204,7 @@
           mat-raised-button
           color="primary"
           (click)="openMedicalHistoryModal(element.patient_id, element.appointment_id, element)">
-          Ver/Editar Historia M茅dica
+          Ver/Editar Historia M閐ica
         </button>
 
       </mat-cell> <!-- CIERRE DEL mat-cell -->

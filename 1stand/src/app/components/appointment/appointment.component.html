@@ -82,7 +82,7 @@
     <div class="appointment-card" *ngFor="let appointment of appointments; let i = index">
       <div class="appointment-details">
         <h3>{{ appointment.patient_name }}</h3>
-        <p><strong>Doctor:</strong> {{ appointment.doctor?.name }} - {{ appointment.doctor?.specialty }}</p>
+        <p><strong>Doctor:</strong> {{ appointment.doctor?.name || appointment.doctor_name || 'Sin doctor' }}{{ (appointment.doctor?.specialty || appointment.doctor_specialty) ? ' - ' + (appointment.doctor?.specialty || appointment.doctor_specialty) : '' }}</p>
         <p><strong>Fecha:</strong> {{ appointment.date }}</p>
         <p><strong>Hora:</strong> {{ appointment.time }}</p>
         <p><strong>Motivo:</strong> {{ appointment.reason }}</p>
@@ -100,6 +100,12 @@
             {{ appointment.payment_status }}
           </span>
         </p>
+        <p>
+          <strong>Estado de Atención: </strong>
+          <span [ngClass]="getAttentionStatusClass(appointment)">
+            {{ getAttentionStatusLabel(appointment) }}
+          </span>
+        </p>
 
       </div>
       <div class="appointment-actions">
@@ -109,3 +115,4 @@
     </div>
   </div>
 </div>
+

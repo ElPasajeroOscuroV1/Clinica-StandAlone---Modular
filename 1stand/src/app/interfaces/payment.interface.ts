@@ -4,6 +4,8 @@ export interface RawPayment {
   patient_id: number;
   appointment_id: number;
   treatment_id?: number;
+  treatments?: any[]; // array of {id, nombre, precio}
+  other_treatments?: any[]; // array of {name, price}
   amount: string;
   date: string;
   method: string;
@@ -29,6 +31,8 @@ export interface Payment {
   patientId: number;
   appointmentId: number;
   treatmentId?: number;
+  treatments?: any[];
+  other_treatments?: any[];
   amount: number;
   date: string;
   method: string;
@@ -51,7 +55,8 @@ export interface Payment {
 export interface CreatePaymentDto {
   patient_id: number;
   appointment_id: number;
-  treatment_id?: number;
+  treatment_ids?: number[];
+  other_treatments?: {name: string, price: number}[];
   amount: number;
   date: string;
   method: string;

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, FormControl } from '@angular/forms';
 import { MedicalAttentionService } from '../../services/medical-attention.service';
 import { MedicalDataService } from '../../services/medical-data.service';
@@ -42,7 +42,6 @@ import { MedicalHistoryService } from '../../services/medical-history.service';
   styleUrls: ['./medical-attention.component.css']
 })
 export class MedicalAttentionComponent implements OnInit, OnDestroy {
-  [x: string]: any;
   form: FormGroup;
   private attentionsSubscription!: Subscription;
   patients: Patient[] = [];
@@ -60,10 +59,12 @@ export class MedicalAttentionComponent implements OnInit, OnDestroy {
     'other_treatments', 
     'pre_enrollment',
     'total_cost', 
+    'appointment_status',
     'actions'
   ]; // Agregué 'doctor'
 
   editingAttention: MedicalAttention | null = null;
+  currentAppointmentStatus: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -93,6 +94,10 @@ export class MedicalAttentionComponent implements OnInit, OnDestroy {
     });
 
     this.medicalDataService.loadMedicalAttentions();
+
+    this.form.get('appointment_id')?.valueChanges.subscribe(() => {
+      this.updateCurrentAppointmentStatus();
+    });
   }
 
   ngOnDestroy() {
@@ -181,50 +186,97 @@ export class MedicalAttentionComponent implements OnInit, OnDestroy {
   loadMedicalAttentions() {
     this.medicalDataService.loadMedicalAttentions();
   }
+
+  onSubmit() {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    const formValue = this.form.getRawValue();
+    const otherTreatments = this.otherTreatmentsFormArray.controls
+      .map(control => {
+        const name = (control.get('name')?.value ?? '').trim();
+        const price = Number(control.get('price')?.value ?? 0);
+        return { name, price };
+      })
+      .filter(treatment => treatment.name.length > 0 || treatment.price > 0);
+
+    const payload: Partial<MedicalAttention> = {
+      patient_id: Number(formValue.patient_id),
+      appointment_id: Number(formValue.appointment_id),
+      diagnosis: formValue.diagnosis,
+      preEnrollment: formValue.preEnrollment,
+      otherTreatments,
+      treatment_ids: (formValue.treatment_ids ?? []).map((id: any) => Number(id)),
+      medical_history_id: this.editingAttention?.medical_history_id
+    };
+
+    const request$ = this.editingAttention
+      ? this.medicalAttentionService.updateMedicalAttention(this.editingAttention.id, {
+          ...payload,
+          id: this.editingAttention.id
+        } as MedicalAttention)
+      : this.medicalAttentionService.createMedicalAttention(payload as MedicalAttention);
+
+    request$.subscribe({
+      next: () => {
+        this.resetForm();
+        this.medicalDataService.loadMedicalAttentions();
+      },
+      error: (err) => {
+        console.error('Error al guardar la atención médica:', err);
+      }
+    });
+  }
+
+  private updateCurrentAppointmentStatus(): void {
+    const appointmentId = this.form.get('appointment_id')?.value;
+
+    if (!appointmentId) {
+      this.currentAppointmentStatus = null;
+      return;
+    }
+
+    const selectedAppointment = this.appointments.find(app => app.id === Number(appointmentId));
+    this.currentAppointmentStatus = selectedAppointment?.status ?? null;
+  }
+
   
   onPatientChange() {
     const patientId = this.form.get('patient_id')?.value;
     if (patientId) {
       this.medicalAttentionService.getAppointmentsByDoctorPatient(patientId).subscribe({
         next: (data: Appointment[]) => {
-          this.appointments = data;
+          const normalized = (data ?? []).map(app => ({
+            ...app,
+            status: app.status ?? 'pending'
+          }));
+
+          const pendingAppointments = normalized.filter(app =>
+            this.getAppointmentStatusKey(app.status) === 'pending'
+          );
+
+          const editingAppointmentId = this.editingAttention?.appointment_id ?? null;
+          if (editingAppointmentId) {
+            const editingAppointment = normalized.find(app => app.id === editingAppointmentId);
+            if (editingAppointment && !pendingAppointments.some(app => app.id === editingAppointmentId)) {
+              pendingAppointments.push(editingAppointment);
+            }
+          }
+
+          this.appointments = pendingAppointments;
+          this.updateCurrentAppointmentStatus();
         },
         error: (err) => {
           console.error('Error al cargar citas:', err);
+          this.appointments = [];
+          this.currentAppointmentStatus = null;
         }
       });
-    }
-  }
-  
-
-  onSubmit() {
-    if (this.form.valid) {
-      const data = {
-        ...this.form.value,
-        pre_enrollment: this.form.get('preEnrollment')?.value,
-        other_treatments: this.otherTreatmentsFormArray.value
-      };
-      if (this.editingAttention) {
-        this.medicalAttentionService.updateMedicalAttention(this.editingAttention.id, data).subscribe({
-          next: () => {
-            this.loadMedicalAttentions();
-            this.resetForm();
-          },
-          error: (err) => {
-            console.error('Error al actualizar atención:', err);
-          }
-        });
-      } else {
-        this.medicalAttentionService.createMedicalAttention(data).subscribe({
-          next: () => {
-            this.loadMedicalAttentions();
-            this.resetForm();
-          },
-          error: (err) => {
-            console.error('Error al crear atención:', err);
-          }
-        });
-      }
+    } else {
+      this.appointments = [];
+      this.currentAppointmentStatus = null;
     }
   }
 
@@ -254,6 +306,7 @@ export class MedicalAttentionComponent implements OnInit, OnDestroy {
   });
 
   this.onPatientChange();
+  this.updateCurrentAppointmentStatus();
 }
 
 
@@ -274,6 +327,57 @@ export class MedicalAttentionComponent implements OnInit, OnDestroy {
     this.form.reset();
     this.editingAttention = null;
     this.appointments = [];
+    this.currentAppointmentStatus = null;
+  }
+
+  getAppointmentStatusLabelFromValue(status?: string | null): string {
+    const key = this.getAppointmentStatusKey(status);
+    const labels: Record<string, string> = {
+      pending: 'Pendiente',
+      attended: 'Atendida',
+      cancelled: 'Cancelada'
+    };
+    return labels[key] ?? this.capitalizeText(key);
+  }
+
+  getAppointmentStatusClassFromValue(status?: string | null): string {
+    const key = this.getAppointmentStatusKey(status);
+    const classes: Record<string, string> = {
+      pending: 'attention-status attention-status--pending',
+      attended: 'attention-status attention-status--attended',
+      cancelled: 'attention-status attention-status--cancelled'
+    };
+    return classes[key] ?? 'attention-status attention-status--unknown';
+  }
+
+  getAppointmentStatus(source: Appointment | number | undefined): string | null {
+    if (source && typeof source === 'object') {
+      return source.status ?? null;
+    }
+
+    if (typeof source === 'number') {
+      const match = this.appointments.find(app => app.id === source);
+      return match?.status ?? null;
+    }
+
+    const selectedId = this.form.get('appointment_id')?.value;
+    if (selectedId) {
+      const match = this.appointments.find(app => app.id === Number(selectedId));
+      return match?.status ?? null;
+    }
+
+    return null;
+  }
+
+  private getAppointmentStatusKey(status?: string | null): string {
+    return (status ?? 'pending').toLowerCase();
+  }
+
+  private capitalizeText(value: string): string {
+    if (!value) {
+      return '';
+    }
+    return value.charAt(0).toUpperCase() + value.slice(1);
   }
 
   getAppointmentDate(appointmentId: number): string {
@@ -351,6 +455,8 @@ export class MedicalAttentionComponent implements OnInit, OnDestroy {
 
     const modalRef = this.modalService.open(MedicalHistoryModalComponent, { size: 'lg' });
 
+    const appointmentReason = formData?.appointment?.reason ?? formData?.reason ?? formData?.consultation_reason ?? this.appointments.find(app => app.id === appointmentId)?.reason ?? 'Consulta m�dica';
+
     modalRef.componentInstance.patientId = patientId;
     modalRef.componentInstance.patientData = {
       name: patient.name,
@@ -361,7 +467,9 @@ export class MedicalAttentionComponent implements OnInit, OnDestroy {
     modalRef.componentInstance.selectedHistory = {
       appointment_id: formData.appointment_id,
       preEnrollment: formData.pre_enrollment ?? '',
-      otherTreatments: formData.other_treatments ?? []
+      otherTreatments: formData.other_treatments ?? [],
+      consultation_reason: appointmentReason,
+      consultationReason: appointmentReason
     };
     
     const doctorId = formData?.appointment?.doctor_id ?? formData?.doctor_id ?? null;
@@ -379,7 +487,9 @@ export class MedicalAttentionComponent implements OnInit, OnDestroy {
             //modalRef.componentInstance.selectedHistory = response.data;
             modalRef.componentInstance.selectedHistory = {
               ...response.data,
-              appointment_id: formData.appointment_id // <-- asegura el appointment_id
+              appointment_id: formData.appointment_id, // <-- asegura el appointment_id
+              consultation_reason: response.data?.consultation_reason ?? appointmentReason,
+              consultationReason: response.data?.consultation_reason ?? appointmentReason
             };
             console.log('✅ Historia médica específica encontrada:', response.data);
             
@@ -435,9 +545,11 @@ export class MedicalAttentionComponent implements OnInit, OnDestroy {
     const treatmentNames = formData.treatment_ids ? 
       this.treatments.filter(t => formData.treatment_ids.includes(t.id)).map(t => t.nombre) : [];
 
+    const appointmentReason = formData?.appointment?.reason ?? formData?.reason ?? formData?.consultation_reason ?? formData.diagnosis ?? 'Consulta médica';
+
     const newHistory = {
       patient_id: patientId,
-      consultation_reason: formData.diagnosis || 'Consulta médica',
+      consultation_reason: appointmentReason,
       diagnosis: formData.diagnosis || '',
       treatments_performed: treatmentNames, // Array de nombres de tratamientos
       other_treatments: Array.isArray(formData.otherTreatments) ? formData.otherTreatments : [],
@@ -455,6 +567,8 @@ export class MedicalAttentionComponent implements OnInit, OnDestroy {
       details: ''
     };
 
+
+
     console.log('📝 Creando nueva historia médica con datos:', newHistory);
     console.log('💊 Tratamientos a sincronizar:', treatmentNames);
     console.log('🔧 Asignando selectedHistory al modal...');
@@ -471,27 +585,6 @@ export class MedicalAttentionComponent implements OnInit, OnDestroy {
   }
 
 
-  updateHistory(updatedHistory: any) {
-    if (!this['selectedHistory']) return;
-  
-    // Actualizar en memoria
-    Object.assign(this['selectedHistory'], updatedHistory);
-  
-    // También actualizamos en la tabla
-    const index = this.medicalAttentions.findIndex(
-      att => att.id === this['selectedHistory'].id
-    );
-    if (index !== -1) {
-      this.medicalAttentions[index] = { ...this['selectedHistory'] };
-    }
-  
-    // Aquí llamarías al backend si corresponde
-    // Aquí llamarías al backend si corresponde
-    this['attentionService'].updateAttention(this['selectedHistory'].id, updatedHistory)
-      .subscribe(() => {
-        console.log('Historia actualizada en el servidor');
-      });
-  }
   
 
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\MedicalAttention;
+use App\Models\Appointment;
 use App\Models\MedicalHistory;
 
 class MedicalAttentionController extends Controller
@@ -48,6 +49,10 @@ class MedicalAttentionController extends Controller
             'pre_enrollment' => 'nullable|string',
         ]);
 
+        $appointment = Appointment::find($validated['appointment_id']);
+        $consultationReason = $appointment->reason ?? ($validated['diagnosis'] ?? 'Consulta médica');
+
+
         //$attention = MedicalAttention::create($validated);
         $attention = MedicalAttention::create([
             'patient_id' => $validated['patient_id'],
@@ -70,11 +75,14 @@ class MedicalAttentionController extends Controller
 
         $attention->update(['total_cost' => $totalCost]);
 
+        // Update the appointment status to 'attended'
+        \App\Models\Appointment::where('id', $attention->appointment_id)->update(['status' => 'attended']);
+
         // Guardar en historial con datos sincronizados
         MedicalHistory::create([
             'patient_id' => $attention->patient_id,
             'medical_attention_id' => $attention->id,
-            'consultation_reason' => 'Consulta médica',
+            'consultation_reason' => $consultationReason,
             'diagnosis' => $validated['diagnosis'] ?? '',
             'pre_enrollment' => $validated['pre_enrollment'] ?? '',
             'other_treatments' => $validated['other_treatments'] ?? [],
@@ -151,6 +159,9 @@ class MedicalAttentionController extends Controller
                 ]
             );
 
+            // Update the appointment status to 'attended'
+            \App\Models\Appointment::where('id', $validated['appointment_id'])->update(['status' => 'attended']);
+
             // Devolver con relaciones cargadas
             return response()->json($attention->load(['patient', 'appointment', 'treatments']));
 
@@ -175,4 +186,52 @@ class MedicalAttentionController extends Controller
 
         return response()->json(null, 204);
     }
+    /*
+    public function getByAppointment(Request $request)
+    {
+        $appointmentId = $request->query('appointment_id');
+
+        if (!$appointmentId) {
+            return response()->json(['error' => 'appointment_id es requerido'], 400);
+        }
+
+        $medicalAttention = MedicalAttention::with(['treatments'])
+            ->where('appointment_id', $appointmentId)
+            ->first();
+
+        if (!$medicalAttention) {
+            return response()->json([
+                'error' => 'No se encontró atención médica para esta cita',
+                'other_treatments' => [],
+            ], 404);
+        }
+
+        $medicalAttention->other_treatments = $medicalAttention->other_treatments ?? [];
+
+
+        return response()->json($medicalAttention);
+    }
+    */
+    public function getByAppointment($appointmentId)
+    {
+        // Fetch the medical attention, eager loading only 'treatments'
+        $attention = MedicalAttention::with(['treatments'])
+            ->where('appointment_id', $appointmentId)
+            ->first();
+
+        if (!$attention) {
+            // If no medical attention is found, return a 404 with a message and an empty other_treatments array
+            return response()->json([
+                'message' => 'No se encontró atención médica para esta cita',
+                'other_treatments' => [],
+            ], 404);
+        }
+
+        // Ensure other_treatments is always an array, even if null in the database
+        $attention->other_treatments = $attention->other_treatments ?? [];
+
+        // Return the attention object with treatments and other_treatments
+        return response()->json($attention);
+    }
+
 }

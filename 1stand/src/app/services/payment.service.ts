@@ -46,17 +46,7 @@ export class PaymentService {
   }
 
 
-  updatePayment(id: number, payment: Payment): Observable<Payment> {
-    const payload = {
-      patient_id: payment.patientId,
-      appointment_id: payment.appointmentId,
-      treatment_id: payment.treatmentId,
-      amount: payment.amount,
-      date: payment.date,
-      method: payment.method,
-      status: payment.status
-    };
-
+  updatePayment(id: number, payload: any): Observable<Payment> {
     return this.http.put<RawPayment>(`${this.apiUrl}/${id}`, payload).pipe(
       map(this.mapPaymentFromBackend)
     );
@@ -72,6 +62,8 @@ export class PaymentService {
       patientId: raw.patient_id,
       appointmentId: raw.appointment_id,
       treatmentId: raw.treatment_id,
+      treatments: raw.treatments,
+      other_treatments: raw.other_treatments,
       amount: parseFloat(raw.amount),
       date: raw.date,
       method: raw.method,

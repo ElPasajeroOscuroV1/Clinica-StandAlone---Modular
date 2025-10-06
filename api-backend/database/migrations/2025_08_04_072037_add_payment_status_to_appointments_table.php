@@ -10,14 +10,14 @@ return new class extends Migration
     {
         Schema::table('appointments', function (Blueprint $table) {
             // Añade la nueva columna 'payment_status' de tipo string
-            $table->string('payment_status')->after('reason')->default('Pendiente');
+            $table->enum('payment_status', ['Pendiente', 'Pagado'])->default('Pendiente')->after('reason');
         });
     }
 
     public function down(): void
     {
         Schema::table('appointments', function (Blueprint $table) {
-            $table->dropColumn('payment_status');
+            $table->enum('payment_status', ['Pendiente', 'Pagado'])->default('Pendiente')->after('status');
         });
     }
 };

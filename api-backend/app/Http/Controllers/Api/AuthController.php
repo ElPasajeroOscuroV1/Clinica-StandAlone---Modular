@@ -21,11 +21,24 @@ class AuthController extends Controller
     {
         try {
             // Validación de datos
-            $request->validate([
+            $rules = [
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
-                'password' => 'required|string|min:8|confirmed'
-            ]);
+                'password' => 'required|string|min:8|confirmed',
+                'role' => 'required|in:doctor,administrador,recepcionista,patient', // Assuming these are the only roles
+            ];
+
+            // Add phone validation if role is 'doctor'
+            if ($request->input('role') === 'doctor') {
+                $rules['phone'] = 'required|string|max:20';
+            } else {
+                // Phone is optional for other roles, but let's ensure it's not present if not needed
+                // or handle it as nullable if it can be provided for other roles.
+                // For now, we'll make it nullable if not a doctor.
+                $rules['phone'] = 'nullable|string|max:20';
+            }
+
+            $request->validate($rules);
 
             // Crear usuario
             $user = User::create([

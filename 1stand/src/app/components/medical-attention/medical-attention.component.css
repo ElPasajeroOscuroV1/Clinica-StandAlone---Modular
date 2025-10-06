@@ -202,3 +202,30 @@ mat-option:focus-visible {
     font-size: 0.9rem;
   }
 }
+.attention-status-badge {
+  margin-bottom: 12px;
+}
+
+.attention-status {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: bold;
+}
+
+.attention-status--pending {
+  background-color: #6c757d;
+}
+
+.attention-status--attended {
+  background-color: #198754;
+}
+
+.attention-status--cancelled {
+  background-color: #dc3545;
+}
+
+.attention-status--unknown {
+  background-color: #6c757d;
+}

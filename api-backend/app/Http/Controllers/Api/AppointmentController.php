@@ -42,10 +42,21 @@ class AppointmentController extends Controller
                 'patient_name' => $appointment->patient ? $appointment->patient->name : null,
                 'doctor_id' => $appointment->doctor_id,
                 'doctor_name' => $appointment->doctor ? $appointment->doctor->name : null,
+                'doctor_specialty' => $appointment->doctor ? $appointment->doctor->specialty : null,
+                'doctor' => $appointment->doctor ? [
+                    'id' => $appointment->doctor->id,
+                    'name' => $appointment->doctor->name,
+                    'specialty' => $appointment->doctor->specialty,
+                    'email' => $appointment->doctor->email,
+                    'phone' => $appointment->doctor->phone,
+                    'available' => $appointment->doctor->available,
+                ] : null,
                 'date' => $appointment->date,
                 'time' => $appointment->time,
                 'reason' => $appointment->reason,
                 'payment_status' => $appointment->payment_status,
+                'status' => $appointment->status,
+                'ci' => $appointment->ci,
             ];
         });
         return response()->json($appointments);
@@ -162,8 +173,12 @@ class AppointmentController extends Controller
                 return [
                     'id' => $appointment->id,
                     'date' => $appointment->date,
+                    'time' => $appointment->time,
                     'doctor_id' => $appointment->doctor_id,
-                    'doctor_name' => $appointment->doctor ? $appointment->doctor->name : null
+                    'doctor_name' => $appointment->doctor ? $appointment->doctor->name : null,
+                    'doctor_specialty' => $appointment->doctor ? $appointment->doctor->specialty : null,
+                    'status' => $appointment->status,
+                    'payment_status' => $appointment->payment_status,
                 ];
             });
 
@@ -173,9 +188,31 @@ class AppointmentController extends Controller
     public function appointmentsByDoctorPatient(Request $request, $patientId)
     {
         $doctorId = $request->user()->doctor_id;
-        return Appointment::where('patient_id', $patientId)
+
+        $appointments = Appointment::with('doctor')
+            ->where('patient_id', $patientId)
             ->where('doctor_id', $doctorId)
-            ->get();
+            ->where(function ($query) {
+                $query->whereNull('status')
+                    ->orWhere('status', '!=', 'attended');
+            })
+            ->orderBy('date')
+            ->orderBy('time')
+            ->get()
+            ->map(function ($appointment) {
+                return [
+                    'id' => $appointment->id,
+                    'date' => $appointment->date,
+                    'time' => $appointment->time,
+                    'doctor_id' => $appointment->doctor_id,
+                    'doctor_name' => $appointment->doctor ? $appointment->doctor->name : null,
+                    'doctor_specialty' => $appointment->doctor ? $appointment->doctor->specialty : null,
+                    'status' => $appointment->status,
+                    'payment_status' => $appointment->payment_status,
+                ];
+            });
+
+        return response()->json($appointments);
     }
 
 }

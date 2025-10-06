@@ -1,0 +1,9 @@
+﻿from pathlib import Path
+path = Path('1stand/src/app/components/payment/payment.component.ts')
+text = path.read_text(encoding='latin-1')
+needle = "  private isAttendedAppointment(appointment: any): boolean {\r\n    if (!appointment) {\r\n      return false;\r\n    }\r\n    const status = (appointment.status ?? appointment.appointment_status ?? '').toString().toLowerCase();\r\n    return status === 'attended';\r\n  }\r\n\r\n  exportToPDF() {"
+if needle not in text:
+    raise SystemExit('needle not found for helper insert')
+insert = "  private isAttendedAppointment(appointment: any): boolean {\r\n    if (!appointment) {\r\n      return false;\r\n    }\r\n    const status = (appointment.status ?? appointment.appointment_status ?? '').toString().toLowerCase();\r\n    return status === 'attended';\r\n  }\r\n\r\n  private buildAppointmentFromPayment(payment: Payment): Appointment | null {\r\n    if (!payment.appointmentId) {\r\n      return null;\r\n    }\r\n\r\n    const base = (payment.appointment ?? {}) as any;\r\n\r\n    const derived: Appointment = {\r\n      id: payment.appointmentId,\r\n      patient_id: payment.patientId,\r\n      patient_name: payment.patient?.name ?? '',\r\n      ci: null,\r\n      doctor_id: base?.doctor_id ?? base?.doctor?.id ?? null,\r\n      doctor: base?.doctor ?? null,\r\n      doctor_name: base?.doctor_name ?? '',\r\n      doctor_specialty: base?.doctor_specialty ?? null,\r\n      date: base?.date ?? '',\r\n      time: base?.time ?? '',\r\n      reason: base?.reason ?? '',\r\n      payment_status: base?.payment_status ?? payment.status ?? 'Pendiente',\r\n      status: base?.status ?? 'attended'\r\n    } as Appointment;\r\n\r\n    return derived;\r\n  }\r\n\r\n  exportToPDF() {"
+text = text.replace(needle, insert)
+path.write_text(text, encoding='latin-1')

@@ -36,6 +36,12 @@ export class MedicalDataService {
           preEnrollment: updatedHistory.pre_enrollment ?? attention.preEnrollment,
           otherTreatments: updatedHistory.other_treatments ?? attention.otherTreatments,
           medical_history_id: updatedHistory.id, // Actualizar la referencia al ID de la historia
+          appointment: attention.appointment
+            ? {
+                ...attention.appointment,
+                reason: updatedHistory.consultation_reason ?? attention.appointment.reason ?? null
+              }
+            : attention.appointment,
           // Asegúrate de que otros campos relevantes de MedicalAttention se actualicen aquí
         };
       }

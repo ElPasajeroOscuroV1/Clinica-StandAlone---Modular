@@ -30,7 +30,8 @@ export class HomeComponent {
   logout() {
     this.authService.logout().subscribe({
       next: () => {
-        localStorage.removeItem('role');
+        //localStorage.removeItem('role');
+        localStorage.clear();
         this.router.navigate(['/login']);
       },
       error: (error) => {

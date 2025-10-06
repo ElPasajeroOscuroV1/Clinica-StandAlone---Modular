@@ -204,13 +204,22 @@ export class MedicalHistoryModalComponent implements OnInit, OnChanges {
    */
   loadSelectedHistory(history: any): void {
     console.log('🔄 Cargando historia en el formulario:', history);
+    const previousSelected = this.selectedHistory;
     this.selectedHistory = history;
+
+    const consultationReason = history.consultation_reason
+      ?? history.consultationReason
+      ?? history.reason
+      ?? history.appointment?.reason
+      ?? previousSelected?.appointment?.reason
+      ?? previousSelected?.reason
+      ?? '';
 
     // Patch valores simples
     const formData = {
       medicalBackground: history.medical_background ?? '',
       dentalBackground: history.dental_background ?? '',
-      consultationReason: history.consultation_reason ?? '',
+      consultationReason: consultationReason,
       diagnosis: history.diagnosis ?? '',
       extraoralExam: history.extraoral_exam ?? '',
       intraoralExam: history.intraoral_exam ?? '',
@@ -430,7 +439,9 @@ export class MedicalHistoryModalComponent implements OnInit, OnChanges {
         details: formValues.details || ''
       };
     
-    const isUpdate = !!this.selectedHistory?.id;
+        const consultationReasonValue = formValues.consultationReason;
+
+const isUpdate = !!this.selectedHistory?.id;
   
     const save$ = isUpdate
       ? this.medicalHistoryService.updateMedicalHistory(this.selectedHistory.id, historyData)
@@ -454,7 +465,7 @@ export class MedicalHistoryModalComponent implements OnInit, OnChanges {
           this.medicalDataService.updateMedicalAttentionFromHistory(historyData); // Notificar a MedicalDataService
     
           // Notifica al padre si lo necesitas
-          this.saveHistory.emit(this.medicalHistoryForm.getRawValue());
+          this.saveHistory.emit({ ...historyData, consultationReason: consultationReasonValue });
     
           this.activeModal.close({
             action: isUpdate ? 'update' : 'create',
@@ -529,6 +540,11 @@ export class MedicalHistoryModalComponent implements OnInit, OnChanges {
   }
   
   startNewVersion(): void {
+    const appointmentReason = this.selectedHistory?.consultation_reason
+      ?? this.selectedHistory?.consultationReason
+      ?? this.selectedHistory?.appointment?.reason
+      ?? '';
+
     this.selectedHistory = null as any;
     this.medicalHistoryForm.reset({
       patientName: this.patientData?.name ?? '',
@@ -536,7 +552,7 @@ export class MedicalHistoryModalComponent implements OnInit, OnChanges {
       patientCi: this.patientData?.ci ?? '',
       medicalBackground: '',
       dentalBackground: '',
-      consultationReason: '',
+      consultationReason: appointmentReason,
       diagnosis: '',
       extraoralExam: '',
       intraoralExam: '',

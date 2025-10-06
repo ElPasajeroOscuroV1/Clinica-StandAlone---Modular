@@ -92,7 +92,7 @@ class MedicalHistoryController extends Controller
                 ->get();
 
             if ($histories->isEmpty()) {
-                return response()->json(['message' => 'No se encontraron historiales para este paciente'], 404);
+                return response()->json(['message' => 'No se encontraron historiales para este paciente', 'data' => []], 200);
             }
 
             return response()->json(['data' => $histories], 200);
@@ -184,3 +184,4 @@ class MedicalHistoryController extends Controller
         }
     }
 }
+

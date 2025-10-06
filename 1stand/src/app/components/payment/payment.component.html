@@ -32,20 +32,44 @@
         Seleccione una cita.
       </div>
 
-      <!-- Tratamiento -->
-      <label for="treatment" class="form-label mt-3">Tratamiento</label>
-      <select id="treatment" formControlName="treatment_id" class="form-control">
-        <option value="">Seleccione un tratamiento</option>
-        <option *ngFor="let treatment of treatments" [value]="treatment.id">
-          {{ treatment.id }} - {{ treatment.nombre }}
-        </option>
-      </select>
+      <!-- Tratamientos médicos aplicados -->
+      <div class="form-group mt-3">
+        <label>Tratamientos aplicados</label>
+        <div *ngIf="attentionTreatments.length > 0" class="bg-light p-2 rounded">
+          <ul class="mb-0">
+            <li *ngFor="let treatment of attentionTreatments">{{ treatment.nombre }} - ${{ treatment.precio }}</li>
+          </ul>
+        </div>
+      </div>
 
-      <!-- Monto -->
+      <!-- Otros Tratamientos aplicados -->
+      <div class="form-group mt-3">
+        <label>Otros Tratamientos aplicados</label>
+        <div *ngIf="otherTreatments.length > 0" class="bg-light p-2 rounded">
+          <ul class="mb-0">
+            <li *ngFor="let other of otherTreatments">{{ other.name }} - ${{ other.price }}</li>
+          </ul>
+        </div>
+        <div *ngIf="attentionTreatments.length === 0 && otherTreatments.length === 0" class="text-muted">
+          Ningún tratamiento aplicado en esta cita.
+        </div>
+      </div>
+
+      <div class="mt-3" *ngIf="selectedAttentionTotal !== null">
+        <h5>Costo total de la atención</h5>
+        <p>{{ selectedAttentionTotal | currency:'USD' }}</p>
+      </div>
+
+      <!-- Monto 
       <label for="amount" class="form-label mt-3">Monto</label>
       <input id="amount" type="number" formControlName="amount" class="form-control" required />
       <div class="text-danger mt-1" *ngIf="paymentForm.get('amount')?.invalid && paymentForm.get('amount')?.touched">
         El monto es obligatorio.
+      </div>-->
+
+      <div>
+        <label for="amount">Monto</label>
+        <input id="amount" type="number" formControlName="amount" readonly />
       </div>
 
       <!-- Fecha de pago -->
@@ -55,23 +79,17 @@
         La fecha de pago es obligatoria.
       </div>
 
-      <!-- Método -->
-      <label for="method" class="form-label mt-3">Método</label>
+      <!-- MÃ©todo -->
+      <label for="method" class="form-label mt-3">MÃ©todo</label>
       <select id="method" formControlName="method" class="form-control" required>
         <option value="Efectivo">Efectivo</option>
         <option value="Tarjeta">Tarjeta</option>
         <option value="Transferencia">Transferencia</option>
       </select>
 
-      <!-- Estado -->
-      <label for="status" class="form-label mt-3">Estado</label>
-      <select id="status" formControlName="status" class="form-control" required>
-        <option value="Pendiente">Pendiente</option>
-        <option value="Pagado">Pagado</option>
-        <option value="Cancelado">Cancelado</option>
-      </select>
 
-      <!-- Botón -->
+
+      <!-- BotÃ³n -->
       <button type="submit" [disabled]="paymentForm.invalid" class="btn btn-success mt-3">
         {{ editingPaymentId ? 'Actualizar Pago' : 'Registrar Pago' }}
       </button>
@@ -87,11 +105,11 @@
       <tr>
         <th>Paciente</th>
         <th>Fecha de Cita</th>
-        <th>Tratamiento</th>
+        <th>Tratamientos</th>
+        <th>Otros Tratamientos</th>
         <th>Fecha de Pago</th>
         <th>Monto</th>
-        <th>Método</th>
-        <th>Estado</th>
+        <th>MÃ©todo</th>
         <th style="width: 150px;">Acciones</th>
       </tr>
     </thead>
@@ -99,24 +117,34 @@
       <tr *ngFor="let payment of payments">
         <td>{{ payment.patient?.name }}</td>
         <td>{{ payment.appointment?.date | date:'shortDate' }}</td>
-        <td>{{ payment.treatment?.nombre || 'Sin tratamiento' }}</td>
+        <td>
+          <ng-container *ngIf="payment.treatments && payment.treatments.length > 0; else noTreatments">
+            <ul style="margin: 0; padding-left: 16px;">
+              <li *ngFor="let t of payment.treatments">
+                {{ t.nombre }} ({{ t.precio }} BS)
+              </li>
+            </ul>
+          </ng-container>
+          <ng-template #noTreatments>Sin tratamientos</ng-template>
+        </td>
+        <td>
+          <ng-container *ngIf="payment.other_treatments && payment.other_treatments.length > 0; else noOtros">
+            <ul style="margin: 0; padding-left: 16px;">
+              <li *ngFor="let ot of payment.other_treatments">
+                {{ ot.name }} ({{ ot.price }} BS)
+              </li>
+            </ul>
+          </ng-container>
+          <ng-template #noOtros>Sin otros tratamientos</ng-template>
+        </td>
         <td [ngClass]="getPagoClass(payment)">{{ payment.date | date:'shortDate' }}</td>
         <td>{{ payment.amount | currency:'USD' }}</td>
         <td>{{ payment.method }}</td>
         <td>
-          <span
-            [ngClass]="{
-              'badge bg-success': payment.status === 'Pagado',
-              'badge bg-warning text-dark': payment.status === 'Pendiente',
-              'badge bg-danger': payment.status === 'Cancelado'
-            }"
-          >
-            {{ payment.status }}
-          </span>
-        </td>
-        <td>
-          <button class="btn btn-primary btn-sm me-2" (click)="editPayment(payment)">Editar</button>
+          <!--<button class="btn btn-primary btn-sm me-2" (click)="editPayment(payment)">Editar</button>-->
           <button class="btn btn-danger btn-sm" (click)="deletePayment(payment.id)">Eliminar</button>
+          <button class="btn btn-outline-primary btn-sm me-2" (click)="exportComprobante(payment)">Comprobante PDF</button>
+
         </td>
       </tr>
     </tbody>
