@@ -63,6 +63,13 @@
         <button routerLink="/medical-attention">Ver Atenciones</button>
       </div>
 
+      <!-- Reportes -->
+      <div class="card" *ngIf="role === 'administrador'">
+        <h3>Reportes</h3>
+        <p>Ver resumen y estadísticas</p>
+        <button routerLink="/reports">Ver Reportes</button>
+      </div>
+
     <!-- Sección de estadísticas -->
     <div class="statistics-section">
       <h2>Resumen</h2>

@@ -1,0 +1,15 @@
+.container {
+  max-width: 900px;
+  margin: auto;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+canvas {
+  max-width: 100%;
+  margin-top: 15px;
+}

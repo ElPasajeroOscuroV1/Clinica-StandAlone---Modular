@@ -1,0 +1,41 @@
+<div class="container my-4">
+  <h2 class="mb-3 text-center">📊 Reportes</h2>
+
+  <div class="mb-4 d-flex gap-2">
+    <input type="date" [(ngModel)]="from" class="form-control w-auto">
+    <input type="date" [(ngModel)]="to" class="form-control w-auto">
+    <select [(ngModel)]="group" class="form-select w-auto">
+      <option value="day">Día</option>
+      <option value="month">Mes</option>
+      <option value="year">Año</option>
+    </select>
+    <button class="btn btn-primary" (click)="loadReports()">Actualizar</button>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-6">
+      <h5 class="text-center">Atenciones</h5>
+      <canvas #appointmentsChart></canvas>
+    </div>
+
+    <div class="col-md-6">
+      <h5 class="text-center">Pacientes frecuentes</h5>
+      <canvas #topPatientsChart></canvas>
+    </div>
+
+    <div class="col-md-6">
+      <h5 class="text-center">Tratamientos más realizados</h5>
+      <canvas #topTreatmentsChart></canvas>
+    </div>
+
+    <div class="col-md-6">
+      <h5 class="text-center">Atenciones por doctor</h5>
+      <canvas #doctorStatsChart></canvas>
+    </div>
+
+    <div class="col-12">
+      <h5 class="text-center">Pagos recibidos</h5>
+      <canvas #paymentsChart></canvas>
+    </div>
+  </div>
+</div>

@@ -10,6 +10,7 @@ import { PaymentComponent } from './components/payment/payment.component';
 import { TreatmentComponent } from './components/treatment/treatment.component';
 import { MedicalAttentionComponent } from './components/medical-attention/medical-attention.component';
 import { MedicalHistoryComponent } from './components/medical-history/medical-history.component';
+import { ReportsComponent } from './components/reports/reports.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/login',
@@ -52,6 +53,9 @@ export const routes: Routes = [
     },
     { path: 'medical-history',
         component: MedicalHistoryComponent
+    },
+    { path: 'reports',
+        component: ReportsComponent
     },
     /*
     { path: 'treatments', 

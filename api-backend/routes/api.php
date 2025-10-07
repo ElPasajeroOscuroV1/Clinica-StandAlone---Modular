@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\TreatmentController;
 use App\Http\Controllers\Api\MedicalAttentionController;
 use App\Http\Controllers\Api\MedicalHistoryController;
+use App\Http\Controllers\Api\ReportController;
 
 Route::get('/', function () {
     return response()->json(['message' => 'API funcionando correctamente']);
@@ -58,7 +59,16 @@ Route::middleware('auth:sanctum')->group(function () {
     // routes/api.php
     Route::get('/medical-attentions/by-appointment/{appointment}', [MedicalAttentionController::class, 'getByAppointment']);
 
+});
 
+Route::prefix('reports')->group(function () {
+    Route::get('/summary', [ReportController::class, 'summary']);
+
+    Route::get('/appointments', [ReportController::class, 'appointments']);
+    Route::get('/patients', [ReportController::class, 'topPatients']);
+    Route::get('/treatments', [ReportController::class, 'topTreatments']);
+    Route::get('/doctors', [ReportController::class, 'doctorStats']);
+    Route::get('/payments', [ReportController::class, 'payments']);
 });
 
 // END POINTS MOVIL
