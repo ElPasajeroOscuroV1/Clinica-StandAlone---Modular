@@ -65,9 +65,9 @@ Route::prefix('reports')->group(function () {
     Route::get('/summary', [ReportController::class, 'summary']);
 
     Route::get('/appointments', [ReportController::class, 'appointments']);
-    Route::get('/patients', [ReportController::class, 'topPatients']);
-    Route::get('/treatments', [ReportController::class, 'topTreatments']);
-    Route::get('/doctors', [ReportController::class, 'doctorStats']);
+    Route::get('/top-patients', [ReportController::class, 'topPatients']);
+    Route::get('/top-treatments', [ReportController::class, 'topTreatments']);
+    Route::get('/doctor-stats', [ReportController::class, 'doctorStats']);
     Route::get('/payments', [ReportController::class, 'payments']);
 });
 

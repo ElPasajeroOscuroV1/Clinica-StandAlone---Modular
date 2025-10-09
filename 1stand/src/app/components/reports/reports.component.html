@@ -1,41 +1,77 @@
-<div class="container my-4">
-  <h2 class="mb-3 text-center">📊 Reportes</h2>
+<div class="container mt-4" id="reportContent">
+  <h2 class="text-center mb-4">📊 Reportes Generales</h2>
 
-  <div class="mb-4 d-flex gap-2">
-    <input type="date" [(ngModel)]="from" class="form-control w-auto">
-    <input type="date" [(ngModel)]="to" class="form-control w-auto">
-    <select [(ngModel)]="group" class="form-select w-auto">
-      <option value="day">Día</option>
-      <option value="month">Mes</option>
-      <option value="year">Año</option>
-    </select>
-    <button class="btn btn-primary" (click)="loadReports()">Actualizar</button>
+  <!-- FILTROS -->
+  <div class="d-flex justify-content-center gap-3 mb-4">
+    <div>
+      <label>Desde:</label>
+      <input type="date" [(ngModel)]="from" class="form-control" />
+    </div>
+    <div>
+      <label>Hasta:</label>
+      <input type="date" [(ngModel)]="to" class="form-control" />
+    </div>
+    <div>
+      <label>Grupo:</label>
+      <select [(ngModel)]="group" class="form-control">
+        <option value="day">Día</option>
+        <option value="week">Semana</option>
+        <option value="month">Mes</option>
+      </select>
+    </div>
+    <div class="align-self-end">
+      <button class="btn btn-primary" (click)="loadReports()">Actualizar</button>
+    </div>
   </div>
 
+  <!-- RESUMEN GENERAL -->
+  <div class="card p-3 mb-4">
+    <h4>📌 Resumen General</h4>
+    <p><b>Total de Citas:</b> {{ summary.totalAppointments || 0 }}</p>
+    <p><b>Total de Pagos:</b> {{ summary.totalIncome || 0 }}</p>
+    <p><b>Tratamiento más Común:</b> {{ summary.mostRequestedTreatment || 'Sin datos' }}</p>
+  </div>
+
+  <!-- GRÁFICOS -->
   <div class="row g-4">
     <div class="col-md-6">
-      <h5 class="text-center">Atenciones</h5>
-      <canvas #appointmentsChart></canvas>
+      <div class="card p-3 shadow">
+        <h5 class="text-center">Citas por Periodo</h5>
+        <canvas id="appointmentsChart"></canvas>
+      </div>
     </div>
 
     <div class="col-md-6">
-      <h5 class="text-center">Pacientes frecuentes</h5>
-      <canvas #topPatientsChart></canvas>
+      <div class="card p-3 shadow">
+        <h5 class="text-center">Pacientes Más Frecuentes</h5>
+        <canvas id="patientsChart"></canvas>
+      </div>
     </div>
 
     <div class="col-md-6">
-      <h5 class="text-center">Tratamientos más realizados</h5>
-      <canvas #topTreatmentsChart></canvas>
+      <div class="card p-3 shadow">
+        <h5 class="text-center">Tratamientos Más Realizados</h5>
+        <canvas id="treatmentsChart"></canvas>
+      </div>
     </div>
 
     <div class="col-md-6">
-      <h5 class="text-center">Atenciones por doctor</h5>
-      <canvas #doctorStatsChart></canvas>
+      <div class="card p-3 shadow">
+        <h5 class="text-center">Atenciones por Doctor</h5>
+        <canvas id="doctorStatsChart"></canvas>
+      </div>
     </div>
 
-    <div class="col-12">
-      <h5 class="text-center">Pagos recibidos</h5>
-      <canvas #paymentsChart></canvas>
+    <div class="col-md-12">
+      <div class="card p-3 shadow">
+        <h5 class="text-center">Pagos por Periodo</h5>
+        <canvas id="paymentsChart"></canvas>
+      </div>
     </div>
   </div>
+</div>
+
+<!-- BOTÓN EXPORTAR -->
+<div class="text-center mt-4">
+  <button class="btn btn-success" (click)="exportPDF()">📄 Exportar a PDF</button>
 </div>

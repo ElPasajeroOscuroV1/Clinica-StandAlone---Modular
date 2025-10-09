@@ -1,9 +1,10 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Chart, ChartConfiguration, ChartOptions, registerables } from 'chart.js';
+import { Chart, ChartConfiguration, ChartOptions, ChartType, registerables } from 'chart.js';
 import { FormsModule } from '@angular/forms';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
-// Register Chart.js components
 Chart.register(...registerables);
 
 @Component({
@@ -15,130 +16,51 @@ Chart.register(...registerables);
 })
 export class ReportsComponent implements OnInit, AfterViewInit {
 
-  @ViewChild('appointmentsChart', { static: true }) appointmentsChartRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('topPatientsChart', { static: true }) topPatientsChartRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('topTreatmentsChart', { static: true }) topTreatmentsChartRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('doctorStatsChart', { static: true }) doctorStatsChartRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('paymentsChart', { static: true }) paymentsChartRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('chartContainer', { static: false }) chartContainer!: ElementRef;
 
-  appointmentsChart: Chart | null = null;
-  topPatientsChart: Chart | null = null;
-  topTreatmentsChart: Chart | null = null;
-  doctorStatsChart: Chart | null = null;
-  paymentsChart: Chart | null = null;
-
-  // 📅 Filtros
   from: string = '';
   to: string = '';
-  group: string = 'day';
+  group: string = 'month';
 
-  // 📊 Datos crudos de la API
   appointments: any[] = [];
   topPatients: any[] = [];
   topTreatments: any[] = [];
   doctorStats: any[] = [];
   payments: any[] = [];
+  summary: any = {};
 
-  // 📈 Configuración de gráficos (para Chart.js)
-  appointmentsChartData: ChartConfiguration<'bar'>['data'] = { labels: [], datasets: [] };
-  topPatientsChartData: ChartConfiguration<'bar'>['data'] = { labels: [], datasets: [] };
-  topTreatmentsChartData: ChartConfiguration<'bar'>['data'] = { labels: [], datasets: [] };
-  doctorStatsChartData: ChartConfiguration<'bar'>['data'] = { labels: [], datasets: [] };
-  paymentsChartData: ChartConfiguration<'bar'>['data'] = { labels: [], datasets: [] };
+  charts: Chart[] = [];
 
-  chartOptions: ChartOptions = {
-    responsive: true,
-    plugins: {
-      legend: { display: true, position: 'top' },
-      tooltip: { enabled: true }
-    }
-  };
+  appointmentsChartData: any;
+  topPatientsChartData: any;
+  topTreatmentsChartData: any;
+  doctorStatsChartData: any;
+  paymentsChartData: any;
 
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
+    const today = new Date();
+    this.to = today.toISOString().split('T')[0];
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    this.from = firstDay.toISOString().split('T')[0];
+
     this.loadReports();
   }
 
   ngAfterViewInit(): void {
-    this.createCharts();
+    this.updateCharts();
   }
 
-  createCharts(): void {
-    // Crear gráfico de atenciones
-    if (this.appointmentsChartRef) {
-      this.appointmentsChart = new Chart(this.appointmentsChartRef.nativeElement, {
-        type: 'bar',
-        data: this.appointmentsChartData,
-        options: this.chartOptions
-      });
-    }
-
-    // Crear gráfico de pacientes frecuentes
-    if (this.topPatientsChartRef) {
-      this.topPatientsChart = new Chart(this.topPatientsChartRef.nativeElement, {
-        type: 'bar',
-        data: this.topPatientsChartData,
-        options: this.chartOptions
-      });
-    }
-
-    // Crear gráfico de tratamientos
-    if (this.topTreatmentsChartRef) {
-      this.topTreatmentsChart = new Chart(this.topTreatmentsChartRef.nativeElement, {
-        type: 'bar',
-        data: this.topTreatmentsChartData,
-        options: this.chartOptions
-      });
-    }
-
-    // Crear gráfico de estadísticas por doctor
-    if (this.doctorStatsChartRef) {
-      this.doctorStatsChart = new Chart(this.doctorStatsChartRef.nativeElement, {
-        type: 'bar',
-        data: this.doctorStatsChartData,
-        options: this.chartOptions
-      });
-    }
-
-    // Crear gráfico de pagos
-    if (this.paymentsChartRef) {
-      this.paymentsChart = new Chart(this.paymentsChartRef.nativeElement, {
-        type: 'bar',
-        data: this.paymentsChartData,
-        options: this.chartOptions
-      });
-    }
-  }
-
-  updateCharts(): void {
-    if (this.appointmentsChart) {
-      this.appointmentsChart.data = this.appointmentsChartData;
-      this.appointmentsChart.update();
-    }
-    if (this.topPatientsChart) {
-      this.topPatientsChart.data = this.topPatientsChartData;
-      this.topPatientsChart.update();
-    }
-    if (this.topTreatmentsChart) {
-      this.topTreatmentsChart.data = this.topTreatmentsChartData;
-      this.topTreatmentsChart.update();
-    }
-    if (this.doctorStatsChart) {
-      this.doctorStatsChart.data = this.doctorStatsChartData;
-      this.doctorStatsChart.update();
-    }
-    if (this.paymentsChart) {
-      this.paymentsChart.data = this.paymentsChartData;
-      this.paymentsChart.update();
-    }
-  }
-
-  // 🔄 Cargar los reportes
   loadReports(): void {
     const baseUrl = 'http://localhost:8000/api/reports';
 
-    // 1️⃣ Reporte de citas (appointments)
+    // 🟢 Resumen general
+    this.http.get<any>(`${baseUrl}/summary`).subscribe(data => {
+      this.summary = data;
+    });
+
+    // 🟢 Reporte de citas
     this.http.get<any[]>(`${baseUrl}/appointments?from=${this.from}&to=${this.to}&group=${this.group}`)
       .subscribe(data => {
         this.appointments = data;
@@ -151,8 +73,8 @@ export class ReportsComponent implements OnInit, AfterViewInit {
         this.updateCharts();
       });
 
-    // 2️⃣ Reporte de pacientes más frecuentes
-    this.http.get<any[]>(`${baseUrl}/patients`)
+    // 🟢 Pacientes más frecuentes
+    this.http.get<any[]>(`${baseUrl}/top-patients`)
       .subscribe(data => {
         this.topPatients = data;
         this.topPatientsChartData = {
@@ -164,8 +86,8 @@ export class ReportsComponent implements OnInit, AfterViewInit {
         this.updateCharts();
       });
 
-    // 3️⃣ Reporte de tratamientos más realizados
-    this.http.get<any[]>(`${baseUrl}/treatments`)
+    // 🟢 Tratamientos más realizados
+    this.http.get<any[]>(`${baseUrl}/top-treatments`)
       .subscribe(data => {
         this.topTreatments = data;
         this.topTreatmentsChartData = {
@@ -177,8 +99,8 @@ export class ReportsComponent implements OnInit, AfterViewInit {
         this.updateCharts();
       });
 
-    // 4️⃣ Reporte de estadísticas por doctor
-    this.http.get<any[]>(`${baseUrl}/doctors`)
+    // 🟢 Estadísticas por doctor
+    this.http.get<any[]>(`${baseUrl}/doctor-stats`)
       .subscribe(data => {
         this.doctorStats = data;
         this.doctorStatsChartData = {
@@ -190,7 +112,7 @@ export class ReportsComponent implements OnInit, AfterViewInit {
         this.updateCharts();
       });
 
-    // 5️⃣ Reporte de pagos por periodo
+    // 🟢 Pagos por periodo
     this.http.get<any[]>(`${baseUrl}/payments?from=${this.from}&to=${this.to}&group=${this.group}`)
       .subscribe(data => {
         this.payments = data;
@@ -203,4 +125,61 @@ export class ReportsComponent implements OnInit, AfterViewInit {
         this.updateCharts();
       });
   }
+
+  updateCharts(): void {
+    this.destroyCharts();
+
+    const chartConfigs: { elementId: string; data: any; type: ChartType; label: string }[] = [
+      { elementId: 'appointmentsChart', data: this.appointmentsChartData, type: 'bar', label: 'Citas' },
+      { elementId: 'patientsChart', data: this.topPatientsChartData, type: 'bar', label: 'Pacientes' },
+      { elementId: 'treatmentsChart', data: this.topTreatmentsChartData, type: 'bar', label: 'Tratamientos' },
+      { elementId: 'doctorStatsChart', data: this.doctorStatsChartData, type: 'bar', label: 'Doctores' },
+      { elementId: 'paymentsChart', data: this.paymentsChartData, type: 'bar', label: 'Pagos' },
+    ];
+
+    chartConfigs.forEach(config => {
+      const element = document.getElementById(config.elementId) as HTMLCanvasElement;
+      if (element && config.data) {
+        const chart = new Chart(element, {
+          type: config.type,
+          data: config.data,
+          options: {
+            responsive: true,
+            plugins: { legend: { display: true, position: 'bottom' } }
+          } as ChartOptions
+        });
+        this.charts.push(chart);
+      }
+    });
+  }
+
+  destroyCharts(): void {
+    this.charts.forEach(chart => chart.destroy());
+    this.charts = [];
+  }
+
+  exportPDF(): void {
+    const data = document.getElementById('reportContent');
+    if (data) {
+      html2canvas(data, { scale: 2 }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        
+        // Escalar la imagen para que quepa dentro de la página
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pageWidth - 20; // margen de 10mm a cada lado
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        
+        // Si la altura es mayor que la página, reducimos un poco
+        const finalHeight = pdfHeight > pageHeight - 20 ? pageHeight - 20 : pdfHeight;
+        
+        pdf.addImage(imgData, 'PNG', 10, 10, pdfWidth, finalHeight);
+        pdf.save('reporte_completo.pdf');
+      });
+    }
+  }
+
 }
