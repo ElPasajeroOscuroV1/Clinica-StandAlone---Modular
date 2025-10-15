@@ -14,10 +14,20 @@ body {
   padding: 1rem;
 }
 
-/* ====== Contenedor principal ====== */
+/* ====== Contenedor del formulario ====== */
 .container {
   max-width: 800px;
   margin: 0 auto 2rem auto;
+  background-color: #fefefe;
+  padding: 1.5rem 2rem;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ====== Contenedor de la lista de pacientes (pantalla completa) ====== */
+.container-fluid {
+  width: 100%;
+  margin: 0 0 2rem 0;
   background-color: #fefefe;
   padding: 1.5rem 2rem;
   border-radius: 8px;

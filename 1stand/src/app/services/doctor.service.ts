@@ -23,26 +23,29 @@ export class DoctorService {
   getDoctor(id: number): Observable<Doctor> {
     return this.http.get<Doctor>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
   }
-  /*
-  createDoctor(doctor: Doctor): Observable<Doctor> {
-    return this.http.post<Doctor>(this.apiUrl, doctor, { headers: this.getHeaders() });
-  }
-
-  updateDoctor(id: number, doctor: Doctor): Observable<Doctor> {
-    return this.http.put<Doctor>(`${this.apiUrl}/${id}`, doctor, { headers: this.getHeaders() });
-  }
-  */
 
   createDoctor(doctor: any): Observable<any> {
     return this.http.post<any>(this.apiUrl, doctor, { headers: this.getHeaders() });
   }
-  
+
   updateDoctor(id: number, doctor: any): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/${id}`, doctor, { headers: this.getHeaders() });
   }
-  
 
   deleteDoctor(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
+  }
+
+  /**
+   * ✅ NUEVO MÉTODO:
+   * Permite actualizar o guardar solo el horario de trabajo del médico (turnos)
+   * desde el WorkScheduleModalComponent.
+   */
+  updateWorkSchedule(doctorId: number, workSchedule: any): Observable<any> {
+    return this.http.put<any>(
+      `${this.apiUrl}/${doctorId}/schedule`,
+      { schedule: workSchedule },
+      { headers: this.getHeaders() }
+    );
   }
 }

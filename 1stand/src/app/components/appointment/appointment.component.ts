@@ -15,6 +15,7 @@ import { Appointment } from '../../interfaces/appointment.interface';
 import { AppointmentService } from '../../services/appointment.service';
 import { PatientService } from '../../services/patient.service';
 import { DoctorService } from '../../services/doctor.service';
+import { WorkScheduleService } from '../../services/work-schedule.service';
 import { Patient } from '../../interfaces/patient.interface';
 import { Doctor } from '../../interfaces/doctor.interface';
 
@@ -31,6 +32,7 @@ export class AppointmentComponent implements OnInit {
   appointments: Appointment[] = [];
   patients: Patient[] = [];
   doctors: Doctor[] = [];
+  availableTurns: any[] = [];
   successMessage: string | null = null;
   errorMessage: string | null = null;
   isLoading = false;
@@ -59,13 +61,14 @@ export class AppointmentComponent implements OnInit {
     private readonly fb: FormBuilder,
     private readonly appointmentService: AppointmentService,
     private readonly patientService: PatientService,
-    private readonly doctorService: DoctorService
+    private readonly doctorService: DoctorService,
+    private readonly workScheduleService: WorkScheduleService
   ) {
     this.appointmentForm = this.fb.group({
       patient_id: ['', Validators.required],
       doctor_id: ['', Validators.required],
       date: ['', Validators.required],
-      time: ['', Validators.required],
+      turn: ['', Validators.required],
       reason: ['', [Validators.required, Validators.maxLength(255)]]
     });
   }
@@ -123,8 +126,8 @@ export class AppointmentComponent implements OnInit {
     this.errorMessage = null;
 
     forkJoin({
-      doctorAvailable: this.appointmentService.checkDoctorAvailability(doctorId, formValue.date, formValue.time),
-      patientAvailable: this.appointmentService.checkPatientAvailability(patientCi, formValue.date, formValue.time)
+      doctorAvailable: this.appointmentService.checkDoctorAvailability(doctorId, formValue.date, formValue.turn),
+      patientAvailable: this.appointmentService.checkPatientAvailability(patientCi, formValue.date, formValue.turn)
     })
       .pipe(
         switchMap(({ doctorAvailable, patientAvailable }) => {
@@ -141,7 +144,7 @@ export class AppointmentComponent implements OnInit {
             patient_id: patientId,
             doctor_id: doctorId,
             date: formValue.date,
-            time: formValue.time,
+            time: formValue.turn,
             reason: formValue.reason,
             payment_status: 'Pendiente'
           } as Appointment;
@@ -212,6 +215,22 @@ export class AppointmentComponent implements OnInit {
   getAttentionStatusLabel(appointment: Appointment): string {
     const statusKey = this.getAttentionStatusKey(appointment.status);
     return this.attentionStatusConfig[statusKey]?.label ?? this.capitalize(statusKey);
+  }
+
+  onDoctorOrDateChange(): void {
+    const formValue = this.appointmentForm.value;
+    const doctorId = formValue.doctor_id;
+    const date = formValue.date;
+
+    if (doctorId && date) {
+      // Limpiar mensajes de error previos al cargar turnos
+      this.errorMessage = '';
+      this.loadAvailableTurns(Number(doctorId), date);
+    } else {
+      // Si no hay doctor o fecha seleccionados, limpiar turnos y mostrar mensaje informativo
+      this.availableTurns = [];
+      this.appointmentForm.patchValue({ turn: '' });
+    }
   }
 
   getAttentionStatusClass(appointment: Appointment): string {
@@ -324,6 +343,18 @@ export class AppointmentComponent implements OnInit {
     return (status ?? 'pending').toLowerCase();
   }
 
+  private loadAvailableTurns(doctorId: number, date: string): void {
+    this.availableTurns = [];
+    this.workScheduleService.getAvailableTurns(doctorId, date).subscribe({
+      next: turns => {
+        this.availableTurns = turns;
+      },
+      error: error => {
+        this.errorMessage = 'Error al cargar los turnos disponibles: ' + this.extractErrorMessage(error);
+      }
+    });
+  }
+
   private capitalize(value: string): string {
     if (!value) {
       return '';
@@ -336,12 +367,13 @@ export class AppointmentComponent implements OnInit {
       patient_id: '',
       doctor_id: '',
       date: '',
-      time: '',
+      turn: '',
       reason: ''
     });
     this.appointmentForm.markAsPristine();
     this.appointmentForm.markAsUntouched();
     this.selectedPatientCi = null;
+    this.availableTurns = [];
   }
 
   private extractErrorMessage(error: unknown): string {
@@ -373,5 +405,3 @@ export class AppointmentComponent implements OnInit {
     return 'Ocurrio un error inesperado. Intente nuevamente.';
   }
 }
-
-

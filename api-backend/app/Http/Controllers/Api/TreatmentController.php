@@ -15,7 +15,12 @@ class TreatmentController extends Controller
     public function index()
     {
         //
-        return response()->json(Treatment::all(), 200);
+        return response()->json(Treatment::all()->map(function ($treatment) {
+            return $treatment->toArray() + [
+                'precio_con_descuento' => $treatment->precio_con_descuento,
+                'ahorro' => $treatment->ahorro,
+            ];
+        }), 200);
 
     }
 
@@ -29,12 +34,35 @@ class TreatmentController extends Controller
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'precio' => 'required|numeric',
-            'duracion' => 'required|integer'
+            'duracion' => 'required|integer',
+            'descuento_porcentaje' => 'nullable|numeric|min:0|max:100',
+            'descuento_monto' => 'nullable|numeric|min:0',
+            'tiene_descuento' => 'nullable|boolean',
+            'motivo_descuento' => 'nullable|string'
         ]);
+
+        // Asignar valores por defecto si no están presentes
+        $validated['tiene_descuento'] = $validated['tiene_descuento'] ?? false;
+        $validated['descuento_porcentaje'] = $validated['descuento_porcentaje'] ?? 0;
+        $validated['descuento_monto'] = $validated['descuento_monto'] ?? 0;
+        $validated['precio_original'] = $validated['precio_original'] ?? $validated['precio'];
+
+        // Si no tiene descuento, limpiar los valores de descuento
+        if (!$validated['tiene_descuento']) {
+            $validated['descuento_porcentaje'] = 0;
+            $validated['descuento_monto'] = 0;
+            $validated['motivo_descuento'] = null;
+        }
 
         $treatment = Treatment::create($validated);
 
-        return response()->json($treatment, 201);
+        // Calcular precio con descuento
+        $response = $treatment->toArray() + [
+            'precio_con_descuento' => $treatment->precio_con_descuento,
+            'ahorro' => $treatment->ahorro,
+        ];
+
+        return response()->json($response, 201);
     }
 
     /**
@@ -43,7 +71,13 @@ class TreatmentController extends Controller
     public function show(string $id)
     {
         //
-        return response()->json(Treatment::findOrFail($id), 200);
+        $treatment = Treatment::findOrFail($id);
+        $response = $treatment->toArray() + [
+            'precio_con_descuento' => $treatment->precio_con_descuento,
+            'ahorro' => $treatment->ahorro,
+        ];
+
+        return response()->json($response, 200);
 
     }
 
@@ -57,14 +91,37 @@ class TreatmentController extends Controller
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'precio' => 'required|numeric',
-            'duracion' => 'required|integer'
+            'duracion' => 'required|integer',
+            'precio_original' => 'nullable|numeric',
+            'descuento_porcentaje' => 'nullable|numeric|min:0|max:100',
+            'descuento_monto' => 'nullable|numeric|min:0',
+            'tiene_descuento' => 'nullable|boolean',
+            'motivo_descuento' => 'nullable|string'
         ]);
+
+        // Asignar valores por defecto si no están presentes
+        $validated['tiene_descuento'] = $validated['tiene_descuento'] ?? false;
+        $validated['descuento_porcentaje'] = $validated['descuento_porcentaje'] ?? 0;
+        $validated['descuento_monto'] = $validated['descuento_monto'] ?? 0;
+
+        // Si no tiene descuento, limpiar los valores de descuento
+        if (!$validated['tiene_descuento']) {
+            $validated['descuento_porcentaje'] = 0;
+            $validated['descuento_monto'] = 0;
+            $validated['motivo_descuento'] = null;
+        }
 
         $treatment = Treatment::findOrFail($id);
 
         $treatment->update($validated); // Usar los datos validados
 
-        return response()->json($treatment, 200);
+        // Calcular precio con descuento
+        $response = $treatment->toArray() + [
+            'precio_con_descuento' => $treatment->precio_con_descuento,
+            'ahorro' => $treatment->ahorro,
+        ];
+
+        return response()->json($response, 200);
     }
 
     /**

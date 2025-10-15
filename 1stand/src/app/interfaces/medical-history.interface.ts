@@ -3,6 +3,7 @@ export interface Patient {
   name: string;
   email: string;
   ci: string;
+  face_image?: string;
 }
 
 export interface MedicalHistory {

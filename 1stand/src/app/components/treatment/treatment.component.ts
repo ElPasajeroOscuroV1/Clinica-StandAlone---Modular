@@ -18,7 +18,12 @@ export class TreatmentComponent implements OnInit {
     nombre: '',
     descripcion: '',
     precio: 0,
-    duracion: 0
+    duracion: 0,
+    precio_original: 0,
+    descuento_porcentaje: 0,
+    descuento_monto: 0,
+    tiene_descuento: false,
+    motivo_descuento: ''
   };
   editMode = false; // true si estamos editando
   selectedId?: number;
@@ -51,13 +56,17 @@ export class TreatmentComponent implements OnInit {
       });
     } else {
       // Crear
+      console.log('Datos a enviar:', this.treatmentForm); // Debug
       this.treatmentService.create(this.treatmentForm).subscribe({
         next: () => {
           alert('Tratamiento creado con éxito');
           this.resetForm();
           this.loadTreatments();
         },
-        error: (err) => console.error('Error creando tratamiento:', err)
+        error: (err) => {
+          console.error('Error creando tratamiento:', err);
+          console.error('Detalles del error:', err.error); // Debug detallado
+        }
       });
     }
   }
@@ -85,9 +94,37 @@ export class TreatmentComponent implements OnInit {
         nombre: '',
         descripcion: '',
         precio: 0,
-        duracion: 0
+        duracion: 0,
+        precio_original: 0,
+        descuento_porcentaje: 0,
+        descuento_monto: 0,
+        tiene_descuento: false,
+        motivo_descuento: ''
       };
       this.editMode = false;
       this.selectedId = undefined;
+    }
+
+    // Calcular precio con descuento en tiempo real (frontend)
+    getPrecioConDescuento(): number {
+      const precio = this.treatmentForm.precio || 0;
+      let precioConDescuento = precio;
+
+      // Aplicar descuento por porcentaje
+      if (this.treatmentForm.descuento_porcentaje && this.treatmentForm.descuento_porcentaje > 0) {
+        precioConDescuento = precioConDescuento * (1 - (this.treatmentForm.descuento_porcentaje / 100));
+      }
+
+      // Aplicar descuento por monto fijo
+      if (this.treatmentForm.descuento_monto && this.treatmentForm.descuento_monto > 0) {
+        precioConDescuento = Math.max(0, precioConDescuento - this.treatmentForm.descuento_monto);
+      }
+
+      return Math.round(precioConDescuento * 100) / 100; // Redondear a 2 decimales
+    }
+
+    // Calcular ahorro
+    getAhorro(): number {
+      return Math.round((this.treatmentForm.precio - this.getPrecioConDescuento()) * 100) / 100;
     }
 }

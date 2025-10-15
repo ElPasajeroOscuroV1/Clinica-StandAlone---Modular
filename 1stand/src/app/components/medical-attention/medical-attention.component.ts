@@ -126,7 +126,12 @@ export class MedicalAttentionComponent implements OnInit, OnDestroy {
   loadTreatments() {
     this.medicalAttentionService.getTreatments().subscribe({
       next: (data: Treatment[]) => {
-        this.treatments = data;
+        this.treatments = data.map(treatment => ({
+          ...treatment,
+          tiene_descuento: treatment.tiene_descuento ?? Boolean(treatment.precio_con_descuento && treatment.precio_con_descuento !== treatment.precio),
+          precio_con_descuento: treatment.precio_con_descuento ?? treatment.precio,
+          ahorro: treatment.ahorro ?? (treatment.precio_con_descuento ? treatment.precio - (treatment.precio_con_descuento || 0) : 0)
+        }));
       },
       error: (err) => {
         console.error('Error al cargar tratamientos:', err);
@@ -440,6 +445,11 @@ export class MedicalAttentionComponent implements OnInit, OnDestroy {
   getDoctorNameByAppointment(app: Appointment): string {
     const doctor = this.doctors.find(d => d.id === app.doctor_id);
     return doctor ? doctor.name : 'Desconocido';
+  }
+
+  // Método para mostrar precio final de un tratamiento
+  getTreatmentPrecioFinal(treatment: any): number {
+    return treatment?.precio_con_descuento ?? treatment?.precio ?? 0;
   }
 
   openMedicalHistoryModal(patientId: number, appointmentId: number, formData: any): void {

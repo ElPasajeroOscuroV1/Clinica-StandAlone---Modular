@@ -1,0 +1,155 @@
+<div #modal class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document" style="z-index: 1055;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          📅 Permisos - {{ doctor?.name }}
+          <small class="text-muted">{{ doctor?.specialty }}</small>
+        </h5>
+        <button type="button" class="btn-close" (click)="closeModal()" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Formulario para crear/editar permisos -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h6 class="mb-0">{{ isEditing ? 'Editar Permiso' : 'Nuevo Permiso' }}</h6>
+          </div>
+          <div class="card-body">
+            <form [formGroup]="permissionForm" (ngSubmit)="onSubmit()">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Tipo</label>
+                    <select class="form-select" formControlName="type">
+                      <option value="vacation">Vacaciones</option>
+                      <option value="permission">Permiso</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Título</label>
+                    <input type="text" class="form-control" formControlName="title" placeholder="Título del permiso">
+                    <div class="invalid-feedback" *ngIf="permissionForm.get('title')?.invalid && permissionForm.get('title')?.touched">
+                      El título es obligatorio
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Descripción</label>
+                <textarea class="form-control" rows="3" formControlName="description" placeholder="Descripción opcional"></textarea>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Fecha Inicio</label>
+                    <input type="date" class="form-control" formControlName="start_date">
+                    <div class="invalid-feedback" *ngIf="permissionForm.get('start_date')?.invalid && permissionForm.get('start_date')?.touched">
+                      La fecha de inicio es obligatoria
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Fecha Fin</label>
+                    <input type="date" class="form-control" formControlName="end_date">
+                    <div class="invalid-feedback" *ngIf="permissionForm.get('end_date')?.invalid && permissionForm.get('end_date')?.touched">
+                      La fecha de fin es obligatoria
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" formControlName="is_active">
+                <label class="form-check-label">Activo</label>
+              </div>
+
+              <button type="submit" class="btn btn-primary" [disabled]="permissionForm.invalid || isLoading">
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                {{ isEditing ? 'Actualizar' : 'Crear' }} Permiso
+              </button>
+              <button type="button" class="btn btn-secondary ms-2" (click)="resetForm()" *ngIf="isEditing">
+                Cancelar
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Lista de permisos existentes -->
+        <div class="card">
+          <div class="card-header">
+            <h6 class="mb-0">Permisos Registrados</h6>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Tipo</th>
+                    <th>Título</th>
+                    <th>Periodo</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let permission of permissions">
+                    <td>
+                      <span class="badge" [ngClass]="permission.type === 'vacation' ? 'bg-info' : 'bg-warning'">
+                        {{ getTypeLabel(permission.type) }}
+                      </span>
+                    </td>
+                    <td>
+                      <strong>{{ permission.title }}</strong>
+                      <br>
+                      <small class="text-muted" *ngIf="permission.description">{{ permission.description }}</small>
+                    </td>
+                    <td>
+                      {{ permission.start_date | date:'dd/MM/yyyy' }}
+                      <br>
+                      <small class="text-muted">al {{ permission.end_date | date:'dd/MM/yyyy' }}</small>
+                    </td>
+                    <td>
+                      <span [ngClass]="getStatusClass(permission.is_active)">
+                        {{ getStatusLabel(permission.is_active) }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary" (click)="editPermission(permission)">
+                          ✏️ Editar
+                        </button>
+                        <button class="btn btn-outline-secondary" (click)="togglePermissionStatus(permission)">
+                          {{ permission.is_active ? '🚫' : '✅' }} {{ permission.is_active ? 'Desactivar' : 'Activar' }}
+                        </button>
+                        <button class="btn btn-outline-danger" (click)="deletePermission(permission.id!)">
+                          🗑️ Eliminar
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr *ngIf="permissions.length === 0">
+                    <td colspan="5" class="text-center text-muted">
+                      No hay permisos registrados para este doctor
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>

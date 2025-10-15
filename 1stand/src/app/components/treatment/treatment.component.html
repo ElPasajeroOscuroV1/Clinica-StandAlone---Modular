@@ -1,23 +1,85 @@
 <div class="container mt-4">
   <h2>Gestión de Tratamientos</h2>
-  <h2>Registrar tratamiento</h2>
+  <h2>{{ editMode ? 'Editar tratamiento' : 'Registrar tratamiento' }}</h2>
+
   <!-- Formulario -->
   <form (ngSubmit)="saveTreatment()" #tForm="ngForm" class="mb-4">
-    <div class="mb-2">
-      <input type="text" [(ngModel)]="treatmentForm.nombre" name="nombre" placeholder="Nombre" class="form-control" required>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Nombre</label>
+        <input type="text" [(ngModel)]="treatmentForm.nombre" name="nombre" placeholder="Nombre del tratamiento" class="form-control" required>
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Duración (minutos)</label>
+        <input type="number" [(ngModel)]="treatmentForm.duracion" name="duracion" placeholder="Duración" class="form-control" required>
+      </div>
     </div>
-    <div class="mb-2">
-      <textarea [(ngModel)]="treatmentForm.descripcion" name="descripcion" placeholder="Descripción" class="form-control"></textarea>
+
+    <div class="mb-3">
+      <label class="form-label">Descripción</label>
+      <textarea [(ngModel)]="treatmentForm.descripcion" name="descripcion" placeholder="Descripción del tratamiento" class="form-control" rows="2"></textarea>
     </div>
-    <div class="mb-2">
-      <input type="text" [(ngModel)]="treatmentForm.precio" name="precio" placeholder="Precio" class="form-control" required>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Precio Base</label>
+        <div class="input-group">
+          <span class="input-group-text">$</span>
+          <input type="number" [(ngModel)]="treatmentForm.precio" name="precio" step="0.01" placeholder="0.00" class="form-control" required>
+        </div>
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Precio Final</label>
+        <div class="input-group">
+          <span class="input-group-text">$</span>
+          <input type="text" [value]="getPrecioConDescuento()" class="form-control" readonly>
+          <span class="input-group-text" *ngIf="getAhorro() > 0">
+            <span class="badge bg-success">Ahorro: ${{ getAhorro() }}</span>
+          </span>
+        </div>
+      </div>
     </div>
-    <div class="mb-2">
-      <input type="text" [(ngModel)]="treatmentForm.duracion" name="duracion" placeholder="Duración (minutos)" class="form-control" required>
+
+    <!-- Sección de Descuentos -->
+    <div class="card mb-3 border-warning">
+      <div class="card-header bg-warning-subtle">
+        <div class="form-check">
+          <input type="checkbox" [(ngModel)]="treatmentForm.tiene_descuento" name="tiene_descuento" class="form-check-input" id="tiene_descuento">
+          <label class="form-check-label" for="tiene_descuento">
+            <strong>Aplicar Descuento</strong>
+          </label>
+        </div>
+      </div>
+      <div class="card-body" *ngIf="treatmentForm.tiene_descuento">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Descuento por Porcentaje (%)</label>
+            <div class="input-group">
+              <input type="number" [(ngModel)]="treatmentForm.descuento_porcentaje" name="descuento_porcentaje" min="0" max="100" step="0.01" placeholder="0" class="form-control">
+              <span class="input-group-text">%</span>
+            </div>
+            <small class="text-muted">Ejemplo: 20 para 20%</small>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Descuento por Monto Fijo ($)</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input type="number" [(ngModel)]="treatmentForm.descuento_monto" name="descuento_monto" min="0" step="0.01" placeholder="0.00" class="form-control">
+            </div>
+            <small class="text-muted">Ejemplo: 50.00</small>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Motivo del Descuento</label>
+          <input type="text" [(ngModel)]="treatmentForm.motivo_descuento" name="motivo_descuento" placeholder="Razón del descuento (opcional)" class="form-control">
+          <small class="text-muted">Ej: Promoción especial, cliente frecuente, etc.</small>
+        </div>
+      </div>
     </div>
 
     <button type="submit" class="btn btn-primary">
-      {{ editMode ? 'Actualizar' : 'Crear' }}
+      {{ editMode ? 'Actualizar Tratamiento' : 'Crear Tratamiento' }}
     </button>
     <button type="button" (click)="resetForm()" *ngIf="editMode" class="btn btn-secondary ms-2">
       Cancelar
@@ -42,8 +104,20 @@
       <tr *ngFor="let t of treatments">
         <td>{{ t.id }}</td>
         <td>{{ t.nombre }}</td>
-        <td>{{ t.descripcion || 'Sin descripción' }}</td> <!-- Mostrar descripción -->
-        <td>{{ t.precio | currency }}</td>
+        <td>{{ t.descripcion || 'Sin descripción' }}</td>
+        <td>
+          <div class="text-nowrap">
+            <div *ngIf="t.tiene_descuento">
+              <s class="text-muted">{{ t.precio | currency }}</s><br>
+              <span class="fw-bold text-success">{{ t.precio_con_descuento | currency }}</span>
+              <br>
+              <small class="badge bg-success">Ahorro: {{ t.ahorro | currency }}</small>
+            </div>
+            <div *ngIf="!t.tiene_descuento">
+              {{ t.precio | currency }}
+            </div>
+          </div>
+        </td>
         <td>{{ t.duracion }} min</td>
         <td>
           <button (click)="editTreatment(t)" class="btn btn-primary btn-sm">Editar</button>

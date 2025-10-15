@@ -17,8 +17,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatOptionModule } from '@angular/material/core';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { of, switchMap } from 'rxjs';
+import { of, switchMap, firstValueFrom } from 'rxjs';
 import { MedicalHistory } from '../../interfaces/medical-history.interface'; // Importar MedicalHistory
+import { environment } from '../../../environments/environment'; // Importar environment
+
+// Usar los valores configurados en environment para mantener consistencia
+const IMAGE_BASE_URL = environment.imageBaseUrl;
+const FACE_IMAGE_API_BASE_URL = `${environment.apiBaseUrl}/api/images/faces/`;
 
 @Component({
   selector: 'app-medical-history-modal',
@@ -52,6 +57,8 @@ export class MedicalHistoryModalComponent implements OnInit, OnChanges {
   loadingHistory = false;
   historySelectControl = new FormControl('new'); // valor inicial 'new'
   form: any;
+  patientImageSrc = '/assets/logo.jpg';
+  private lastLoadedFaceImageRef: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -96,6 +103,8 @@ export class MedicalHistoryModalComponent implements OnInit, OnChanges {
       });
     }
 
+    void this.loadPatientImage();
+
     // Solo cargar datos si ya tenemos selectedHistory
     // Si no, esperaremos a que se asigne desde el componente padre
     if (this.selectedHistory) {
@@ -112,7 +121,12 @@ export class MedicalHistoryModalComponent implements OnInit, OnChanges {
     // Cargar tratamientos disponibles
     this.medicalHistoryService.getTreatments().subscribe({
       next: (treatments: any[]) => {
-        this.availableTreatments = treatments;
+        this.availableTreatments = treatments.map(treatment => ({
+          ...treatment,
+          tiene_descuento: treatment.tiene_descuento ?? Boolean(treatment.precio_con_descuento && treatment.precio_con_descuento !== treatment.precio),
+          precio_con_descuento: treatment.precio_con_descuento ?? treatment.precio,
+          ahorro: treatment.ahorro ?? (treatment.precio_con_descuento ? treatment.precio - (treatment.precio_con_descuento || 0) : 0)
+        }));
         console.log('Tratamientos cargados:', treatments);
       },
       error: (err: any) => {
@@ -166,12 +180,18 @@ export class MedicalHistoryModalComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     console.log('🔄 ngOnChanges detectado:', changes);
     
-    if (changes['patientData'] && this.patientData) {
-      this.medicalHistoryForm.patchValue({
-        patientName: this.patientData.name,
-        patientEmail: this.patientData.email,
-        patientCi: this.patientData.ci,
-      });
+    if (changes['patientData']) {
+      if (this.patientData) {
+        this.medicalHistoryForm.patchValue({
+          patientName: this.patientData.name,
+          patientEmail: this.patientData.email,
+          patientCi: this.patientData.ci,
+        });
+
+        void this.loadPatientImage();
+      } else {
+        this.patientImageSrc = '/assets/logo.jpg';
+      }
     }
     
     if (changes['selectedHistory'] && this.selectedHistory) {
@@ -293,6 +313,8 @@ export class MedicalHistoryModalComponent implements OnInit, OnChanges {
         }
       });
     }
+
+    void this.loadPatientImage();
   }
 
   /*
@@ -575,6 +597,131 @@ const isUpdate = !!this.selectedHistory?.id;
 
   }
 
+  getPatientImageUrl(): string {
+    return this.patientImageSrc;
+  }
+
+  private async loadPatientImage(): Promise<void> {
+    let faceImageRef = this.resolveFaceImageReference();
+
+    if (!faceImageRef) {
+      faceImageRef = await this.fetchFaceImageFromApi();
+    }
+
+    if (!faceImageRef) {
+      this.patientImageSrc = '/assets/logo.jpg';
+      return;
+    }
+
+    if (faceImageRef === this.lastLoadedFaceImageRef && this.patientImageSrc.startsWith('data:')) {
+      return;
+    }
+
+    if (faceImageRef.startsWith('data:')) {
+      this.patientImageSrc = faceImageRef;
+      this.lastLoadedFaceImageRef = faceImageRef;
+      return;
+    }
+
+    let filename = faceImageRef.trim();
+
+    if (filename.startsWith(IMAGE_BASE_URL)) {
+      filename = filename.substring(IMAGE_BASE_URL.length);
+    }
+
+    filename = filename.split('?')[0];
+
+    if (filename.includes('/')) {
+      const segments = filename.split('/');
+      filename = segments[segments.length - 1];
+    }
+
+    if (!filename) {
+      this.patientImageSrc = '/assets/logo.jpg';
+      return;
+    }
+
+    try {
+      const response = await fetch(`${FACE_IMAGE_API_BASE_URL}${encodeURIComponent(filename)}`, {
+        method: 'GET',
+        mode: 'cors',
+        cache: 'reload'
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const payload = await response.json();
+      if (payload?.base64) {
+        this.patientImageSrc = payload.base64;
+        this.lastLoadedFaceImageRef = faceImageRef;
+      } else {
+        throw new Error('Invalid base64 payload received');
+      }
+    } catch (error) {
+      console.warn('No fue posible cargar la imagen del paciente, se mostrara el placeholder.', error);
+      this.patientImageSrc = '/assets/logo.jpg';
+    }
+  }
+
+  private resolveFaceImageReference(): string | null {
+    const candidates: Array<string | undefined | null> = [
+      this.getFaceImageFromSource(this.patientData),
+      this.getFaceImageFromSource(this.selectedHistory?.patient),
+      this.getFaceImageFromSource(this.selectedHistory)
+    ];
+
+    if (Array.isArray(this.patientHistories)) {
+      for (const history of this.patientHistories) {
+        const historyCandidate =
+          this.getFaceImageFromSource((history as any)?.patient) ??
+          this.getFaceImageFromSource(history);
+        if (historyCandidate) {
+          candidates.push(historyCandidate);
+          break;
+        }
+      }
+    }
+
+    const candidate = candidates.find(value => typeof value === 'string' && value.trim().length > 0);
+    return candidate ? candidate.trim() : null;
+  }
+
+  private async fetchFaceImageFromApi(): Promise<string | null> {
+    if (!this.patientId) {
+      return null;
+    }
+
+    try {
+      const patient = await firstValueFrom(this.patientService.getPatient(this.patientId));
+      const faceImage = this.getFaceImageFromSource(patient);
+
+      if (faceImage) {
+        this.patientData = { ...(this.patientData ?? {}), face_image: faceImage };
+      }
+
+      return faceImage ?? null;
+    } catch (error) {
+      console.warn("No se pudo obtener la imagen del paciente desde la API.", error);
+      return null;
+    }
+  }
+
+  private getFaceImageFromSource(source: any): string | null {
+    if (!source) {
+      return null;
+    }
+
+    const value: unknown = source.face_image ?? source.faceImage ?? source.photo ?? null;
+
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return value.trim();
+    }
+
+    return null;
+  }
+
   closeModal(): void {
     this.activeModal.dismiss('cancel');
   }
@@ -583,73 +730,201 @@ const isUpdate = !!this.selectedHistory?.id;
     const modalElement = document.getElementById('modalContent');
     if (!modalElement) return;
 
-    html2canvas(modalElement, { scale: 2 }).then(canvas => {
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`HistoriaClinica_${this.patientData?.name ?? 'Paciente'}.pdf`);
-    });
-  }
-  /*
-  private updateMedicalAttentionFromHistory(historyData: any): void {
-    // Solo actualizar si hay un medical_attention_id
-    if (historyData.medical_attention_id) {
-      // Convertir nombres de tratamientos de vuelta a IDs para la atención médica
-      const treatmentIds = Array.isArray(historyData.treatments_performed) 
-        ? historyData.treatments_performed
-            .map((treatmentName: string) => {
-              const treatment = this.availableTreatments.find(t => t.nombre === treatmentName);
-              return treatment ? treatment.id : null;
-            })
-            .filter((id: any) => id !== null)
-        : [];
+    // Show loading state
+    const exportBtn = document.querySelector('#exportPdfBtn') as HTMLButtonElement;
+    if (exportBtn) {
+      exportBtn.disabled = true;
+      exportBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generando PDF...';
+    }
 
-      // Si no hay tratamientos, usar un tratamiento por defecto o no actualizar
-      if (treatmentIds.length === 0) {
-        console.log('⚠️ No hay tratamientos para sincronizar, saltando actualización de atención médica');
-        return;
+    // Function to fetch image as base64
+    const fetchImageAsBase64 = async (imageSrc: string): Promise<string> => {
+      if (!imageSrc) {
+        return '/assets/logo.jpg';
       }
 
-      // Verificar que tenemos appointment_id válido
-      if (!this.selectedHistory?.appointment_id) {
-        console.log('⚠️ No hay appointment_id válido, saltando actualización de atención médica');
-        return;
+      if (imageSrc.startsWith('data:')) {
+        return imageSrc;
       }
 
-      const attentionUpdateData = {
-        patient_id: this.patientId, // Agregar patient_id requerido
-        appointment_id: this.selectedHistory.appointment_id, // Agregar appointment_id requerido
-        diagnosis: historyData.diagnosis,
-        pre_enrollment: historyData.pre_enrollment, // Corregir nombre del campo
-        other_treatments: historyData.other_treatments,
-        treatment_ids: treatmentIds // Sincronizar también los tratamientos
-      } as any; // Usar 'as any' para evitar problemas de tipos
+      if (imageSrc.startsWith(IMAGE_BASE_URL)) {
+        const relativePath = imageSrc.substring(IMAGE_BASE_URL.length);
+        const filename = relativePath.split('/').pop();
 
-      console.log('🔄 Sincronizando atención médica con:', attentionUpdateData);
-      console.log('💊 IDs de tratamientos a sincronizar:', treatmentIds);
-      console.log('🆔 Medical Attention ID:', historyData.medical_attention_id);
-      console.log('👤 Patient ID:', this.patientId);
-      console.log('📅 Appointment ID:', this.selectedHistory?.appointment_id);
+        if (filename) {
+          const sanitizedFilename = filename.split('?')[0];
+          try {
+            const response = await fetch(`${FACE_IMAGE_API_BASE_URL}${encodeURIComponent(sanitizedFilename)}`, {
+              method: 'GET',
+              mode: 'cors'
+            });
 
-      this.medicalAttentionService.updateMedicalAttention(historyData.medical_attention_id, attentionUpdateData).subscribe({
-        next: () => {
-          console.log('✅ Atención médica actualizada desde historia médica');
-        },
-        error: (err) => {
-          console.error('❌ Error actualizando atención médica desde historia:', err);
-          console.error('📋 Detalles del error de atención médica:', err.error);
-          console.error('📊 Status del error:', err.status);
-          console.error('📝 Mensaje del error:', err.message);
-          if (err.error && err.error.errors) {
-            console.error('🚫 Errores de validación de atención médica:', err.error.errors);
-            console.error('🔍 Campos con errores:', Object.keys(err.error.errors));
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const payload = await response.json();
+            if (payload?.base64) {
+              return payload.base64;
+            }
+
+            throw new Error('Invalid image payload received from API');
+          } catch (error) {
+            console.warn('Failed to load image through API, using placeholder instead:', filename, error);
+            return '/assets/logo.jpg';
           }
         }
+
+        return '/assets/logo.jpg';
+      }
+
+      return new Promise((resolve) => {
+        fetch(imageSrc, {
+          method: 'GET',
+          mode: 'cors',
+          cache: 'reload'
+        })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.blob();
+          })
+          .then(blob => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = () => resolve('/assets/logo.jpg');
+            reader.readAsDataURL(blob);
+          })
+          .catch(error => {
+            console.warn('Failed to fetch image as base64, falling back to placeholder:', imageSrc, error);
+            resolve('/assets/logo.jpg');
+          });
       });
-    }
+    };
+
+    // Pre-load images as base64
+    const loadImages = async () => {
+      const images = modalElement.querySelectorAll('img');
+      const imagePromises = Array.from(images).map(async img => {
+        try {
+          return await fetchImageAsBase64(img.src);
+        } catch (error) {
+          console.warn('Failed to load image, using placeholder:', img.src);
+          return '/assets/logo.jpg';
+        }
+      });
+
+      return await Promise.all(imagePromises);
+    };
+
+    // Load all images first
+    loadImages().then(base64Images => {
+      // Temporarily replace images with base64 versions
+      const images = modalElement.querySelectorAll('img');
+      const imageReplacements: { img: HTMLImageElement; originalSrc: string; }[] = [];
+
+      images.forEach((img, index) => {
+        const originalSrc = img.src;
+        imageReplacements.push({ img, originalSrc });
+
+        // Use the fetched base64 image
+        const loadedImage = base64Images[index];
+        img.src = loadedImage;
+        img.crossOrigin = 'anonymous';
+      });
+
+      // Wait for images to render
+      setTimeout(() => {
+        // Opciones optimizadas para html2canvas
+        const options: any = {
+          scale: 2,
+          allowTaint: true,
+          useCORS: false, // Images are now base64
+          foreignObjectRendering: false,
+          logging: false,
+          backgroundColor: '#ffffff',
+          ignoreElements: (element: Element) => {
+            // Ignore problematic elements
+            return element.tagName === 'LINK' || element.tagName === 'SCRIPT' || element.tagName === 'META';
+          },
+          onclone: (clonedDocument: Document) => {
+            // Ensure cloned images maintain their base64 sources
+            const clonedImages = clonedDocument.querySelectorAll('img');
+            clonedImages.forEach((clonedImg, index) => {
+              if (base64Images[index]) {
+                clonedImg.src = base64Images[index];
+                clonedImg.crossOrigin = '';
+              }
+            });
+          }
+        };
+
+        html2canvas(modalElement, options).then(canvas => {
+          // Restore original images
+          imageReplacements.forEach(({ img, originalSrc }) => {
+            img.src = originalSrc;
+          });
+
+          // Reset button state
+          if (exportBtn) {
+            exportBtn.disabled = false;
+            exportBtn.innerHTML = 'Exportar a PDF';
+          }
+
+          // Create PDF
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+          // Calculate dimensions maintaining aspect ratio
+          const imgProps = pdf.getImageProperties(imgData);
+          const pdfWidth = pdf.internal.pageSize.getWidth() - 12;
+          const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+          // Añadir contenido respetando el alto de página
+          const pageHeight = pdf.internal.pageSize.getHeight();
+          const contentHeight = pageHeight - 12; // márgenes superior e inferior de 6mm
+          let heightLeft = pdfHeight;
+          let position = 6;
+
+          pdf.addImage(imgData, 'JPEG', 6, position, pdfWidth, pdfHeight, undefined, 'FAST');
+          heightLeft -= contentHeight;
+
+          while (heightLeft > 0.5) {
+            pdf.addPage();
+            position = heightLeft - pdfHeight + 6;
+            pdf.addImage(imgData, 'JPEG', 6, position, pdfWidth, pdfHeight, undefined, 'FAST');
+            heightLeft -= contentHeight;
+          }
+
+          pdf.save(`HistoriaClinica_${this.patientData?.name ?? 'Paciente'}.pdf`);
+        }).catch(error => {
+          console.error('Error generating PDF:', error);
+
+          // Restore images in case of error
+          imageReplacements.forEach(({ img, originalSrc }) => {
+            img.src = originalSrc;
+          });
+
+          // Reset button state
+          if (exportBtn) {
+            exportBtn.disabled = false;
+            exportBtn.innerHTML = 'Exportar a PDF';
+          }
+
+          alert('Error generating PDF. Please try again.');
+        });
+      }, 800); // Wait 800ms for images to render
+    }).catch(error => {
+      console.error('Error loading images:', error);
+
+      // Reset button state
+      if (exportBtn) {
+        exportBtn.disabled = false;
+        exportBtn.innerHTML = 'Exportar a PDF';
+      }
+
+      alert('Error loading images. PDF will be generated without them.');
+    });
   }
-  */
 }

@@ -13,6 +13,16 @@
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
+    # CORS headers for image files (storage)
+    <FilesMatch "\.(png|jpg|jpeg|gif|webp|svg)$">
+        <IfModule mod_headers.c>
+            Header set Access-Control-Allow-Origin "http://localhost:4200"
+            Header set Access-Control-Allow-Methods "GET, OPTIONS"
+            Header set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept"
+            Header set Access-Control-Allow-Credentials "true"
+        </IfModule>
+    </FilesMatch>
+
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$

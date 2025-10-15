@@ -1,13 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common'; // Agrega esto
+import { CommonModule } from '@angular/common';
 import { Doctor } from '../../interfaces/doctor.interface';
 import { DoctorService } from '../../services/doctor.service';
+import { WorkScheduleModalComponent } from '../work-schedule-modal/work-schedule-modal.component';
+import { DoctorPermissionsModalComponent } from '../doctor-permissions-modal/doctor-permissions-modal.component';
 
 @Component({
   selector: 'app-doctor',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, WorkScheduleModalComponent, DoctorPermissionsModalComponent],
   templateUrl: './doctor.component.html',
   styleUrls: ['./doctor.component.css']
 })
@@ -16,6 +18,10 @@ export class DoctorComponent implements OnInit {
   doctorForm: FormGroup;
   isEditing = false;
   currentDoctorId?: number;
+
+  @ViewChild('scheduleModal') scheduleModal!: WorkScheduleModalComponent;
+  @ViewChild('permissionsModal') permissionsModal!: DoctorPermissionsModalComponent;
+  selectedDoctorId!: number;
 
   constructor(
     private doctorService: DoctorService,
@@ -37,7 +43,7 @@ export class DoctorComponent implements OnInit {
 
   loadDoctors(): void {
     this.doctorService.getDoctors().subscribe({
-      next: (data) => this.doctors = data,
+      next: (data) => (this.doctors = data),
       error: (error) => console.error('Error cargando médicos:', error)
     });
   }
@@ -83,5 +89,14 @@ export class DoctorComponent implements OnInit {
     this.isEditing = false;
     this.currentDoctorId = undefined;
     this.doctorForm.reset({ available: true });
+  }
+
+  openScheduleModal(doctorId: number): void {
+    this.selectedDoctorId = doctorId;
+    this.scheduleModal.openModal(doctorId);
+  }
+
+  openPermissionsModal(doctor: any): void {
+    this.permissionsModal.openModal(doctor);
   }
 }

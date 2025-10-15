@@ -37,7 +37,15 @@
         <label>Tratamientos aplicados</label>
         <div *ngIf="attentionTreatments.length > 0" class="bg-light p-2 rounded">
           <ul class="mb-0">
-            <li *ngFor="let treatment of attentionTreatments">{{ treatment.nombre }} - ${{ treatment.precio }}</li>
+            <li *ngFor="let treatment of attentionTreatments">
+              {{ treatment.nombre }}
+              <ng-container *ngIf="treatment.tiene_descuento; else precioNormal">
+                <s class="text-muted">{{ treatment.precio }} BS</s>
+                <span class="fw-bold text-success">{{ treatment.precio_con_descuento ?? treatment.precio }} BS</span>
+                <small class="badge bg-success ms-1">Ahorro: {{ treatment.ahorro ?? 0 }} BS</small>
+              </ng-container>
+              <ng-template #precioNormal>{{ treatment.precio }} BS</ng-template>
+            </li>
           </ul>
         </div>
       </div>
@@ -47,7 +55,7 @@
         <label>Otros Tratamientos aplicados</label>
         <div *ngIf="otherTreatments.length > 0" class="bg-light p-2 rounded">
           <ul class="mb-0">
-            <li *ngFor="let other of otherTreatments">{{ other.name }} - ${{ other.price }}</li>
+            <li *ngFor="let other of otherTreatments">{{ other.name }} - {{ other.price }} BS</li>
           </ul>
         </div>
         <div *ngIf="attentionTreatments.length === 0 && otherTreatments.length === 0" class="text-muted">
@@ -56,7 +64,7 @@
       </div>
 
       <div class="mt-3" *ngIf="selectedAttentionTotal !== null">
-        <h5>Costo total de la atención</h5>
+        <h5>Costo total de la atención (con descuentos aplicados)</h5>
         <p>{{ selectedAttentionTotal | currency:'USD' }}</p>
       </div>
 
@@ -121,7 +129,13 @@
           <ng-container *ngIf="payment.treatments && payment.treatments.length > 0; else noTreatments">
             <ul style="margin: 0; padding-left: 16px;">
               <li *ngFor="let t of payment.treatments">
-                {{ t.nombre }} ({{ t.precio }} BS)
+                {{ t.nombre }}
+                <ng-container *ngIf="t.tiene_descuento; else precioNormal">
+                  <s class="text-muted">{{ t.precio }} BS</s>
+                  <span class="fw-bold text-success">{{ t.precio_con_descuento ?? t.precio }} BS</span>
+                  <small class="badge bg-success ms-1">Ahorro: {{ t.ahorro ?? 0 }} BS</small>
+                </ng-container>
+                <ng-template #precioNormal>{{ t.precio }} BS</ng-template>
               </li>
             </ul>
           </ng-container>

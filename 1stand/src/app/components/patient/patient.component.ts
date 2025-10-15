@@ -494,7 +494,8 @@ export class PatientComponent implements OnInit {
         ref.componentInstance.patientData = {
           name: patient.name,
           email: patient.email,
-          ci: patient.ci
+          ci: patient.ci,
+          face_image: patient.face_image
         };
         ref.componentInstance.patientHistories = Array.isArray(list) ? list : [];
         ref.componentInstance.selectedHistory = Array.isArray(list) && list.length ? list[0] : null;

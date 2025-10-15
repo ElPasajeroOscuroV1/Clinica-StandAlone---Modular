@@ -31,6 +31,7 @@
           id="doctor_id"
           formControlName="doctor_id"
           class="form-control"
+          (change)="onDoctorOrDateChange()"
         >
           <option value="">Seleccione un doctor</option>
           <option *ngFor="let doctor of doctors" [value]="doctor.id">{{ doctor.name }} - {{ doctor.specialty }}</option>
@@ -44,17 +45,22 @@
           id="date"
           formControlName="date"
           class="form-control"
+          (change)="onDoctorOrDateChange()"
         >
       </div>
 
       <div class="form-group">
-        <label for="time">Hora</label>
-        <input
-          type="time"
-          id="time"
-          formControlName="time"
+        <label for="turn">Turno</label>
+        <select
+          id="turn"
+          formControlName="turn"
           class="form-control"
         >
+          <option value="">Seleccione un turno</option>
+          <option *ngFor="let availableTurn of availableTurns; let i = index" [value]="availableTurn.time" [disabled]="!availableTurn.available">
+            {{ availableTurn.formatted_time }} {{ availableTurn.available ? '(Disponible)' : '(Ocupado)' }}
+          </option>
+        </select>
       </div>
 
       <div class="form-group">
@@ -101,7 +107,7 @@
           </span>
         </p>
         <p>
-          <strong>Estado de Atención: </strong>
+          <strong>Estado de AtenciÃ³n: </strong>
           <span [ngClass]="getAttentionStatusClass(appointment)">
             {{ getAttentionStatusLabel(appointment) }}
           </span>
@@ -115,4 +121,3 @@
     </div>
   </div>
 </div>
-

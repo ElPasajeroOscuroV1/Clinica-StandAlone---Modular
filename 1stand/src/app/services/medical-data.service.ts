@@ -15,13 +15,77 @@ export class MedicalDataService {
   loadMedicalAttentions() {
     this.medicalAttentionService.getMedicalAttentions().subscribe({
       next: (data) => {
-        this.medicalAttentionsSource.next(data);
-        console.log('MedicalDataService: Atenciones médicas actualizadas y notificadas.');
+        // Procesar tratamientos para asegurarse de que tengan precios finales correctos
+        // Primero obtenemos los tratamientos completos desde el servicio para enriquecer los datos
+        this.medicalAttentionService.getTreatments().subscribe({
+          next: (allTreatments) => {
+            const processedData = data.map(attention => {
+              // Enriquecer tratamientos de esta atención con datos completos
+              const enrichedTreatments = attention.treatments?.map(treatment => {
+                // Buscar el tratamiento completo en allTreatments para obtener datos de descuento
+                const fullTreatment = allTreatments.find(t => t.id === treatment.id);
+                return {
+                  ...treatment,
+                  // Usar datos del tratamiento completo si están disponibles
+                  precio_original: fullTreatment?.precio ?? treatment.precio,
+                  tiene_descuento: fullTreatment?.tiene_descuento ?? Boolean(fullTreatment?.precio_con_descuento && fullTreatment.precio_con_descuento !== fullTreatment.precio),
+                  precio_con_descuento: fullTreatment?.precio_con_descuento ?? fullTreatment?.precio ?? treatment.precio,
+                  ahorro: fullTreatment?.ahorro ?? (fullTreatment?.precio_con_descuento ? (fullTreatment.precio - fullTreatment.precio_con_descuento) : 0),
+                };
+              }) ?? [];
+
+              // Recalcular el total_cost basado en precios finales
+              const totalCost = this.calculateTotalCost({
+                ...attention,
+                treatments: enrichedTreatments
+              });
+
+              return {
+                ...attention,
+                treatments: enrichedTreatments,
+                total_cost: totalCost
+              };
+            });
+
+            this.medicalAttentionsSource.next(processedData);
+            console.log('MedicalDataService: Atenciones médicas procesadas con tratamientos enriquecidos');
+          },
+          error: (treatmentsErr) => {
+            console.warn('Error al cargar tratamientos completos, usando datos disponibles:', treatmentsErr);
+            // Fallback: procesar sin enriquecer si falla la carga de tratamientos
+            const processedData = data.map(attention => ({
+              ...attention,
+              total_cost: attention.total_cost ?? this.calculateTotalCost(attention)
+            }));
+            this.medicalAttentionsSource.next(processedData);
+          }
+        });
       },
       error: (err) => {
         console.error('MedicalDataService: Error al cargar atenciones médicas', err);
       }
     });
+  }
+
+  private calculateTotalCost(attention: MedicalAttention): number {
+    let total = 0;
+
+    // Suma precio final de tratamientos
+    if (attention.treatments && attention.treatments.length > 0) {
+      total += attention.treatments.reduce((sum, treatment) => {
+        const precioFinal = treatment.precio_con_descuento ?? treatment.precio ?? 0;
+        return sum + precioFinal;
+      }, 0);
+    }
+
+    // Suma otros tratamientos
+    if (attention.otherTreatments && attention.otherTreatments.length > 0) {
+      total += attention.otherTreatments.reduce((sum, other: any) => {
+        return sum + (Number(other.price) || 0);
+      }, 0);
+    }
+
+    return total;
   }
 
   updateMedicalAttentionFromHistory(updatedHistory: any) {

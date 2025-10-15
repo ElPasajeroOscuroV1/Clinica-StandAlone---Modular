@@ -22,6 +22,10 @@ export interface MedicalAttention {
   treatments?: {
     id: number;
     nombre: string;
-    precio: string;
+    precio: number;
+    precio_original?: number;
+    tiene_descuento?: boolean;
+    precio_con_descuento?: number;
+    ahorro?: number;
   }[];
 }

@@ -12,10 +12,15 @@ use App\Http\Controllers\Api\TreatmentController;
 use App\Http\Controllers\Api\MedicalAttentionController;
 use App\Http\Controllers\Api\MedicalHistoryController;
 use App\Http\Controllers\Api\ReportController;
+use App\Http\Controllers\Api\WorkScheduleController;
+use App\Http\Controllers\Api\ImageController;
 
 Route::get('/', function () {
     return response()->json(['message' => 'API funcionando correctamente']);
 });
+
+Route::get('/images/faces/{filename}', [ImageController::class, 'showFace'])
+    ->where('filename', '.*');
 
 // Rutas de autenticación
 Route::prefix('auth')->group(function () {
@@ -70,6 +75,17 @@ Route::prefix('reports')->group(function () {
     Route::get('/doctor-stats', [ReportController::class, 'doctorStats']);
     Route::get('/payments', [ReportController::class, 'payments']);
 });
+
+Route::get('/work-schedules', [WorkScheduleController::class, 'index']);
+Route::get('/work-schedules/doctor/{doctorId}', [WorkScheduleController::class, 'showByDoctor']);
+Route::get('/work-schedules/doctor/{doctorId}/turns/{date}', [WorkScheduleController::class, 'getAvailableTurns']);
+Route::post('/work-schedules', [WorkScheduleController::class, 'store']);
+Route::put('/work-schedules/{id}', [WorkScheduleController::class, 'update']);
+Route::delete('/work-schedules/{id}', [WorkScheduleController::class, 'destroy']);
+
+use App\Http\Controllers\Api\DoctorPermissionController;
+Route::apiResource('doctor-permissions', DoctorPermissionController::class);
+Route::get('/doctor-permissions/{doctorId}/check/{date}', [DoctorPermissionController::class, 'checkPermission']);
 
 // END POINTS MOVIL
 //Route::prefix('mobile')->group(function () {
