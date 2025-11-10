@@ -3,9 +3,18 @@
   <div id="modalContent" class="p-3" style="font-family: Arial, sans-serif; color: #333;">
 
     <!-- Cabecera -->
-    <div class="modal-header" style="border-bottom: 2px solid #0d6efd;">
-      <h4 class="modal-title">Historial Clínico del Paciente: {{ patientData?.name }}</h4>
-      <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
+    <div class="modal-header" style="border-bottom: 2px solid #0d6efd; position: relative; padding-top: 60px;">
+      <!-- Logo Section - Left side with clinic title -->
+      <div class="clinic-logo-header" style="position: absolute; top: 10px; left: 15px; display: flex; align-items: center; gap: 10px;">
+        <img src="/assets/logo.png" alt="Logo Clínica" style="width: 50px; height: 50px; object-fit: contain; border-radius: 4px;" onerror="this.src='/assets/logo.jpg'">
+        <div style="display: flex; flex-direction: column; line-height: 1.2;">
+          <span style="font-size: 16px; font-weight: bold; color: #0d6efd;">CLÍNICA DENTAL</span>
+          <span style="font-size: 10px; color: #6c757d;">Centro Odontológico Especializado</span>
+        </div>
+      </div>
+
+      <h4 class="modal-title" style="margin: 0; text-align: center;">Historial Clínico del Paciente: {{ patientData?.name }}</h4>
+      <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()" style="position: absolute; right: 15px; top: 15px;"></button>
     </div>
 
     <!-- Selección de historial -->

@@ -728,7 +728,11 @@ const isUpdate = !!this.selectedHistory?.id;
 
   exportModalToPDF(): void {
     const modalElement = document.getElementById('modalContent');
-    if (!modalElement) return;
+    if (!modalElement) {
+      console.error('Modal content element not found');
+      alert('Error: No se pudo encontrar el contenido del modal');
+      return;
+    }
 
     // Show loading state
     const exportBtn = document.querySelector('#exportPdfBtn') as HTMLButtonElement;
@@ -736,6 +740,106 @@ const isUpdate = !!this.selectedHistory?.id;
       exportBtn.disabled = true;
       exportBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generando PDF...';
     }
+
+    try {
+      // Simplified PDF generation without complex logo loading
+      this.generateSimplePDF(modalElement, exportBtn);
+    } catch (error) {
+      console.error('Error in PDF generation:', error);
+      if (exportBtn) {
+        exportBtn.disabled = false;
+        exportBtn.innerHTML = 'Exportar a PDF';
+      }
+      alert('Error generando PDF. Por favor, inténtelo de nuevo.');
+    }
+  }
+
+  private generateSimplePDF(modalElement: HTMLElement, exportBtn: HTMLButtonElement | null): void {
+    // Multi-page PDF generation with html2canvas
+    html2canvas(modalElement, {
+      scale: 1.5,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      height: modalElement.scrollHeight // Capture full height
+    }).then(canvas => {
+      // Reset button state
+      if (exportBtn) {
+        exportBtn.disabled = false;
+        exportBtn.innerHTML = 'Exportar a PDF';
+      }
+
+      // Create PDF
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgData = canvas.toDataURL('image/jpeg', 0.8);
+
+      // Calculate dimensions
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth() - 20; // margins
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const contentHeight = pageHeight - 45 - 20; // header + margins
+
+      // Calculate how many pages we need
+      const totalContentHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      const totalPages = Math.ceil(totalContentHeight / contentHeight);
+
+      let position = 45; // Start after header
+      let remainingHeight = totalContentHeight;
+
+      for (let page = 0; page < totalPages; page++) {
+        if (page > 0) {
+          pdf.addPage();
+          position = 20; // Reset position for new page (less margin)
+
+          // Add page number only to subsequent pages
+          pdf.setFontSize(10);
+          pdf.setFont('helvetica', 'normal');
+          pdf.text(`Página ${page + 1} de ${totalPages}`, 105, 15, { align: 'center' });
+        } else {
+          // First page header
+          pdf.setFontSize(18);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('CLINICA DENTAL', 105, 15, { align: 'center' });
+
+          pdf.setFontSize(12);
+          pdf.setFont('helvetica', 'normal');
+          pdf.text('Centro Odontologico Especializado', 105, 22, { align: 'center' });
+          pdf.text('Atencion Profesional y Calidad', 105, 29, { align: 'center' });
+
+          // Add line separator
+          pdf.setLineWidth(0.5);
+          pdf.line(20, 35, 190, 35);
+        }
+
+        // Calculate how much content fits on this page
+        const availableHeight = page === 0 ? contentHeight : (pageHeight - 25);
+        const contentToShow = Math.min(remainingHeight, availableHeight);
+
+        if (contentToShow > 0) {
+          // For multi-page, we'll use a simpler approach - just add the full image and let it overflow
+          // This is more reliable than trying to crop portions
+          pdf.addImage(imgData, 'JPEG', 10, position, pdfWidth, contentToShow);
+
+          remainingHeight -= contentToShow;
+        }
+      }
+
+      pdf.save(`HistoriaClinica_${this.patientData?.name?.replace(/\s+/g, '_') || 'Paciente'}_${new Date().toISOString().split('T')[0]}.pdf`);
+    }).catch(error => {
+      console.error('Error generating PDF:', error);
+
+      // Reset button state
+      if (exportBtn) {
+        exportBtn.disabled = false;
+        exportBtn.innerHTML = 'Exportar a PDF';
+      }
+
+      alert('Error generando PDF. Por favor, inténtelo de nuevo.');
+    });
+  }
+
+  private generatePDFWithContent(modalElement: HTMLElement, exportBtn: HTMLButtonElement | null, logoData: string | null): void {
 
     // Function to fetch image as base64
     const fetchImageAsBase64 = async (imageSrc: string): Promise<string> => {
@@ -874,6 +978,34 @@ const isUpdate = !!this.selectedHistory?.id;
 
           // Create PDF
           const pdf = new jsPDF('p', 'mm', 'a4');
+
+          // Add logo at the top if available
+          let startY = 6;
+          if (logoData) {
+            const logoWidth = 35;
+            const logoHeight = 35;
+            const logoX = 15;
+            const logoY = 10;
+
+            pdf.addImage(logoData, 'PNG', logoX, logoY, logoWidth, logoHeight);
+
+            // Add clinic name next to logo
+            pdf.setFontSize(16);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('CLÍNICA DENTAL', logoX + logoWidth + 10, logoY + 12);
+
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text('Centro Odontológico Especializado', logoX + logoWidth + 10, logoY + 20);
+            pdf.text('Atención Profesional y Calidad', logoX + logoWidth + 10, logoY + 27);
+
+            // Add border around header
+            pdf.setLineWidth(0.5);
+            pdf.rect(10, 5, 190, 45);
+
+            startY = 55; // Adjust starting position for content
+          }
+
           const imgData = canvas.toDataURL('image/jpeg', 0.95);
 
           // Calculate dimensions maintaining aspect ratio
@@ -883,16 +1015,16 @@ const isUpdate = !!this.selectedHistory?.id;
 
           // Añadir contenido respetando el alto de página
           const pageHeight = pdf.internal.pageSize.getHeight();
-          const contentHeight = pageHeight - 12; // márgenes superior e inferior de 6mm
+          const contentHeight = pageHeight - startY - 6; // márgenes superior e inferior
           let heightLeft = pdfHeight;
-          let position = 6;
+          let position = startY;
 
           pdf.addImage(imgData, 'JPEG', 6, position, pdfWidth, pdfHeight, undefined, 'FAST');
           heightLeft -= contentHeight;
 
           while (heightLeft > 0.5) {
             pdf.addPage();
-            position = heightLeft - pdfHeight + 6;
+            position = heightLeft - pdfHeight + startY;
             pdf.addImage(imgData, 'JPEG', 6, position, pdfWidth, pdfHeight, undefined, 'FAST');
             heightLeft -= contentHeight;
           }
