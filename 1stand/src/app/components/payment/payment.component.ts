@@ -26,6 +26,7 @@ import { MedicalAttentionService } from '../../services/medical-attention.servic
   ]
 })
 export class PaymentComponent implements OnInit {
+  // Force TypeScript recompile
   payments: Payment[] = [];
   paymentForm: FormGroup;
   patients: any[] = [];
@@ -430,18 +431,101 @@ export class PaymentComponent implements OnInit {
   exportComprobante(payment: Payment) {
     const doc = new jsPDF();
 
-    doc.setFontSize(18);
-    doc.text('COMPROBANTE DE PAGO', 70, 20);
+    // Add logo at the top
+    const addLogoToPDF = async () => {
+      try {
+        // Load the logo image from assets
+        const logoResponse = await fetch('/assets/logo.jpg');
+        const logoBlob = await logoResponse.blob();
+
+        return new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const logoData = reader.result as string;
+            resolve(logoData);
+          };
+          reader.readAsDataURL(logoBlob);
+        });
+      } catch (error) {
+        console.warn('Error loading logo image, using text fallback:', error);
+        return null;
+      }
+    };
+
+    // Create PDF with logo
+    addLogoToPDF().then((logoData) => {
+      if (logoData) {
+        // Add actual logo image
+        const logoWidth = 35;
+        const logoHeight = 35;
+        const logoX = 15;
+        const logoY = 15;
+
+        doc.addImage(logoData, 'PNG', logoX, logoY, logoWidth, logoHeight);
+
+        // Add clinic name next to logo
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('CLÍNICA DENTAL', logoX + logoWidth + 10, logoY + 12);
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Centro Odontológico Especializado', logoX + logoWidth + 10, logoY + 20);
+        doc.text('Atención Profesional y Calidad', logoX + logoWidth + 10, logoY + 27);
+      } else {
+        // Fallback to text-based logo
+        const logoWidth = 30;
+        const logoHeight = 30;
+        const logoX = 15;
+        const logoY = 15;
+
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('🏥 CLÍNICA DENTAL', logoX + logoWidth + 10, logoY + 10);
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Centro Odontológico Especializado', logoX + logoWidth + 10, logoY + 18);
+        doc.text('Atención Profesional y Calidad', logoX + logoWidth + 10, logoY + 25);
+      }
+
+      // Add border around header
+      doc.setLineWidth(0.5);
+      doc.rect(10, 10, 190, 40);
+
+      this.addPDFContent(doc, payment);
+    }).catch(() => {
+      // Final fallback
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.text('🏥 CLÍNICA DENTAL', 15, 25);
+      doc.setLineWidth(0.5);
+      doc.rect(10, 10, 190, 40);
+
+      this.addPDFContent(doc, payment);
+    });
+  }
+
+  private addPDFContent(doc: jsPDF, payment: Payment) {
+
+    // Main title
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('COMPROBANTE DE PAGO', 105, 60, { align: 'center' });
+
+    // Decorative line
     doc.setLineWidth(0.5);
-    doc.line(15, 25, 195, 25);
+    doc.line(15, 65, 195, 65);
 
-    doc.setFontSize(12);
-    doc.text(`Fecha de emisión: ${new Date().toLocaleDateString()}`, 15, 35);
-    doc.text(`Paciente: ${payment.patient?.name || 'No especificado'}`, 15, 45);
-    doc.text(`Cita: ${payment.appointment?.date ? new Date(payment.appointment.date).toLocaleDateString() : 'Sin fecha'}`, 15, 55);
-    doc.text(`Médico: ${payment.appointment?.doctor_name || 'No registrado'}`, 15, 65);
+    // Patient information
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Fecha de emisión: ${new Date().toLocaleDateString()}`, 15, 75);
+    doc.text(`Paciente: ${payment.patient?.name || 'No especificado'}`, 15, 85);
+    doc.text(`Cita: ${payment.appointment?.date ? new Date(payment.appointment.date).toLocaleDateString() : 'Sin fecha'}`, 15, 95);
+    doc.text(`Médico: ${payment.appointment?.doctor_name || 'No registrado'}`, 15, 105);
 
-    let y = 80;
+    let y = 120;
     doc.setFontSize(14);
     doc.text('Tratamientos Realizados:', 15, y);
     y += 5;

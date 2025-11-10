@@ -345,6 +345,15 @@ export class MedicalAttentionComponent implements OnInit, OnDestroy {
     return labels[key] ?? this.capitalizeText(key);
   }
 
+  // Getters for template
+  get totalRevenue(): number {
+    return this.medicalAttentions.reduce((sum, a) => sum + (a.total_cost ?? 0), 0);
+  }
+
+  get hasRevenue(): boolean {
+    return this.medicalAttentions.some(a => (a.total_cost ?? 0) > 0);
+  }
+
   getAppointmentStatusClassFromValue(status?: string | null): string {
     const key = this.getAppointmentStatusKey(status);
     const classes: Record<string, string> = {

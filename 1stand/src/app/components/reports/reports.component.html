@@ -1,77 +1,171 @@
-<div class="container mt-4" id="reportContent">
-  <h2 class="text-center mb-4">📊 Reportes Generales</h2>
-
-  <!-- FILTROS -->
-  <div class="d-flex justify-content-center gap-3 mb-4">
-    <div>
-      <label>Desde:</label>
-      <input type="date" [(ngModel)]="from" class="form-control" />
-    </div>
-    <div>
-      <label>Hasta:</label>
-      <input type="date" [(ngModel)]="to" class="form-control" />
-    </div>
-    <div>
-      <label>Grupo:</label>
-      <select [(ngModel)]="group" class="form-control">
-        <option value="day">Día</option>
-        <option value="week">Semana</option>
-        <option value="month">Mes</option>
-      </select>
-    </div>
-    <div class="align-self-end">
-      <button class="btn btn-primary" (click)="loadReports()">Actualizar</button>
-    </div>
-  </div>
-
-  <!-- RESUMEN GENERAL -->
-  <div class="card p-3 mb-4">
-    <h4>📌 Resumen General</h4>
-    <p><b>Total de Citas:</b> {{ summary.totalAppointments || 0 }}</p>
-    <p><b>Total de Pagos:</b> {{ summary.totalIncome || 0 }}</p>
-    <p><b>Tratamiento más Común:</b> {{ summary.mostRequestedTreatment || 'Sin datos' }}</p>
-  </div>
-
-  <!-- GRÁFICOS -->
-  <div class="row g-4">
-    <div class="col-md-6">
-      <div class="card p-3 shadow">
-        <h5 class="text-center">Citas por Periodo</h5>
-        <canvas id="appointmentsChart"></canvas>
-      </div>
-    </div>
-
-    <div class="col-md-6">
-      <div class="card p-3 shadow">
-        <h5 class="text-center">Pacientes Más Frecuentes</h5>
-        <canvas id="patientsChart"></canvas>
-      </div>
-    </div>
-
-    <div class="col-md-6">
-      <div class="card p-3 shadow">
-        <h5 class="text-center">Tratamientos Más Realizados</h5>
-        <canvas id="treatmentsChart"></canvas>
-      </div>
-    </div>
-
-    <div class="col-md-6">
-      <div class="card p-3 shadow">
-        <h5 class="text-center">Atenciones por Doctor</h5>
-        <canvas id="doctorStatsChart"></canvas>
-      </div>
-    </div>
-
-    <div class="col-md-12">
-      <div class="card p-3 shadow">
-        <h5 class="text-center">Pagos por Periodo</h5>
-        <canvas id="paymentsChart"></canvas>
+<div class="reports-container" id="reportContent">
+  <div class="reports-header">
+    <div class="header-content">
+      <div class="header-icon">📊</div>
+      <div class="header-text">
+        <h1>Reportes y Estadísticas</h1>
+        <p>Análisis completo del rendimiento médico y financiero</p>
       </div>
     </div>
   </div>
-</div>
 
-<!-- BOTÓN EXPORTAR -->
-<div class="text-center mt-4">
-  <button class="btn btn-success" (click)="exportPDF()">📄 Exportar a PDF</button>
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="filters-header">
+      <h3><i class="icon-filter"></i> Filtros de Reporte</h3>
+      <small>Personaliza el período y agrupación de datos</small>
+    </div>
+
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label for="from-date" class="filter-label">
+          <i class="icon-calendar"></i> Fecha Desde
+        </label>
+        <input type="date" id="from-date" [(ngModel)]="from" class="filter-input" />
+      </div>
+
+      <div class="filter-group">
+        <label for="to-date" class="filter-label">
+          <i class="icon-calendar"></i> Fecha Hasta
+        </label>
+        <input type="date" id="to-date" [(ngModel)]="to" class="filter-input" />
+      </div>
+
+      <div class="filter-group">
+        <label for="group-select" class="filter-label">
+          <i class="icon-group"></i> Agrupar Por
+        </label>
+        <select id="group-select" [(ngModel)]="group" class="filter-input">
+          <option value="day">📅 Por Día</option>
+          <option value="week">📊 Por Semana</option>
+          <option value="month">🗓️ Por Mes</option>
+        </select>
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn btn-primary" (click)="loadReports()">
+          <i class="icon-refresh"></i> Actualizar Reportes
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-section">
+    <div class="summary-header">
+      <h3><i class="icon-summary"></i> Resumen Ejecutivo</h3>
+      <small>Métricas clave del período seleccionado</small>
+    </div>
+
+    <div class="summary-cards">
+      <div class="summary-card appointments-card">
+        <div class="card-icon">📅</div>
+        <div class="card-content">
+          <div class="card-value">{{ summary.totalAppointments || 0 }}</div>
+          <div class="card-label">Total de Citas</div>
+          <div class="card-subtitle">Atenciones realizadas</div>
+        </div>
+      </div>
+
+      <div class="summary-card income-card">
+        <div class="card-icon">💰</div>
+        <div class="card-content">
+          <div class="card-value">{{ summary.totalIncome || 0 | currency:'USD':'symbol':'1.2-2' }}</div>
+          <div class="card-label">Ingresos Totales</div>
+          <div class="card-subtitle">Facturación del período</div>
+        </div>
+      </div>
+
+      <div class="summary-card treatment-card">
+        <div class="card-icon">🩺</div>
+        <div class="card-content">
+          <div class="card-value">{{ summary.mostRequestedTreatment || 'N/A' }}</div>
+          <div class="card-label">Tratamiento Más Solicitado</div>
+          <div class="card-subtitle">Servicio más popular</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="charts-section">
+    <div class="charts-header">
+      <h3><i class="icon-charts"></i> Visualización de Datos</h3>
+      <small>Gráficos interactivos con métricas detalladas</small>
+    </div>
+
+    <div class="charts-grid">
+      <!-- Appointments Chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h4><i class="icon-appointments"></i> Citas por Período</h4>
+          <small>Evolución temporal de atenciones</small>
+        </div>
+        <div class="chart-container">
+          <canvas id="appointmentsChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Patients Chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h4><i class="icon-patients"></i> Pacientes Más Frecuentes</h4>
+          <small>Top pacientes por frecuencia de visita</small>
+        </div>
+        <div class="chart-container">
+          <canvas id="patientsChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Treatments Chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h4><i class="icon-treatments"></i> Tratamientos Más Realizados</h4>
+          <small>Servicios médicos más demandados</small>
+        </div>
+        <div class="chart-container">
+          <canvas id="treatmentsChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Doctor Stats Chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h4><i class="icon-doctors"></i> Atenciones por Doctor</h4>
+          <small>Productividad por profesional médico</small>
+        </div>
+        <div class="chart-container">
+          <canvas id="doctorStatsChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Payments Chart (Full Width) -->
+      <div class="chart-card full-width">
+        <div class="chart-header">
+          <h4><i class="icon-payments"></i> Pagos por Período</h4>
+          <small>Ingresos generados en el tiempo</small>
+        </div>
+        <div class="chart-container">
+          <canvas id="paymentsChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Section -->
+  <div class="export-section">
+    <div class="export-header">
+      <h3><i class="icon-export"></i> Exportar Reporte</h3>
+      <small>Genera un PDF completo con todos los datos y gráficos</small>
+    </div>
+
+    <div class="export-actions">
+      <button class="btn btn-success export-btn" (click)="exportPDF()">
+        <i class="icon-pdf"></i> Exportar Reporte Completo a PDF
+      </button>
+      <small class="export-note">
+        El PDF incluirá todos los gráficos, estadísticas y filtros aplicados
+      </small>
+    </div>
+  </div>
 </div>

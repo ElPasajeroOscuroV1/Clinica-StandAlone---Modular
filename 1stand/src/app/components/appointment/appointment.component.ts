@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin, EMPTY } from 'rxjs';
 import { catchError, finalize, switchMap } from 'rxjs/operators';
@@ -67,7 +67,7 @@ export class AppointmentComponent implements OnInit {
     this.appointmentForm = this.fb.group({
       patient_id: ['', Validators.required],
       doctor_id: ['', Validators.required],
-      date: ['', Validators.required],
+      date: ['', [Validators.required, this.dateNotInPastValidator]],
       turn: ['', Validators.required],
       reason: ['', [Validators.required, Validators.maxLength(255)]]
     });
@@ -239,6 +239,32 @@ export class AppointmentComponent implements OnInit {
     return `attention-status ${className}`;
   }
 
+  filterAppointments(filterType: string): void {
+    // This method will be implemented in the template
+    // For now, it just accepts the filter type
+    console.log('Filtering appointments:', filterType);
+  }
+
+  logFormState(): void {
+    console.log('=== FORM STATE DEBUG ===');
+    console.log('Form valid:', this.appointmentForm.valid);
+    console.log('Form value:', this.appointmentForm.value);
+
+    // Check individual controls
+    Object.keys(this.appointmentForm.controls).forEach(controlName => {
+      const control = this.appointmentForm.get(controlName);
+      if (control) {
+        console.log(`${controlName}: value="${control.value}", valid=${control.valid}, touched=${control.touched}, dirty=${control.dirty}, errors=`, control.errors);
+      }
+    });
+
+    // Additional validation info
+    console.log('Available turns:', this.availableTurns.length);
+    console.log('Selected patient CI:', this.selectedPatientCi);
+    console.log('Patients loaded:', this.patients.length);
+    console.log('Doctors loaded:', this.doctors.length);
+  }
+
   private loadInitialData(): void {
     this.loadPatients();
     this.loadDoctors();
@@ -403,5 +429,38 @@ export class AppointmentComponent implements OnInit {
     }
 
     return 'Ocurrio un error inesperado. Intente nuevamente.';
+  }
+
+  getTodayDateString(): string {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  getTodaysAppointmentCount(): number {
+    const today = this.getTodayDateString();
+    return this.appointments.filter(app => app.date === today).length;
+  }
+
+  getPendingAppointmentsCount(): number {
+    return this.appointments.filter(a => a.status?.toLowerCase() === 'pending').length;
+  }
+
+  private dateNotInPastValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) {
+      return null;
+    }
+
+    const selectedDate = new Date(control.value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate date comparison
+
+    if (selectedDate < today) {
+      return { dateInPast: true };
+    }
+
+    return null;
   }
 }

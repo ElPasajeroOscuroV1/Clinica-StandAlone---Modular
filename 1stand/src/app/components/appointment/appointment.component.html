@@ -1,7 +1,26 @@
 <div class="appointments-container">
-  
+  <div class="appointments-header">
+    <div class="header-content">
+      <div class="header-icon">📅</div>
+      <div class="header-text">
+        <h1>Gestión de Citas Médicas</h1>
+        <p>Programa y administra todas las citas de tu clínica</p>
+      </div>
+    </div>
+  </div>
+
   <div class="form-section">
-    <h2>Programar Nueva Cita</h2>
+    <div class="form-header">
+      <h2>Programar Nueva Cita</h2>
+      <div class="availability-indicator">
+        <small *ngIf="appointmentForm.valid && availableTurns.length > 0" class="text-success">
+          ✓ Formulario completo y turnos disponibles
+        </small>
+        <small *ngIf="!appointmentForm.valid || availableTurns.length === 0" class="text-muted">
+          Complete todos los campos para ver turnos disponibles
+        </small>
+      </div>
+    </div>
 
     <div *ngIf="successMessage" class="alert alert-success">
       {{ successMessage }}
@@ -45,8 +64,13 @@
           id="date"
           formControlName="date"
           class="form-control"
+          [min]="getTodayDateString()"
           (change)="onDoctorOrDateChange()"
         >
+        <div class="invalid-feedback" *ngIf="appointmentForm.get('date')?.invalid && appointmentForm.get('date')?.touched">
+          <span *ngIf="appointmentForm.get('date')?.errors?.['required']">La fecha es obligatoria</span>
+          <span *ngIf="appointmentForm.get('date')?.errors?.['dateInPast']">No se puede programar citas en fechas pasadas</span>
+        </div>
       </div>
 
       <div class="form-group">
@@ -78,13 +102,41 @@
       </button>
     </form>
   </div>
-<!--CALENDARIO-->
-  <div class="calendar-container">
-    <full-calendar [options]="calendarOptions"></full-calendar>
+  <!-- Calendar Section -->
+  <div class="calendar-section">
+    <div class="section-header">
+      <h2>Calendario de Citas</h2>
+      <div class="calendar-stats">
+        <span class="stat-item">
+          <i class="icon-calendar"></i>
+          {{ appointments.length }} citas programadas
+        </span>
+        <span class="stat-item">
+          <i class="icon-today"></i>
+          Hoy: {{ getTodaysAppointmentCount() }} citas
+        </span>
+      </div>
+    </div>
+    <div class="calendar-container">
+      <full-calendar [options]="calendarOptions"></full-calendar>
+    </div>
   </div>
 
-  <div class="appointments-list">
-    <h2>Citas Programadas</h2>
+  <div class="appointments-list-section">
+    <div class="list-header">
+      <h2>Citas Programadas</h2>
+      <div class="filter-buttons">
+        <button class="filter-btn active" (click)="filterAppointments('all')">
+          Todas ({{ appointments.length }})
+        </button>
+        <button class="filter-btn" (click)="filterAppointments('today')">
+          Hoy ({{ getTodaysAppointmentCount() }})
+        </button>
+        <button class="filter-btn" (click)="filterAppointments('pending')">
+          Pendientes ({{ getPendingAppointmentsCount() }})
+        </button>
+      </div>
+    </div>
     <div class="appointment-card" *ngFor="let appointment of appointments; let i = index">
       <div class="appointment-details">
         <h3>{{ appointment.patient_name }}</h3>

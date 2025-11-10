@@ -49,15 +49,16 @@ class WorkScheduleController extends Controller
 
     public function getAvailableTurns($doctorId, $date)
     {
-        // Verificar si el doctor tiene permisos para esta fecha
-        $hasPermission = DoctorPermission::where('doctor_id', $doctorId)
+        // Verificar si el doctor está de vacaciones en esta fecha
+        $hasVacation = DoctorPermission::where('doctor_id', $doctorId)
+            ->where('type', 'vacation')
             ->where('is_active', true)
             ->where('start_date', '<=', $date)
             ->where('end_date', '>=', $date)
             ->exists();
 
-        if ($hasPermission) {
-            return response()->json(['message' => 'El doctor tiene permisos en esta fecha y no está disponible'], 403);
+        if ($hasVacation) {
+            return response()->json(['message' => 'El doctor está de vacaciones en esta fecha y no está disponible'], 403);
         }
 
         // Obtener el día de la semana
@@ -89,6 +90,11 @@ class WorkScheduleController extends Controller
             ->pluck('time')
             ->toArray();
 
+        // Obtener la fecha y hora actual
+        $now = now();
+        $currentDate = $now->format('Y-m-d');
+        $currentTime = $now->format('H:i:s');
+
         foreach ($schedules as $schedule) {
             $startTime = strtotime($schedule->start_time);
             $endTime = strtotime($schedule->end_time);
@@ -98,7 +104,16 @@ class WorkScheduleController extends Controller
                 $turnTime = date('H:i:s', $time);
 
                 // Verificar si el turno ya está ocupado
-                $isAvailable = !in_array($turnTime, $existingAppointments);
+                $isOccupied = in_array($turnTime, $existingAppointments);
+
+                // Para la fecha actual, verificar si el turno ya pasó
+                $isPast = false;
+                if ($date === $currentDate) {
+                    $isPast = $turnTime < $currentTime;
+                }
+
+                // El turno está disponible si no está ocupado y no ha pasado
+                $isAvailable = !$isOccupied && !$isPast;
 
                 $availableTurns[] = [
                     'time' => $turnTime,

@@ -1,129 +1,243 @@
-<div class="container mt-4">
-  <h2>Gestión de Tratamientos</h2>
-  <h2>{{ editMode ? 'Editar tratamiento' : 'Registrar tratamiento' }}</h2>
-
-  <!-- Formulario -->
-  <form (ngSubmit)="saveTreatment()" #tForm="ngForm" class="mb-4">
-    <div class="row">
-      <div class="col-md-6 mb-3">
-        <label class="form-label">Nombre</label>
-        <input type="text" [(ngModel)]="treatmentForm.nombre" name="nombre" placeholder="Nombre del tratamiento" class="form-control" required>
+<div class="treatments-container">
+  <div class="treatments-header">
+    <div class="header-content">
+      <div class="header-icon">💊</div>
+      <div class="header-text">
+        <h1>Gestión de Tratamientos</h1>
+        <p>Administra tratamientos médicos, precios y descuentos</p>
       </div>
-      <div class="col-md-6 mb-3">
-        <label class="form-label">Duración (minutos)</label>
-        <input type="number" [(ngModel)]="treatmentForm.duracion" name="duracion" placeholder="Duración" class="form-control" required>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-header">
+      <h2>{{ editMode ? 'Editar Tratamiento' : 'Registrar Nuevo Tratamiento' }}</h2>
+      <div class="form-status" *ngIf="treatmentForm.nombre && treatmentForm.precio > 0">
+        <small class="text-success">✓ Información básica completa</small>
       </div>
     </div>
 
-    <div class="mb-3">
-      <label class="form-label">Descripción</label>
-      <textarea [(ngModel)]="treatmentForm.descripcion" name="descripcion" placeholder="Descripción del tratamiento" class="form-control" rows="2"></textarea>
-    </div>
-
-    <div class="row">
-      <div class="col-md-6 mb-3">
-        <label class="form-label">Precio Base</label>
-        <div class="input-group">
-          <span class="input-group-text">$</span>
-          <input type="number" [(ngModel)]="treatmentForm.precio" name="precio" step="0.01" placeholder="0.00" class="form-control" required>
-        </div>
-      </div>
-      <div class="col-md-6 mb-3">
-        <label class="form-label">Precio Final</label>
-        <div class="input-group">
-          <span class="input-group-text">$</span>
-          <input type="text" [value]="getPrecioConDescuento()" class="form-control" readonly>
-          <span class="input-group-text" *ngIf="getAhorro() > 0">
-            <span class="badge bg-success">Ahorro: ${{ getAhorro() }}</span>
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Sección de Descuentos -->
-    <div class="card mb-3 border-warning">
-      <div class="card-header bg-warning-subtle">
-        <div class="form-check">
-          <input type="checkbox" [(ngModel)]="treatmentForm.tiene_descuento" name="tiene_descuento" class="form-check-input" id="tiene_descuento">
-          <label class="form-check-label" for="tiene_descuento">
-            <strong>Aplicar Descuento</strong>
+    <form (ngSubmit)="saveTreatment()" #tForm="ngForm" class="treatment-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="nombre" class="form-label">
+            <i class="icon-treatment-name"></i> Nombre del Tratamiento
           </label>
-        </div>
-      </div>
-      <div class="card-body" *ngIf="treatmentForm.tiene_descuento">
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label class="form-label">Descuento por Porcentaje (%)</label>
-            <div class="input-group">
-              <input type="number" [(ngModel)]="treatmentForm.descuento_porcentaje" name="descuento_porcentaje" min="0" max="100" step="0.01" placeholder="0" class="form-control">
-              <span class="input-group-text">%</span>
-            </div>
-            <small class="text-muted">Ejemplo: 20 para 20%</small>
-          </div>
-          <div class="col-md-6 mb-3">
-            <label class="form-label">Descuento por Monto Fijo ($)</label>
-            <div class="input-group">
-              <span class="input-group-text">$</span>
-              <input type="number" [(ngModel)]="treatmentForm.descuento_monto" name="descuento_monto" min="0" step="0.01" placeholder="0.00" class="form-control">
-            </div>
-            <small class="text-muted">Ejemplo: 50.00</small>
+          <input type="text" [(ngModel)]="treatmentForm.nombre" name="nombre"
+                 placeholder="Ej: Consulta General, Extracción Dental" class="form-control" required />
+          <div class="invalid-feedback" *ngIf="tForm.submitted && !treatmentForm.nombre">
+            El nombre del tratamiento es obligatorio
           </div>
         </div>
 
-        <div class="mb-3">
-          <label class="form-label">Motivo del Descuento</label>
-          <input type="text" [(ngModel)]="treatmentForm.motivo_descuento" name="motivo_descuento" placeholder="Razón del descuento (opcional)" class="form-control">
-          <small class="text-muted">Ej: Promoción especial, cliente frecuente, etc.</small>
+        <div class="form-group">
+          <label for="duracion" class="form-label">
+            <i class="icon-duration"></i> Duración (minutos)
+          </label>
+          <input type="number" [(ngModel)]="treatmentForm.duracion" name="duracion"
+                 placeholder="30" class="form-control" required min="1" />
+          <div class="invalid-feedback" *ngIf="tForm.submitted && !treatmentForm.duracion">
+            La duración es obligatoria
+          </div>
         </div>
       </div>
+
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label for="descripcion" class="form-label">
+            <i class="icon-description"></i> Descripción
+          </label>
+          <textarea [(ngModel)]="treatmentForm.descripcion" name="descripcion"
+                    placeholder="Describe detalladamente el tratamiento médico" class="form-control" rows="3"></textarea>
+        </div>
+      </div>
+
+      <!-- Pricing Section -->
+      <div class="pricing-section">
+        <h4><i class="icon-pricing"></i> Información de Precios</h4>
+
+        <div class="pricing-grid">
+          <div class="price-card base-price">
+            <div class="price-label">Precio Base</div>
+            <div class="price-input-group">
+              <span class="currency-symbol">$</span>
+              <input type="number" [(ngModel)]="treatmentForm.precio" name="precio"
+                     step="0.01" placeholder="0.00" class="price-input" required min="0" />
+            </div>
+          </div>
+
+          <div class="price-card final-price" *ngIf="treatmentForm.precio > 0">
+            <div class="price-label">Precio Final</div>
+            <div class="final-price-display">
+              <span class="final-amount">${{ getPrecioConDescuento() | number:'1.2-2' }}</span>
+              <div class="savings-info" *ngIf="getAhorro() > 0">
+                <span class="savings-badge">💰 Ahorro: ${{ getAhorro() | number:'1.2-2' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Discount Section -->
+      <div class="discount-section">
+        <div class="discount-header">
+          <div class="discount-toggle">
+            <input type="checkbox" [(ngModel)]="treatmentForm.tiene_descuento"
+                   name="tiene_descuento" id="tiene_descuento" class="discount-checkbox" />
+            <label for="tiene_descuento" class="discount-label">
+              <i class="icon-discount"></i>
+              <span>Aplicar Descuento Especial</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="discount-content" *ngIf="treatmentForm.tiene_descuento">
+          <div class="discount-options">
+            <div class="discount-option">
+              <label for="descuento_porcentaje" class="option-label">
+                <i class="icon-percentage"></i> Descuento por Porcentaje
+              </label>
+              <div class="input-with-unit">
+                <input type="number" [(ngModel)]="treatmentForm.descuento_porcentaje"
+                       name="descuento_porcentaje" min="0" max="100" step="0.01"
+                       placeholder="20" class="form-control" />
+                <span class="unit">%</span>
+              </div>
+              <small class="help-text">Ejemplo: 20 para 20% de descuento</small>
+            </div>
+
+            <div class="discount-option">
+              <label for="descuento_monto" class="option-label">
+                <i class="icon-fixed"></i> Descuento por Monto Fijo
+              </label>
+              <div class="input-with-unit">
+                <input type="number" [(ngModel)]="treatmentForm.descuento_monto"
+                       name="descuento_monto" min="0" step="0.01"
+                       placeholder="50.00" class="form-control" />
+                <span class="unit">$</span>
+              </div>
+              <small class="help-text">Ejemplo: 50.00 para descuento fijo</small>
+            </div>
+          </div>
+
+          <div class="discount-reason">
+            <label for="motivo_descuento" class="option-label">
+              <i class="icon-reason"></i> Motivo del Descuento
+            </label>
+            <input type="text" [(ngModel)]="treatmentForm.motivo_descuento"
+                   name="motivo_descuento" placeholder="Razón del descuento aplicado"
+                   class="form-control" />
+            <small class="help-text">Ej: Promoción especial, cliente frecuente, paquete familiar</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+          <i class="icon-save"></i> {{ editMode ? 'Actualizar Tratamiento' : 'Crear Tratamiento' }}
+        </button>
+        <button type="button" (click)="resetForm()" *ngIf="editMode" class="btn btn-secondary">
+          <i class="icon-cancel"></i> Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Treatments List Section -->
+<div class="treatments-list-section">
+  <div class="list-header">
+    <h3>Tratamientos Registrados</h3>
+    <div class="list-stats">
+      <span class="stat-item">
+        <i class="icon-treatments-count"></i>
+        {{ treatments.length }} tratamientos
+      </span>
+      <span class="stat-item" *ngIf="hasTreatmentsWithDiscount">
+        <i class="icon-discounts"></i>
+        {{ treatmentsWithDiscount }} con descuento
+      </span>
     </div>
+  </div>
 
-    <button type="submit" class="btn btn-primary">
-      {{ editMode ? 'Actualizar Tratamiento' : 'Crear Tratamiento' }}
-    </button>
-    <button type="button" (click)="resetForm()" *ngIf="editMode" class="btn btn-secondary ms-2">
-      Cancelar
-    </button>
-  </form>
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <p>Cargando tratamientos...</p>
+  </div>
 
-  <!-- Tabla -->
-  <h2>Lista de tratamientos</h2>
-  <div *ngIf="loading">Cargando tratamientos...</div>
-  <table class="table table-striped" *ngIf="!loading">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Nombre</th>
-        <th>Descripción</th> <!-- Nueva columna -->
-        <th>Precio</th>
-        <th>Duración</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let t of treatments">
-        <td>{{ t.id }}</td>
-        <td>{{ t.nombre }}</td>
-        <td>{{ t.descripcion || 'Sin descripción' }}</td>
-        <td>
-          <div class="text-nowrap">
-            <div *ngIf="t.tiene_descuento">
-              <s class="text-muted">{{ t.precio | currency }}</s><br>
-              <span class="fw-bold text-success">{{ t.precio_con_descuento | currency }}</span>
-              <br>
-              <small class="badge bg-success">Ahorro: {{ t.ahorro | currency }}</small>
+  <!-- Treatments Table -->
+  <div class="table-responsive" *ngIf="!loading && treatments.length > 0">
+    <table class="treatments-table">
+      <thead>
+        <tr>
+          <th><i class="icon-id"></i> ID</th>
+          <th><i class="icon-treatment-name"></i> Tratamiento</th>
+          <th><i class="icon-description"></i> Descripción</th>
+          <th><i class="icon-pricing"></i> Precio</th>
+          <th><i class="icon-duration"></i> Duración</th>
+          <th><i class="icon-discount"></i> Descuento</th>
+          <th><i class="icon-actions"></i> Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of treatments; let i = index" [class.even-row]="i % 2 === 0">
+          <td class="id-cell">{{ t.id }}</td>
+          <td class="treatment-cell">
+            <div class="treatment-info">
+              <strong>{{ t.nombre }}</strong>
+              <div class="treatment-meta" *ngIf="t.tiene_descuento">
+                <span class="discount-indicator">🏷️ Con descuento</span>
+              </div>
             </div>
-            <div *ngIf="!t.tiene_descuento">
-              {{ t.precio | currency }}
+          </td>
+          <td class="description-cell">
+            <span class="description-text" [title]="t.descripcion">
+              {{ t.descripcion || 'Sin descripción' }}
+            </span>
+          </td>
+          <td class="pricing-cell">
+            <div class="pricing-info">
+              <div *ngIf="t.tiene_descuento; else normalPricing">
+                <div class="original-price">{{ t.precio | currency:'USD':'symbol':'1.2-2' }}</div>
+                <div class="discounted-price">{{ t.precio_con_descuento | currency:'USD':'symbol':'1.2-2' }}</div>
+                <div class="savings-amount">Ahorro: {{ t.ahorro | currency:'USD':'symbol':'1.2-2' }}</div>
+              </div>
+              <ng-template #normalPricing>
+                <div class="normal-price">{{ t.precio | currency:'USD':'symbol':'1.2-2' }}</div>
+              </ng-template>
             </div>
-          </div>
-        </td>
-        <td>{{ t.duracion }} min</td>
-        <td>
-          <button (click)="editTreatment(t)" class="btn btn-primary btn-sm">Editar</button>
-          <button (click)="deleteTreatment(t.id!)" class="btn btn-danger btn-sm ms-2">Eliminar</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+          </td>
+          <td class="duration-cell">
+            <span class="duration-badge">{{ t.duracion }} min</span>
+          </td>
+          <td class="discount-cell">
+            <span class="discount-status" [class.active]="t.tiene_descuento" [class.inactive]="!t.tiene_descuento">
+              {{ t.tiene_descuento ? 'Activo' : 'Sin descuento' }}
+            </span>
+          </td>
+          <td class="actions-cell">
+            <div class="action-buttons">
+              <button class="btn btn-primary btn-sm" (click)="editTreatment(t)" title="Editar tratamiento">
+                <i class="icon-edit"></i> Editar
+              </button>
+              <button class="btn btn-danger btn-sm" (click)="deleteTreatment(t.id!)" title="Eliminar tratamiento">
+                <i class="icon-delete"></i> Eliminar
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && treatments.length === 0">
+    <div class="empty-icon">💊</div>
+    <h3>No hay tratamientos registrados</h3>
+    <p>Aún no se han registrado tratamientos médicos en el sistema.</p>
+    <div class="empty-actions">
+      <small>Crea tratamientos para poder asignarlos en las citas médicas.</small>
+    </div>
+  </div>
 </div>
