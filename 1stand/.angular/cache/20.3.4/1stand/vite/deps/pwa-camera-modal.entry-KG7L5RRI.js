@@ -2,7 +2,7 @@ import {
   createEvent,
   h,
   registerInstance
-} from "./chunk-L545XVBB.js";
+} from "./chunk-JRG224JJ.js";
 import "./chunk-N6ESDQJH.js";
 
 // node_modules/@ionic/pwa-elements/dist/esm-es5/pwa-camera-modal.entry.js

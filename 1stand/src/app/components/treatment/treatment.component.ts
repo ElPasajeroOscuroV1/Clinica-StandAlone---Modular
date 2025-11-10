@@ -124,7 +124,16 @@ export class TreatmentComponent implements OnInit {
     }
 
     // Calcular ahorro
-    getAhorro(): number {
-      return Math.round((this.treatmentForm.precio - this.getPrecioConDescuento()) * 100) / 100;
-    }
+  getAhorro(): number {
+    return Math.round((this.treatmentForm.precio - this.getPrecioConDescuento()) * 100) / 100;
+  }
+
+  // Getters for template
+  get treatmentsWithDiscount(): number {
+    return this.treatments.filter(t => t.tiene_descuento).length;
+  }
+
+  get hasTreatmentsWithDiscount(): boolean {
+    return this.treatments.some(t => t.tiene_descuento);
+  }
 }

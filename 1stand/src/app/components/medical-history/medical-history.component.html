@@ -1,50 +1,120 @@
-<div class="container mt-3">
-  <h2>Historiales Clínicos</h2>
-
-  <div *ngIf="loading" class="alert alert-info">Cargando historiales...</div>
-  
-  <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
-    {{ successMessage }}
-    <button type="button" class="btn-close" (click)="successMessage = null" aria-label="Close"></button>
+<div class="medical-history-container">
+  <div class="medical-history-header">
+    <div class="header-content">
+      <div class="header-icon">📋</div>
+      <div class="header-text">
+        <h1>Historiales Clínicos</h1>
+        <p>Gestión completa de historias médicas de pacientes</p>
+      </div>
+    </div>
   </div>
 
-  <table class="table table-striped" *ngIf="!loading && histories.length > 0">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Paciente</th>
-        <th>Email</th>
-        <th>CI</th>
-        <th>Motivo de Consulta</th>
-        <th>Alergias</th>
-        <th>Fecha de Creación</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let h of histories">
-        <td>{{ h.id }}</td>
-        <td>{{ h.patient.name }}</td>
-        <td>{{ h.patient.email }}</td>
-        <td>{{ h.patient.ci }}</td>
-        <td>{{ h.consultation_reason }}</td>
-        <td>{{ h.allergies }}</td>
-        <td>{{ h.created_at | date:'dd/MM/yyyy HH:mm' }}</td>
-        <td>
-          <button class="btn btn-sm btn-primary" (click)="openHistoryModal(h)">
-            Ver / Editar
-          </button>
-          <!--
-          <button class="btn btn-secondary" (click)="exportHistoryHTMLToPDF(h)">
-            Exportar PDF Visual
-          </button>
-          -->
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="content-section">
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Cargando historiales clínicos...</p>
+    </div>
 
-  <div *ngIf="!loading && histories.length === 0" class="alert alert-warning">
-    No hay historiales clínicos registrados.
+    <!-- Success Message -->
+    <div *ngIf="successMessage" class="message-alert success-alert">
+      <div class="alert-icon">✅</div>
+      <div class="alert-content">
+        <strong>¡Éxito!</strong>
+        <p>{{ successMessage }}</p>
+      </div>
+      <button type="button" class="alert-close" (click)="successMessage = null" aria-label="Cerrar">
+        ✕
+      </button>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="message-alert error-alert">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-content">
+        <strong>Error</strong>
+        <p>{{ errorMessage }}</p>
+      </div>
+    </div>
+
+    <!-- Medical Histories Table -->
+    <div *ngIf="!loading && histories.length > 0" class="table-section">
+      <div class="table-header">
+        <h3>Registros de Historias Clínicas</h3>
+        <div class="table-stats">
+          <span class="stat-item">
+            <i class="icon-records"></i>
+            {{ histories.length }} registros
+          </span>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="medical-history-table">
+          <thead>
+            <tr>
+              <th><i class="icon-id"></i> ID</th>
+              <th><i class="icon-user"></i> Paciente</th>
+              <th><i class="icon-mail"></i> Email</th>
+              <th><i class="icon-card"></i> CI</th>
+              <th><i class="icon-reason"></i> Motivo de Consulta</th>
+              <th><i class="icon-allergy"></i> Alergias</th>
+              <th><i class="icon-calendar"></i> Fecha de Creación</th>
+              <th><i class="icon-actions"></i> Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let h of histories; let i = index" [class.even-row]="i % 2 === 0">
+              <td class="id-cell">{{ h.id }}</td>
+              <td class="patient-cell">
+                <div class="patient-info">
+                  <strong>{{ h.patient.name }}</strong>
+                </div>
+              </td>
+              <td class="email-cell">{{ h.patient.email }}</td>
+              <td class="ci-cell">
+                <span class="ci-badge">{{ h.patient.ci }}</span>
+              </td>
+              <td class="reason-cell">
+                <div class="reason-text" [title]="h.consultation_reason">
+                  {{ h.consultation_reason }}
+                </div>
+              </td>
+              <td class="allergies-cell">
+                <span class="allergy-badge" *ngIf="h.allergies; else noAllergies">
+                  {{ h.allergies }}
+                </span>
+                <ng-template #noAllergies>
+                  <span class="no-allergies">Sin alergias registradas</span>
+                </ng-template>
+              </td>
+              <td class="date-cell">
+                <div class="date-info">
+                  <span class="date">{{ h.created_at | date:'dd/MM/yyyy' }}</span>
+                  <small class="time">{{ h.created_at | date:'HH:mm' }}</small>
+                </div>
+              </td>
+              <td class="actions-cell">
+                <div class="action-buttons">
+                  <button class="btn btn-primary btn-sm" (click)="openHistoryModal(h)" title="Ver y editar historial">
+                    <i class="icon-view"></i> Ver / Editar
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && histories.length === 0" class="empty-state">
+      <div class="empty-icon">📄</div>
+      <h3>No hay historiales clínicos</h3>
+      <p>Aún no se han registrado historias clínicas en el sistema.</p>
+      <div class="empty-actions">
+        <small>Los historiales se crearán automáticamente cuando se registren atenciones médicas.</small>
+      </div>
+    </div>
   </div>
 </div>

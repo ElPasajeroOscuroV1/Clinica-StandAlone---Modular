@@ -3,7 +3,7 @@ import {
   getElement,
   h,
   registerInstance
-} from "./chunk-L545XVBB.js";
+} from "./chunk-JRG224JJ.js";
 import "./chunk-N6ESDQJH.js";
 
 // node_modules/@ionic/pwa-elements/dist/esm-es5/pwa-toast.entry.js
@@ -53,4 +53,4 @@ PWAToast.style = toastCss;
 export {
   PWAToast as pwa_toast
 };
-//# sourceMappingURL=pwa-toast.entry-A5YOCFVD.js.map
+//# sourceMappingURL=pwa-toast.entry-F6LSVDPR.js.map

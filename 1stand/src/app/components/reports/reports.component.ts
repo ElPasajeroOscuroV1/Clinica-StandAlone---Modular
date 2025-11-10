@@ -2,6 +2,8 @@ import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angula
 import { HttpClient } from '@angular/common/http';
 import { Chart, ChartConfiguration, ChartOptions, ChartType, registerables } from 'chart.js';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { CurrencyPipe } from '@angular/common';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -10,7 +12,7 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, CommonModule, CurrencyPipe],
   templateUrl: './reports.component.html',
   styleUrls: ['./reports.component.css']
 })

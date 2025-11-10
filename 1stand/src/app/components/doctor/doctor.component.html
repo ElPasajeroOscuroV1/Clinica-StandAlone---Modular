@@ -1,58 +1,116 @@
-<div class="container mt-4">
-  <h2>Gestión de Médicos</h2>
-  <h2>{{ isEditing ? 'Editar Médico' : 'Registrar Nuevo Médico' }}</h2>
+<div class="doctors-container">
+  <div class="doctors-header">
+    <div class="header-content">
+      <div class="header-icon">👨‍⚕️</div>
+      <div class="header-text">
+        <h1>Gestión de Médicos</h1>
+        <p>Administra el registro y configuración de médicos en tu clínica</p>
+      </div>
+    </div>
+  </div>
 
-  <form [formGroup]="doctorForm" (ngSubmit)="onSubmit()" class="mb-4">
-    <div class="mb-3">
-      <label for="name" class="form-label">Nombre</label>
-      <input type="text" class="form-control" id="name" formControlName="name" />
+  <div class="form-section">
+    <div class="form-header">
+      <h2>{{ isEditing ? 'Editar Médico' : 'Registrar Nuevo Médico' }}</h2>
+      <div class="form-status" *ngIf="doctorForm.valid">
+        <small class="text-success">✓ Formulario completo</small>
+      </div>
     </div>
 
-    <div class="mb-3">
-      <label for="specialty" class="form-label">Especialidad</label>
-      <input type="text" class="form-control" id="specialty" formControlName="specialty" />
-    </div>
+    <form [formGroup]="doctorForm" (ngSubmit)="onSubmit()" class="doctor-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="name" class="form-label">
+            <i class="icon-user"></i> Nombre Completo
+          </label>
+          <input type="text" class="form-control" id="name" formControlName="name"
+                 placeholder="Ingresa el nombre completo" />
+          <div class="invalid-feedback" *ngIf="doctorForm.get('name')?.invalid && doctorForm.get('name')?.touched">
+            El nombre es obligatorio
+          </div>
+        </div>
 
-    <div class="mb-3">
-      <label for="email" class="form-label">Email</label>
-      <input type="email" class="form-control" id="email" formControlName="email" />
-    </div>
+        <div class="form-group">
+          <label for="specialty" class="form-label">
+            <i class="icon-stethoscope"></i> Especialidad
+          </label>
+          <input type="text" class="form-control" id="specialty" formControlName="specialty"
+                 placeholder="Ej: Cardiología, Pediatría" />
+          <div class="invalid-feedback" *ngIf="doctorForm.get('specialty')?.invalid && doctorForm.get('specialty')?.touched">
+            La especialidad es obligatoria
+          </div>
+        </div>
+      </div>
 
-    <div class="mb-3">
-      <label for="password" class="form-label">Password</label>
-      <input type="password" class="form-control" id="password" formControlName="password" required />
-    </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="email" class="form-label">
+            <i class="icon-mail"></i> Correo Electrónico
+          </label>
+          <input type="email" class="form-control" id="email" formControlName="email"
+                 placeholder="doctor@clinica.com" />
+          <div class="invalid-feedback" *ngIf="doctorForm.get('email')?.invalid && doctorForm.get('email')?.touched">
+            <span *ngIf="doctorForm.get('email')?.errors?.['required']">El email es obligatorio</span>
+            <span *ngIf="doctorForm.get('email')?.errors?.['email']">Formato de email inválido</span>
+          </div>
+        </div>
 
-    <div class="mb-3">
-      <label for="phone" class="form-label">Teléfono</label>
-      <input type="text" class="form-control" id="phone" formControlName="phone" />
-    </div>
+        <div class="form-group">
+          <label for="phone" class="form-label">
+            <i class="icon-phone"></i> Teléfono
+          </label>
+          <input type="text" class="form-control" id="phone" formControlName="phone"
+                 placeholder="+591 12345678" />
+          <div class="invalid-feedback" *ngIf="doctorForm.get('phone')?.invalid && doctorForm.get('phone')?.touched">
+            El teléfono es obligatorio
+          </div>
+        </div>
+      </div>
 
-    <div class="mb-3 form-check">
-      <input type="checkbox" class="form-check-input" id="available" formControlName="available" />
-      <label class="form-check-label" for="available">Disponible</label>
-    </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="password" class="form-label">
+            <i class="icon-lock"></i> Contraseña
+          </label>
+          <input type="password" class="form-control" id="password" formControlName="password"
+                 placeholder="Contraseña segura" />
+          <div class="invalid-feedback" *ngIf="doctorForm.get('password')?.invalid && doctorForm.get('password')?.touched">
+            La contraseña es obligatoria
+          </div>
+        </div>
 
-    <button type="submit" class="btn btn-primary" [disabled]="!doctorForm.valid">
-      {{ isEditing ? 'Actualizar' : 'Registrar' }}
-    </button>
-    <button type="button" class="btn btn-secondary ms-2" (click)="resetForm()" *ngIf="isEditing">
-      Cancelar
-    </button>
-  </form>
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="available" formControlName="available" />
+            <span class="checkmark"></span>
+            <span class="checkbox-text">Médico disponible para citas</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="!doctorForm.valid">
+          <i class="icon-save"></i> {{ isEditing ? 'Actualizar Médico' : 'Registrar Médico' }}
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="resetForm()" *ngIf="isEditing">
+          <i class="icon-cancel"></i> Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- 📋 Lista de médicos -->
-<div class="mt-4 px-4">
-  <h3>Lista de Médicos</h3>
-  <div class="table-responsive" style="overflow-x: auto;">
-    <table class="table table-striped">
+<div class="doctors-list-section">
+  <h3>Lista de Médicos Registrados</h3>
+  <div class="table-responsive">
+    <table class="doctors-table">
       <thead>
         <tr>
-          <th>Nombre</th>
-          <th>Especialidad</th>
-          <th>Email</th>
-          <th>Teléfono</th>
+          <th><i class="icon-user"></i> Nombre</th>
+          <th><i class="icon-stethoscope"></i> Especialidad</th>
+          <th><i class="icon-mail"></i> Email</th>
+          <th><i class="icon-phone"></i> Teléfono</th>
           <th>Estado</th>
           <th>Acciones</th>
         </tr>
@@ -63,16 +121,26 @@
           <td>{{ doctor.specialty }}</td>
           <td>{{ doctor.email }}</td>
           <td>{{ doctor.phone }}</td>
-          <td>{{ doctor.available ? 'Disponible' : 'No disponible' }}</td>
-          <td class="d-flex gap-1">
-            <button class="btn btn-sm btn-primary" (click)="editDoctor(doctor)">Editar</button>
-            <button class="btn btn-sm btn-outline-secondary" (click)="openScheduleModal(doctor.id!)">
-              🕒 Horarios
-            </button>
-            <button class="btn btn-sm btn-warning" (click)="openPermissionsModal(doctor)">
-              📅 Permisos
-            </button>
-            <button class="btn btn-sm btn-danger" (click)="deleteDoctor(doctor.id!)">Eliminar</button>
+          <td>
+            <span class="status-badge" [class.available]="doctor.available" [class.unavailable]="!doctor.available">
+              {{ doctor.available ? 'Disponible' : 'No disponible' }}
+            </span>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn btn-primary btn-sm" (click)="editDoctor(doctor)" title="Editar médico">
+                <i class="icon-edit"></i> Editar
+              </button>
+              <button class="btn btn-secondary btn-sm" (click)="openScheduleModal(doctor.id!)" title="Configurar horarios">
+                <i class="icon-schedule"></i> Horarios
+              </button>
+              <button class="btn btn-warning btn-sm" (click)="openPermissionsModal(doctor)" title="Gestionar permisos">
+                <i class="icon-permission"></i> Permisos
+              </button>
+              <button class="btn btn-danger btn-sm" (click)="deleteDoctor(doctor.id!)" title="Eliminar médico">
+                <i class="icon-delete"></i> Eliminar
+              </button>
+            </div>
           </td>
         </tr>
       </tbody>

@@ -124,8 +124,8 @@ export class DoctorPermissionsModalComponent {
       type: permission.type,
       title: permission.title,
       description: permission.description || '',
-      start_date: permission.start_date,
-      end_date: permission.end_date,
+      start_date: new Date(permission.start_date).toISOString().split('T')[0],
+      end_date: new Date(permission.end_date).toISOString().split('T')[0],
       is_active: permission.is_active
     });
   }

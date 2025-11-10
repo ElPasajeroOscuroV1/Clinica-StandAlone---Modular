@@ -3,7 +3,7 @@ import {
   getElement,
   h,
   registerInstance
-} from "./chunk-L545XVBB.js";
+} from "./chunk-JRG224JJ.js";
 import "./chunk-N6ESDQJH.js";
 
 // node_modules/@ionic/pwa-elements/dist/esm-es5/pwa-camera-modal-instance.entry.js
@@ -161,4 +161,4 @@ PWACameraModal.style = cameraModalInstanceCss;
 export {
   PWACameraModal as pwa_camera_modal_instance
 };
-//# sourceMappingURL=pwa-camera-modal-instance.entry-3V3552A3.js.map
+//# sourceMappingURL=pwa-camera-modal-instance.entry-PKUU52UY.js.map

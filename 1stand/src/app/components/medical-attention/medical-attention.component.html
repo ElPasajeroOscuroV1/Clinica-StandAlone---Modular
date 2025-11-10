@@ -1,227 +1,351 @@
-<form [formGroup]="form" (ngSubmit)="onSubmit()">
-  <h2>Atención Médica</h2>
-  <h3>Registro de Atención</h3>
+<div class="medical-attention-container">
+  <div class="medical-attention-header">
+    <div class="header-content">
+      <div class="header-icon">🏥</div>
+      <div class="header-text">
+        <h1>Atenciones Médicas</h1>
+        <p>Gestión completa de consultas y tratamientos médicos</p>
+      </div>
+    </div>
+  </div>
 
-  <!-- Selección de Paciente -->
-  <mat-form-field appearance="fill" class="full-width">
-    <mat-label>Paciente</mat-label>
-    <mat-select formControlName="patient_id" (selectionChange)="onPatientChange()">
-      <mat-option *ngFor="let patient of patients" [value]="patient.id">
-        {{ patient.name }}
-      </mat-option>
-    </mat-select>
-    
-  </mat-form-field>
-    <button
-      mat-raised-button
-      color="primary"
-      [disabled]="!form.value.patient_id || !form.value.appointment_id"
-      (click)="openMedicalHistoryModal(form.value.patient_id, form.value.appointment_id, editingAttention ? editingAttention : form.value)">
-      Ver/Editar Historia Médica
-    </button>
+  <div class="form-section">
+    <div class="form-header">
+      <h2>{{ editingAttention ? 'Editar Atención Médica' : 'Registrar Nueva Atención' }}</h2>
+      <div class="form-status" *ngIf="form.valid && form.value.patient_id">
+        <small class="text-success">✓ Formulario completo y listo para guardar</small>
+      </div>
+    </div>
 
-  <!-- Selección de Cita -->
-  <mat-form-field appearance="fill" class="full-width">
-    <mat-label>Cita Médica</mat-label>
-    <mat-select formControlName="appointment_id">
-      <mat-option *ngFor="let app of appointments" [value]="app.id">
-        {{ app.date }} {{ app.time }} - {{ getDoctorNameByAppointment(app) }}
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
-  <ng-container *ngIf="getAppointmentStatus(form.value.appointment_id) as appointmentStatus">
-    <div class="attention-status-badge">
-      <span [ngClass]="getAppointmentStatusClassFromValue(appointmentStatus)">
-        {{ getAppointmentStatusLabelFromValue(appointmentStatus) }}
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="attention-form">
+      <!-- Patient and Appointment Selection -->
+      <div class="form-row">
+        <div class="form-group">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>
+              <i class="icon-user"></i> Paciente
+            </mat-label>
+            <mat-select formControlName="patient_id" (selectionChange)="onPatientChange()">
+              <mat-option *ngFor="let patient of patients" [value]="patient.id">
+                <div class="option-content">
+                  <span class="patient-name">{{ patient.name }}</span>
+                  <small class="patient-ci">CI: {{ patient.ci }}</small>
+                </div>
+              </mat-option>
+            </mat-select>
+            <mat-hint>Seleccione el paciente para la atención médica</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div class="form-group">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>
+              <i class="icon-calendar"></i> Cita Médica
+            </mat-label>
+            <mat-select formControlName="appointment_id">
+              <mat-option *ngFor="let app of appointments" [value]="app.id">
+                <div class="option-content">
+                  <div class="appointment-primary">
+                    <span class="appointment-date">{{ app.date | date:'dd/MM/yyyy' }}</span>
+                    <span class="appointment-time">{{ app.time }}</span>
+                  </div>
+                  <small class="appointment-doctor">{{ getDoctorNameByAppointment(app) }}</small>
+                  <small class="appointment-reason">{{ app.reason }}</small>
+                </div>
+              </mat-option>
+            </mat-select>
+            <mat-hint>Seleccione la cita programada</mat-hint>
+          </mat-form-field>
+
+          <!-- Appointment Status Badge -->
+          <ng-container *ngIf="getAppointmentStatus(form.value.appointment_id) as appointmentStatus">
+            <div class="status-indicator">
+              <span [ngClass]="getAppointmentStatusClassFromValue(appointmentStatus)">
+                <i class="status-icon" [ngClass]="appointmentStatus.toLowerCase()"></i>
+                {{ getAppointmentStatusLabelFromValue(appointmentStatus) }}
+              </span>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+      <!-- Medical History Button -->
+      <div class="history-access-section" *ngIf="form.value.patient_id && form.value.appointment_id">
+        <div class="history-access-card">
+          <div class="history-info">
+            <i class="icon-history"></i>
+            <div class="history-text">
+              <strong>Historia Clínica</strong>
+              <small>Acceder a registros médicos del paciente</small>
+            </div>
+          </div>
+          <button
+            mat-raised-button
+            color="primary"
+            class="history-btn"
+            (click)="openMedicalHistoryModal(form.value.patient_id, form.value.appointment_id, editingAttention ? editingAttention : form.value)">
+            <mat-icon>visibility</mat-icon>
+            Ver/Editar Historia
+          </button>
+        </div>
+      </div>
+
+      <!-- Diagnosis Section -->
+      <div class="diagnosis-section">
+        <h4><i class="icon-diagnosis"></i> Información Médica</h4>
+
+        <div class="form-row">
+          <div class="form-group full-width">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>
+                <i class="icon-stethoscope"></i> Diagnóstico Médico
+              </mat-label>
+              <textarea matInput formControlName="diagnosis"
+                       placeholder="Describa detalladamente el diagnóstico médico..."
+                       rows="3"></textarea>
+              <mat-hint>Diagnóstico profesional basado en la evaluación médica</mat-hint>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group full-width">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>
+                <i class="icon-notes"></i> Preinscripción / Notas
+              </mat-label>
+              <textarea matInput formControlName="preEnrollment"
+                       placeholder="Información adicional, observaciones, recomendaciones..."
+                       rows="2"></textarea>
+              <mat-hint>Notas importantes sobre la atención médica</mat-hint>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+
+      <!-- Treatments Section -->
+      <div class="treatments-section">
+        <h4><i class="icon-treatment"></i> Tratamientos Aplicados</h4>
+
+        <div class="treatments-grid">
+          <!-- Medical Treatments -->
+          <div class="treatment-category">
+            <h5>Tratamientos Médicos</h5>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Seleccionar tratamientos realizados</mat-label>
+              <mat-select formControlName="treatment_ids" multiple>
+                <mat-option *ngFor="let treat of treatments" [value]="treat.id">
+                  <div class="treatment-option">
+                    <div class="treatment-info">
+                      <span class="treatment-name">{{ treat.nombre }}</span>
+                      <small class="treatment-duration">{{ treat.duracion }} min</small>
+                    </div>
+                    <div class="treatment-pricing">
+                      <ng-container *ngIf="treat.tiene_descuento; else normalPricing">
+                        <div class="pricing-discount">
+                          <span class="original-price">{{ treat.precio | currency:'USD':'symbol':'1.2-2' }}</span>
+                          <span class="discounted-price">{{ getTreatmentPrecioFinal(treat) | currency:'USD':'symbol':'1.2-2' }}</span>
+                          <span class="savings-badge">Ahorro: {{ treat.ahorro | currency:'USD':'symbol':'1.2-2' }}</span>
+                        </div>
+                      </ng-container>
+                      <ng-template #normalPricing>
+                        <span class="normal-price">{{ treat.precio | currency:'USD':'symbol':'1.2-2' }}</span>
+                      </ng-template>
+                    </div>
+                  </div>
+                </mat-option>
+              </mat-select>
+              <mat-hint>Seleccione uno o más tratamientos aplicados</mat-hint>
+            </mat-form-field>
+          </div>
+
+          <!-- Other Treatments -->
+          <div class="treatment-category">
+            <h5>Otros Servicios</h5>
+            <div formArrayName="otherTreatments" class="other-treatments-list">
+              <div *ngFor="let ot of otherTreatmentsFormArray.controls; let i = index" [formGroupName]="i" class="other-treatment-item">
+                <div class="treatment-inputs">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Nombre del servicio</mat-label>
+                    <input matInput formControlName="name" placeholder="Ej: Radiografía, Análisis">
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Precio</mat-label>
+                    <input matInput type="number" formControlName="price" step="0.01" placeholder="0.00">
+                    <span matSuffix>BS</span>
+                  </mat-form-field>
+                </div>
+                <button mat-icon-button color="warn" type="button" (click)="removeOtherTreatment(i)" matTooltip="Eliminar servicio">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <div class="add-treatment-section">
+              <button mat-stroked-button color="accent" type="button" (click)="addOtherTreatment()" class="add-treatment-btn">
+                <mat-icon>add</mat-icon>
+                Agregar Servicio Adicional
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button type="submit" mat-raised-button color="primary" [disabled]="form.invalid" class="submit-btn">
+          <mat-icon>{{ editingAttention ? 'update' : 'save' }}</mat-icon>
+          {{ editingAttention ? 'Actualizar Atención' : 'Guardar Atención' }}
+        </button>
+        <button type="button" mat-raised-button color="warn" (click)="resetForm()" *ngIf="editingAttention" class="cancel-btn">
+          <mat-icon>cancel</mat-icon>
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Medical Attentions List Section -->
+<div class="medical-attentions-list-section">
+  <div class="list-header">
+    <h3>Historial de Atenciones Médicas</h3>
+    <div class="list-stats">
+      <span class="stat-item">
+        <i class="icon-attentions-count"></i>
+        {{ medicalAttentions.length }} atenciones registradas
+      </span>
+      <span class="stat-item" *ngIf="hasRevenue">
+        <i class="icon-total-revenue"></i>
+        Total: {{ totalRevenue | currency:'USD':'symbol':'1.2-2' }}
       </span>
     </div>
-  </ng-container>
-
-
-  <!-- Diagnóstico -->
-  <mat-form-field appearance="fill" class="full-width">
-    <mat-label>Diagnóstico</mat-label>
-    <textarea matInput formControlName="diagnosis" placeholder="Ingrese el diagnóstico"></textarea>
-  </mat-form-field>
-
-  <!-- Selección de Tratamientos -->
-  <mat-form-field appearance="fill" class="full-width">
-    <mat-label>Tratamientos</mat-label>
-    <mat-select formControlName="treatment_ids" multiple>
-      <mat-option *ngFor="let treat of treatments" [value]="treat.id">
-        {{ treat.nombre }}
-        <ng-container *ngIf="treat.tiene_descuento; else precioNormal">
-          (<s>{{ treat.precio }} BS</s> {{ getTreatmentPrecioFinal(treat) }} BS - Ahorro: {{ treat.ahorro }} BS)
-        </ng-container>
-        <ng-template #precioNormal>({{ treat.precio }} BS)</ng-template>
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
-
-  <!-- Otros tratamientos -->
-  <div formArrayName="otherTreatments">
-    <div *ngFor="let ot of otherTreatmentsFormArray.controls; let i = index" [formGroupName]="i">
-      <mat-form-field appearance="fill">
-        <mat-label>Otro tratamiento</mat-label>
-        <input matInput formControlName="name">
-      </mat-form-field>
-      <mat-form-field appearance="fill">
-        <mat-label>Precio</mat-label>
-        <input matInput type="number" formControlName="price">
-      </mat-form-field>
-      <button mat-icon-button color="warn" type="button" (click)="removeOtherTreatment(i)">
-        <mat-icon>delete</mat-icon>
-      </button>
-    </div>
   </div>
 
-  <div class="add-treatment-btn">
-    <button mat-raised-button color="accent" type="button" (click)="addOtherTreatment()">
-      <mat-icon>add</mat-icon>
-      Agregar otro tratamiento
-    </button>
+  <div class="table-responsive">
+    <table class="medical-attentions-table" *ngIf="medicalAttentions.length > 0; else noAttentions">
+      <thead>
+        <tr>
+          <th><i class="icon-id"></i> ID</th>
+          <th><i class="icon-user"></i> Paciente</th>
+          <th><i class="icon-calendar"></i> Cita</th>
+          <th><i class="icon-doctor"></i> Doctor</th>
+          <th><i class="icon-diagnosis"></i> Diagnóstico</th>
+          <th><i class="icon-treatment"></i> Tratamientos</th>
+          <th><i class="icon-money"></i> Costo Total</th>
+          <th><i class="icon-status"></i> Estado</th>
+          <th><i class="icon-actions"></i> Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let attention of medicalAttentions; let i = index" [class.even-row]="i % 2 === 0">
+          <td class="id-cell">{{ attention.id }}</td>
+
+          <td class="patient-cell">
+            <div class="patient-info">
+              <strong>{{ getPatientName(attention.patient_id) }}</strong>
+              <small class="patient-id">ID: {{ attention.patient_id }}</small>
+            </div>
+          </td>
+
+          <td class="appointment-cell">
+            <div class="appointment-info">
+              <span class="appointment-date">{{ getAppointmentDate(attention.appointment_id) }}</span>
+            </div>
+          </td>
+
+          <td class="doctor-cell">
+            <span class="doctor-name">{{ getDoctorName(attention) }}</span>
+          </td>
+
+          <td class="diagnosis-cell">
+            <div class="diagnosis-content">
+              <span class="diagnosis-text" [title]="attention.diagnosis">
+                {{ attention.diagnosis || 'Sin diagnóstico registrado' }}
+              </span>
+              <div class="pre-enrollment" *ngIf="attention.preEnrollment">
+                <small class="pre-enrollment-label">Preinscripción:</small>
+                <span class="pre-enrollment-text" [title]="attention.preEnrollment">
+                  {{ attention.preEnrollment }}
+                </span>
+              </div>
+            </div>
+          </td>
+
+          <td class="treatments-cell">
+            <div class="treatments-summary">
+              <!-- Medical Treatments -->
+              <div class="treatment-group" *ngIf="attention.treatments && attention.treatments.length > 0">
+                <div class="treatment-item" *ngFor="let t of attention.treatments">
+                  <span class="treatment-name">{{ t.nombre }}</span>
+                  <div class="treatment-pricing">
+                    <ng-container *ngIf="t.tiene_descuento; else normalPricing">
+                      <span class="original-price">{{ t.precio | currency:'USD':'symbol':'1.2-2' }}</span>
+                      <span class="discounted-price">{{ t.precio_con_descuento ?? t.precio | currency:'USD':'symbol':'1.2-2' }}</span>
+                      <span class="savings-tag">Ahorro: {{ t.ahorro ?? 0 | currency:'USD':'symbol':'1.2-2' }}</span>
+                    </ng-container>
+                    <ng-template #normalPricing>
+                      <span class="normal-price">{{ t.precio | currency:'USD':'symbol':'1.2-2' }}</span>
+                    </ng-template>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Other Treatments -->
+              <div class="other-treatments-group" *ngIf="attention.otherTreatments && attention.otherTreatments.length > 0">
+                <div class="other-treatment-item" *ngFor="let ot of attention.otherTreatments">
+                  <span class="treatment-name">{{ ot.name }}</span>
+                  <span class="treatment-price">{{ ot.price | currency:'USD':'symbol':'1.2-2' }}</span>
+                </div>
+              </div>
+
+              <!-- No treatments message -->
+              <span class="no-treatments" *ngIf="(!attention.treatments || attention.treatments.length === 0) && (!attention.otherTreatments || attention.otherTreatments.length === 0)">
+                Sin tratamientos registrados
+              </span>
+            </div>
+          </td>
+
+          <td class="cost-cell">
+            <div class="total-cost">
+              <span class="cost-amount">{{ attention.total_cost || 0 | currency:'USD':'symbol':'1.2-2' }}</span>
+            </div>
+          </td>
+
+          <td class="status-cell">
+            <span [ngClass]="getAppointmentStatusClassFromValue(getAppointmentStatus(attention.appointment_id))">
+              <i class="status-icon" [ngClass]="(getAppointmentStatus(attention.appointment_id) || 'pending').toLowerCase()"></i>
+              {{ getAppointmentStatusLabelFromValue(getAppointmentStatus(attention.appointment_id)) }}
+            </span>
+          </td>
+
+          <td class="actions-cell">
+            <div class="action-buttons">
+              <button class="btn btn-primary btn-sm" (click)="editAttention(attention)" title="Editar atención médica">
+                <i class="icon-edit"></i> Editar
+              </button>
+              <button class="btn btn-danger btn-sm" (click)="deleteAttention(attention.id)" title="Eliminar atención médica">
+                <i class="icon-delete"></i> Eliminar
+              </button>
+              <button class="btn btn-outline-primary btn-sm" (click)="openMedicalHistoryModal(attention.patient_id, attention.appointment_id, attention)" title="Ver/editar historia médica">
+                <i class="icon-history"></i> Historia
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty State -->
+    <ng-template #noAttentions>
+      <div class="empty-state">
+        <div class="empty-icon">🏥</div>
+        <h3>No hay atenciones médicas registradas</h3>
+        <p>Aún no se han registrado atenciones médicas en el sistema.</p>
+        <div class="empty-actions">
+          <small>Las atenciones se registran después de completar las citas médicas.</small>
+        </div>
+      </div>
+    </ng-template>
   </div>
-
-
-
-
-  <!-- Preinscripción -->
-  <mat-form-field appearance="fill" class="full-width">
-    <mat-label>Preinscripción</mat-label>
-    <textarea matInput formControlName="preEnrollment" placeholder="Ingrese información de preinscripción"></textarea>
-  </mat-form-field>
-
-  <!-- Botones de acción -->
-  <div class="actions">
-    <button type="submit" mat-raised-button color="primary">
-      {{ editingAttention ? 'Actualizar Atención' : 'Guardar Atención' }}
-    </button>
-    <button type="button" mat-raised-button color="warn" (click)="resetForm()" *ngIf="editingAttention">
-      Cancelar
-    </button>
-  </div>
-</form>
-
-<!-- Tabla de atenciones médicas -->
-<h2>Lista de Atenciones Médicas</h2>
-<div class="table-container">
-  <mat-table [dataSource]="medicalAttentions" class="mat-elevation-z8">
-
-    <!-- ID -->
-    <ng-container matColumnDef="id">
-      <mat-header-cell *matHeaderCellDef>ID</mat-header-cell>
-      <mat-cell *matCellDef="let element">{{ element.id }}</mat-cell>
-    </ng-container>
-
-    <!-- Paciente -->
-    <ng-container matColumnDef="patient_id">
-      <mat-header-cell *matHeaderCellDef>Paciente</mat-header-cell>
-      <mat-cell *matCellDef="let element">{{ getPatientName(element.patient_id) }}</mat-cell>
-      
-    </ng-container>
-      
-
-    <!-- Cita -->
-    <ng-container matColumnDef="appointment_id">
-      <mat-header-cell *matHeaderCellDef>Cita</mat-header-cell>
-      <mat-cell *matCellDef="let element">{{ getAppointmentDate(element.appointment_id) }}</mat-cell>
-    </ng-container>
-
-    <!-- Doctor -->
-    <ng-container matColumnDef="doctor">
-      <mat-header-cell *matHeaderCellDef>Doctor</mat-header-cell>
-      <!-- <mat-cell *matCellDef="let element">{{ getDoctorName(element.appointment_id) }}</mat-cell> -->
-      <mat-cell *matCellDef="let element">{{ getDoctorName(element) }}</mat-cell>
-    </ng-container>
-
-    <!-- Diagnóstico -->
-    <ng-container matColumnDef="diagnosis">
-      <mat-header-cell *matHeaderCellDef>Diagnóstico</mat-header-cell>
-      <mat-cell *matCellDef="let element">{{ element.diagnosis || 'Sin diagnóstico' }}</mat-cell>
-    </ng-container>
-
-    <!-- Tratamientos -->
-    <ng-container matColumnDef="treatments">
-      <mat-header-cell *matHeaderCellDef>Tratamientos</mat-header-cell>
-      <mat-cell *matCellDef="let element">
-        <ng-container *ngIf="element.treatments && element.treatments.length > 0; else noTreatments">
-          <ul style="margin: 0; padding-left: 16px;">
-            <li *ngFor="let t of element.treatments">
-              {{ t.nombre }}
-              <ng-container *ngIf="t.tiene_descuento; else precioNormal">
-                <s class="text-muted">{{ t.precio }} BS</s>
-                <span class="fw-bold text-success">{{ t.precio_con_descuento ?? t.precio }} BS</span>
-                <small class="badge bg-success ms-1">Ahorro: {{ t.ahorro ?? 0 }} BS</small>
-              </ng-container>
-              <ng-template #precioNormal>{{ t.precio }} BS</ng-template>
-            </li>
-          </ul>
-        </ng-container>
-        <ng-template #noTreatments>Sin tratamientos</ng-template>
-      </mat-cell>
-    </ng-container>
-
-
-
-    <!-- Otros tratamientos -->
-    <ng-container matColumnDef="other_treatments">
-      <mat-header-cell *matHeaderCellDef>Otros Tratamientos</mat-header-cell>
-      <mat-cell *matCellDef="let element">
-        <ng-container *ngIf="element.other_treatments && element.other_treatments.length > 0; else noOtros">
-          <ul style="margin: 0; padding-left: 16px;">
-            <li *ngFor="let ot of element.other_treatments">
-              {{ ot.name }} ({{ ot.price }} BS)
-            </li>
-          </ul>
-        </ng-container>
-        <ng-template #noOtros>Sin otros tratamientos</ng-template>
-      </mat-cell>
-    </ng-container>
-
-    <!-- Preinscripción -->
-    <ng-container matColumnDef="pre_enrollment">
-      <mat-header-cell *matHeaderCellDef>Preinscripción</mat-header-cell>
-      <mat-cell *matCellDef="let element">
-        {{ element.preEnrollment || 'Sin datos' }}
-      </mat-cell>
-    </ng-container>
-
-    <!-- Costo total -->
-    <ng-container matColumnDef="total_cost">
-      <mat-header-cell *matHeaderCellDef>Costo Total</mat-header-cell>
-      <mat-cell *matCellDef="let element">{{ element.total_cost || 0 }} BS</mat-cell>
-    </ng-container>
-
-    <ng-container matColumnDef="appointment_status">
-      <mat-header-cell *matHeaderCellDef>Estado Atención</mat-header-cell>
-      <mat-cell *matCellDef="let element">
-        <span [ngClass]="getAppointmentStatusClassFromValue(getAppointmentStatus(element.appointment))">
-          {{ getAppointmentStatusLabelFromValue(getAppointmentStatus(element.appointment)) }}
-        </span>
-      </mat-cell>
-    </ng-container>
-
-    <ng-container matColumnDef="actions">
-      <mat-header-cell *matHeaderCellDef>Acciones</mat-header-cell>
-      <mat-cell *matCellDef="let element">
-        <button mat-icon-button color="primary" (click)="editAttention(element)">
-          <mat-icon>edit</mat-icon>
-        </button>
-        <button mat-icon-button color="warn" (click)="deleteAttention(element.id)">
-          <mat-icon>delete</mat-icon>
-        </button>
-        <button
-          mat-raised-button
-          color="primary"
-          (click)="openMedicalHistoryModal(element.patient_id, element.appointment_id, element)">
-          Ver/Editar Historia Médica
-        </button>
-
-      </mat-cell> <!-- CIERRE DEL mat-cell -->
-    </ng-container>
-
-
-    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-  </mat-table>
 </div>

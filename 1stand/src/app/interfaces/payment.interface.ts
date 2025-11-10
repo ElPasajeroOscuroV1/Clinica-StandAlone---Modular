@@ -13,6 +13,7 @@ export interface RawPayment {
   patient?: {
     id: number;
     name: string;
+    ci?: string;
   };
   appointment?: {
     id: number;
@@ -40,6 +41,7 @@ export interface Payment {
   patient?: {
     id: number;
     name: string;
+    ci?: string;
   };
   appointment?: {
     id: number;
